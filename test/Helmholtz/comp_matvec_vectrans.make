@@ -1,9 +1,10 @@
 PROJECT = int2
 
-HOST = macosx
+#HOST = macosx
 HOST = linux-gfortran
-HOST = linux-ifort
-HOST = linux-gfortran-openmp
+#HOST = linux-ifort
+#HOST = linux-gfortran-openmp
+#HOST = linux-gfortran-no-op
 
 ifeq ($(HOST),macosx)
 FC = gfortran -c -w
@@ -14,6 +15,12 @@ endif
 ifeq ($(HOST),linux-gfortran)
 FC = gfortran -c 
 FFLAGS = -O3 -march=native -funroll-loops -fPIC -ftree-vectorizer-verbose=2
+FLINK = gfortran -o $(PROJECT) -lopenblas
+endif
+
+ifeq ($(HOST),linux-gfortran-no-op)
+FC = gfortran -c 
+FFLAGS = -O3 -funroll-loops -fPIC -march=native
 FLINK = gfortran -o $(PROJECT) -lopenblas
 endif
 

@@ -21,7 +21,7 @@ c
       complex *16 zk,ima,cra1,cra2,cra3,alpha,beta
       real *8 rscale0, rscale1, center0(3),center1(3)
       real *8 xnodes(10000),wts(10000)
-      integer, parameter :: nd = 10000
+      integer, parameter :: nd = 100000
       character *1 transa,transb 
       data ima/(0.0d0,1.0d0)/
 
@@ -32,7 +32,7 @@ c
 c       generate data for testing
 c
 
-      nterms = 26
+      nterms = 39
       nsize = (nterms+1)**2
 
       zk = 1.1d0 + ima*0.1d0
@@ -98,6 +98,7 @@ c
       transb = 'n'
       alpha = 1
       beta = 0
+      print *, "Starting strategy 1"
      
       
       call cpu_time(t1)
@@ -107,7 +108,7 @@ C$      t1 = omp_get_wtime()
       call cpu_time(t2) 
 C$      t2 = omp_get_wtime()     
       
-      print *, "Time for blas=",t2-t1
+      print *, "Time for blas=",(t2-t1)/nd
 
 c
 c
@@ -119,6 +120,8 @@ c
 
       t1 = 0
       t2 = 0
+
+      print *, "Starting strategy 2"
       
       call cpu_time(t1) 
 C$      t1 = omp_get_wtime()      
@@ -128,7 +131,7 @@ C$      t1 = omp_get_wtime()
       call cpu_time(t2) 
 C$      t2 = omp_get_wtime()     
  
-      print *, "Time mpmp vec=",t2-t1
+      print *, "Time mpmp vec=",(t2-t1)/nd
 
 c
 c
@@ -136,6 +139,7 @@ c      Strategy 3: apply mpmp operator 1 expansion at a time
 c
       t1 = 0
       t2 = 0
+      print *, "Starting strategy 3"
       call cpu_time(t1)
 C$       t1 = omp_get_wtime()      
 C$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(idim)     
@@ -147,7 +151,7 @@ C$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(idim)
 C$OMP END PARALLEL DO
       call cpu_time(t2)
 C$       t2 = omp_get_wtime()      
-      print *, "time mpmp=",t2-t1
+      print *, "time mpmp=",(t2-t1)/nd
 
 
 c
