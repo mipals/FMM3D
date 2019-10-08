@@ -174,7 +174,7 @@ c
        else if(eps.ge.0.5d-2) then
          ndiv = 40
        else if(eps.ge.0.5d-3) then
-         ndiv = 100 
+         ndiv = 30 
        else if(eps.ge.0.5d-6) then
          ndiv = 200
        else if(eps.ge.0.5d-9) then
@@ -187,6 +187,8 @@ c
          ndiv = nsource+ntarg
        endif
 
+
+       ndiv = 160
 
 c
 cc      set tree flags
@@ -202,7 +204,7 @@ c
        nadd = 0
        ntj = 0
 
-       idivflag = 0
+       idivflag = 1
 
        mnlist1 = 0
        mnlist2 = 0
@@ -392,6 +394,10 @@ c     Compute length of expansions at each level
          call l3dterms(eps,nterms(i))
          if(nterms(i).gt.nmax) nmax = nterms(i)
       enddo
+
+      open(unit=17,access='append')
+      write(17,*) nterms(1)
+      close(17)
 c       
 c     Multipole and local expansions will be held in workspace
 c     in locations pointed to by array iaddr(2,nboxes).
@@ -654,7 +660,7 @@ c     Prints timing breakdown and other things if ifprint=1.
 c     Prints timing breakdown, list information, 
 c     and other things if ifprint=2.
 c       
-      ifprint=0
+      ifprint=1
       
 
 c     Initialize routines for plane wave mp loc translation
@@ -1419,6 +1425,8 @@ C$OMP$SCHEDULE(DYNAMIC)
 
             npts = iend-istart+1
 
+            if(npts.gt.0) then
+
             do i=1,nlist3
               jbox = itree(ipointer(25)+(ibox-1)*mnlist3+i-1)
               call l3dmpevalp(nd,rscales(ilev+1),centers(1,jbox),
@@ -1426,6 +1434,8 @@ C$OMP$SCHEDULE(DYNAMIC)
      2          targsort(1,istart),npts,pottarg(1,istart),wlege,nlege,
      3          thresh)
             enddo
+
+            endif
           enddo
 C$OMP END PARALLEL DO
         endif
@@ -1919,6 +1929,11 @@ C$OMP END PARALLEL DO
 C$        time2=omp_get_wtime()
       timeinfo(8) = time2-time1
       if(ifprint.ge.1) call prin2('timeinfo=*',timeinfo,8)
+
+ 1235 format(8(2x,e11.5))      
+      open(unit=17,access='append')
+      write(17,1235) timeinfo(1:8)
+      close(17)
       d = 0
       do i = 1,8
          d = d + timeinfo(i)

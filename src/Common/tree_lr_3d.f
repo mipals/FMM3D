@@ -537,6 +537,7 @@ c
       nee = nexpc - nhungexp(1)
       if ((idivflag .eq.0).and.(nss.gt.ndiv)) irefine=1
       if ((idivflag .eq.1).and.(nt.gt.ndiv)) irefine=1
+
       if ((idivflag .eq.2).and.(nss+nt.gt.ndiv)) irefine=1
       if ((idivflag .eq.3).and.(nss+nt+nee.gt.ndiv)) irefine=1
 
@@ -1351,7 +1352,7 @@ c           Create the required boxes
                jj = 2
                if(i.eq.1.or.i.eq.2.or.i.eq.5.or.i.eq.6) ii = 1
                if(i.lt.5) jj = 1
-               if(nsc(i)+ntc(i)+nexpcc(i).gt.0) then
+               if(nsc(i)+ntc(i)+nexpcc(i).ge.0) then
 c                 Increment total number of boxes               
                   nboxes = nboxes + 1
                   if(nboxes.gt.nbmax) then
@@ -3871,7 +3872,7 @@ c           Create the required boxes
                jj = 2
                if(i.eq.1.or.i.eq.2.or.i.eq.5.or.i.eq.6) ii = 1
                if(i.lt.5) jj = 1
-               if(nsc(i)+ntc(i)+nexpcc(i).gt.0) then
+               if(nsc(i)+ntc(i)+nexpcc(i).ge.0) then
 c                 Increment total number of boxes               
                   nboxes = nboxes + 1
                   if(nboxes.gt.nbmax) then
