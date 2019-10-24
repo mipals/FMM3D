@@ -2036,12 +2036,12 @@ c--------------------------------------------------------------------
 c
 c
 c--------------------------------------------------------------------
-      subroutine processudexplist3(nd,ibox,ilev,nboxes,centers,ichild,
+      subroutine processlist3udexp(nd,ibox,ilev,nboxes,centers,ichild,
      1           rscale,nterms,iaddr,rmlexp,rlams,whts,nlams,nfourier,
      2           nphysical,nthmax,nexptot,nexptotp,mexp,nuall,uall,
-     3           nu1234,u1234,ndall,dall,nd5678,d5678,mexpup,mexpdown,
-     4           mexpupphys,mexpdownphys,mexpuall,mexpu5678,mexpdall,
-     5           mexpd1234,xs,ys,zs,fexpback,rlsc,rscpow)
+     3           ndall,dall,mexpup,mexpdown,
+     4           mexpupphys,mexpdownphys,mexpuall,mexpdall,
+     5           xs,ys,zs,fexpback,rlsc,rscpow)
 c--------------------------------------------------------------------
 c      process up down expansions for box ibox
 c-------------------------------------------------------------------
@@ -2062,7 +2062,6 @@ c-------------------------------------------------------------------
       double complex mexpup(nd,nexptot),mexpdown(nd,nexptot)
       double complex mexpupphys(nd,nexptotp),mexpdownphys(nd,nexptotp)
       double complex mexpuall(nd,nexptotp),mexpdall(nd,nexptotp)
-      double complex mexpd1234(nd,nexptotp),mexpu5678(nd,nexptotp)
       double complex xs(-5:5,nexptotp),ys(-5:5,nexptotp)
       double precision zs(5,nexptotp)
       double precision rlsc(0:nterms,0:nterms,nlams),rscpow(0:nterms)
@@ -2082,8 +2081,6 @@ c      temp variables
         do idim=1,nd
           mexpuall(idim,i) = 0
           mexpdall(idim,i) = 0
-          mexpu5678(idim,i) = 0
-          mexpd1234(idim,i) = 0
         enddo
       enddo
       
@@ -2107,22 +2104,6 @@ c      temp variables
         enddo
       enddo
 
-      do i=1,nu1234
-        jbox = u1234(i)
-        ix = 1.05d0*(centers(1,jbox)-ctmp(1))/rscale
-        iy = 1.05d0*(centers(2,jbox)-ctmp(2))/rscale
-        iz = 1.05d0*(centers(3,jbox)-ctmp(3))/rscale
-
-        do j=1,nexptotp
-          zmul = zs(iz,j)*xs(ix,j)*ys(iy,j)
-          do idim=1,nd
-            mexpd1234(idim,j) = mexpd1234(idim,j) + 
-     1          mexp(idim,j,jbox,2)*zmul
-          enddo
-        enddo
-      enddo
-
-
       do i=1,ndall
         jbox = dall(i)
 
@@ -2135,21 +2116,6 @@ c      temp variables
           do idim=1,nd
             mexpuall(idim,j) = mexpuall(idim,j) + 
      1          mexp(idim,j,jbox,1)*zmul
-          enddo
-        enddo
-      enddo
-
-      do i=1,nd5678
-        jbox = d5678(i)
-        ix = 1.05d0*(centers(1,jbox)-ctmp(1))/rscale
-        iy = 1.05d0*(centers(2,jbox)-ctmp(2))/rscale
-        iz = 1.05d0*(centers(3,jbox)-ctmp(3))/rscale
-
-        do j=1,nexptotp
-          zmul = zs(-iz,j)*xs(-ix,j)*ys(-iy,j)
-          do idim=1,nd
-            mexpu5678(idim,j) = mexpu5678(idim,j) + 
-     1         mexp(idim,j,jbox,1)*zmul
           enddo
         enddo
       enddo
@@ -2167,7 +2133,7 @@ c      add contributions due to child 1
         do i=1,nexptotp
           do idim=1,nd
             mexpupphys(idim,i)  = mexpuall(idim,i)
-            mexpdownphys(idim,i) = mexpdall(idim,i) + mexpd1234(idim,i)
+            mexpdownphys(idim,i) = mexpdall(idim,i)
           enddo
         enddo
 
@@ -2195,8 +2161,7 @@ c      add contributions due to child 2
         do i=1,nexptotp
           do idim=1,nd
             mexpupphys(idim,i)  = mexpuall(idim,i)*xs(1,i)
-            mexpdownphys(idim,i) = (mexpdall(idim,i) + 
-     1          mexpd1234(idim,i))*xs(-1,i)
+            mexpdownphys(idim,i) = mexpdall(idim,i)*xs(-1,i)
           enddo
         enddo
  
@@ -2223,8 +2188,7 @@ c      add contributions due to child 3
         do i=1,nexptotp
           do idim=1,nd
             mexpupphys(idim,i)  = mexpuall(idim,i)*ys(1,i)
-            mexpdownphys(idim,i) = (mexpdall(idim,i) + 
-     1          mexpd1234(idim,i))*ys(-1,i)
+            mexpdownphys(idim,i) = mexpdall(idim,i)*ys(-1,i)
           enddo
         enddo
 
@@ -2253,8 +2217,7 @@ c      add contributions due to child 4
           ztmp2 = ys(-1,i)*xs(-1,i)
           do idim=1,nd
             mexpupphys(idim,i)  = mexpuall(idim,i)*ztmp
-            mexpdownphys(idim,i) = (mexpdall(idim,i) + 
-     1         mexpd1234(idim,i))*ztmp2
+            mexpdownphys(idim,i) = mexpdall(idim,i)*ztmp2
           enddo
         enddo
 
@@ -2281,8 +2244,7 @@ c      add contributions due to child 5
         do i=1,nexptotp
           rtmp = 1.0d0/zs(1,i)
           do idim=1,nd
-            mexpupphys(idim,i)  = (mexpuall(idim,i)+
-     1           mexpu5678(idim,i))*zs(1,i)
+            mexpupphys(idim,i)  = mexpuall(idim,i)*zs(1,i)
             mexpdownphys(idim,i) = mexpdall(idim,i)*rtmp
           enddo
         enddo
@@ -2312,8 +2274,7 @@ c      add contributions due to child 6
           ztmp = xs(1,i)*zs(1,i)
           ztmp2 = xs(-1,i)/zs(1,i)
           do idim=1,nd
-            mexpupphys(idim,i)  = (mexpuall(idim,i)+
-     1         mexpu5678(idim,i))*ztmp
+            mexpupphys(idim,i)  =  mexpuall(idim,i)*ztmp
             mexpdownphys(idim,i) = mexpdall(idim,i)*ztmp2
           enddo
         enddo
@@ -2343,8 +2304,7 @@ c      add contributions due to child 7
           ztmp = zs(1,i)*ys(1,i)
           ztmp2 = ys(-1,i)/zs(1,i)
           do idim=1,nd
-            mexpupphys(idim,i)  = (mexpuall(idim,i)+
-     1          mexpu5678(idim,i))*ztmp
+            mexpupphys(idim,i)  =  mexpuall(idim,i)*ztmp
             mexpdownphys(idim,i) = mexpdall(idim,i)*ztmp2
           enddo
         enddo
@@ -2372,8 +2332,7 @@ c      add contributions due to child 8
           ztmp = zs(1,i)*ys(1,i)*xs(1,i)
           ztmp2 = xs(-1,i)*ys(-1,i)/zs(1,i)
           do idim=1,nd
-            mexpupphys(idim,i)  = (mexpuall(idim,i)+
-     1         mexpu5678(idim,i))*ztmp
+            mexpupphys(idim,i)  =  mexpuall(idim,i)+*ztmp
             mexpdownphys(idim,i) = mexpdall(idim,i)*ztmp2
           enddo
         enddo
@@ -2398,7 +2357,7 @@ c      add contributions due to child 8
       end
 c--------------------------------------------------------------------      
 
-      subroutine processnsexplist3(nd,ibox,ilev,nboxes,centers,ichild,
+      subroutine processlist3nsexp(nd,ibox,ilev,nboxes,centers,ichild,
      1           rscale,nterms,iaddr,rmlexp,rlams,whts,nlams,nfourier,
      2           nphysical,nthmax,nexptot,nexptotp,mexp,nnall,nall,
      3           nn1256,n1256,nn12,n12,nn56,n56,
@@ -2840,7 +2799,7 @@ c      add contributions due to child 8
       end
 c--------------------------------------------------------------------      
 
-      subroutine processewexplist3(nd,ibox,ilev,nboxes,centers,ichild,
+      subroutine processlist3ewexp(nd,ibox,ilev,nboxes,centers,ichild,
      1           rscale,nterms,iaddr,rmlexp,rlams,whts,nlams,nfourier,
      2           nphysical,nthmax,nexptot,nexptotp,mexp,neall,eall,
      3           ne1357,e1357,ne13,e13,ne57,e57,ne1,e1,ne3,e3,ne5,e5,

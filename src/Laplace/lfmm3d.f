@@ -618,6 +618,8 @@ c     PW variables
       double complex, allocatable :: mexpf1(:,:),mexpf2(:,:)
       double complex, allocatable ::
      1       mexpp1(:,:),mexpp2(:,:),mexppall(:,:,:)
+      integer, allocatable :: isrcbox(:)
+      integer iboxfl(2,8)
 
       double complex, allocatable :: tmp(:,:,:)
 
@@ -739,6 +741,8 @@ c     Compute total number of plane waves
       allocate(mexpf1(nd,nexptot),mexpf2(nd,nexptot),
      1   mexpp1(nd,nexptotp))
       allocate(mexpp2(nd,nexptotp),mexppall(nd,nexptotp,16))
+
+      allocate(isrcbox(ndiv))
 
 c
 cc      NOTE: there can be some memory savings here
@@ -1191,6 +1195,7 @@ C$OMP$PRIVATE(nn1256,n1256,ns3478,s3478,ne1357,e1357,nw2468,w2468)
 C$OMP$PRIVATE(nn12,n12,nn56,n56,ns34,s34,ns78,s78,ne13,e13,ne57,e57)
 C$OMP$PRIVATE(nw24,w24,nw68,w68,ne1,e1,ne3,e3,ne5,e5,ne7,e7)
 C$OMP$PRIVATE(nw2,w2,nw4,w4,nw6,w6,nw8,w8)
+C$OMP$PRIVATE(isrcbox,iboxfl)
          do ibox = laddr(1,ilev-1),laddr(2,ilev-1)
            npts = 0
            if(ifpghtarg.gt.0) then
@@ -1266,7 +1271,28 @@ C$OMP$PRIVATE(nw2,w2,nw4,w4,nw6,w6,nw8,w8)
 ccc merge step 6(list 3) to m2l
             nlist3 = itree(ipointer(24)+ibox-1)
             if(nlist3.gt.0) then
-              call getlist3pwlistall()
+              call getlist3pwlistall(ibox,nboxes,nlist3,
+     1               itree(ipointer(25)+(ibox-1)*mnlist3),
+     2               centers,nuall,uall,ndall,dall,nnall,nall,
+     3                       nsall,sall,neall,eall,nwall,wall)
+
+C              call processlist3udexp()
+C              call processlist3nsexp()
+C              call processlist3ewexp()
+              
+              istart = itree(ipointer(10)+ibox-1)
+              iend = itree(ipointer(11)+ibox-1)
+              npts = iend-istart+1
+              call subdividebox(sourcesort(1,istart),npts,center,
+     1               isrcbox,iboxfl,subcenters)
+
+              call l3dmpevalp(nd,rscales(ilev+1),centers(1,jbox),
+     1          rmlexp(iaddr(1,jbox)),nterms(ilev+1),
+     2          sourcesort(1,istart),npts,pot(1,istart),wlege,nlege,
+     3          thresh)
+
+C              call l3dpwevalp
+C              call l3dpwevalg
             endif
 
          enddo
