@@ -1843,3 +1843,335 @@ c
 c
       return
       end
+c
+c**********************************************************************
+      subroutine l3devallist3p(nd,rscale,center,mpole,nterms,
+     1		ztarg,ntarg,pot,wlege,nlege,thresh)
+c**********************************************************************
+c
+c
+c     this subroutine evaluates the potential   
+c     of an outgoing multipole expansioni and adds
+c     to existing quantities
+c
+c     pot =  pot + sum sum  mpole(n,m) Y_nm(theta,phi) / r^{n+1} 
+c                   n   m
+c
+c
+c-----------------------------------------------------------------------
+c     INPUT:
+c
+c     nd     :    number of multipole expansions
+c     rscale :    scaling parameter 
+c     center :    expansion center
+c     mpole  :    multipole expansion 
+c     nterms :    order of the multipole expansion
+c     ztarg  :    target location
+c     ntarg  :    number of target locations
+c     wlege  :    precomputed array of scaling coeffs for Pnm
+c     nlege  :    dimension parameter for wlege
+c     thresh :    threshold for computing outgoing expansion,
+c                 potential at target location
+c                 won't be updated if |t-c| <= thresh, where
+c                 t is the target location and c is the expansion
+c                 center location
+c-----------------------------------------------------------------------
+c     OUTPUT:
+c
+c     pot    :   updated potential at ztarg
+c
+c----------------------------------------------------------------------
+      implicit none
+
+c
+cc     calling sequence variables
+c
+
+      integer nterms,nlege,ntarg,nd
+      real *8 rscale,center(3),ztarg(3,ntarg)
+      real *8 pot(nd,ntarg)
+      complex *16 mpole(nd,0:nterms,-nterms:nterms)
+      real *8 wlege(0:nlege,0:nlege), thresh
+
+c
+cc     temporary variables
+c
+
+      integer idim
+      real *8, allocatable :: ynm(:,:),fr(:)
+      complex *16, allocatable :: ephi(:)
+      integer i,j,k,l,m,n,itarg
+      real *8 done,r,theta,phi,zdiff(3)
+      real *8 ctheta,stheta,cphi,sphi
+      real *8 d,rs,rtmp1,rtmp2
+      complex *16 ephi1
+c
+      complex *16 eye
+c
+      data eye/(0.0d0,1.0d0)/
+c
+      done=1.0d0
+
+      allocate(ephi(0:nterms+1))
+      allocate(fr(0:nterms+1))
+      allocate(ynm(0:nterms,0:nterms))
+
+      do itarg=1,ntarg
+        zdiff(1)=ztarg(1,itarg)-center(1)
+        zdiff(2)=ztarg(2,itarg)-center(2)
+        zdiff(3)=ztarg(3,itarg)-center(3)
+c
+        call cart2polar(zdiff,r,theta,phi)
+
+        if(abs(r).lt.thresh) goto 1000 
+
+        ctheta = dcos(theta)
+        stheta = dsin(theta)
+        cphi = dcos(phi)
+        sphi = dsin(phi)
+        ephi1 = dcmplx(cphi,sphi)
+c
+c     compute exp(eye*m*phi) array
+c
+        ephi(0)=done
+        ephi(1)=ephi1
+        d = 1.0d0/r
+        fr(0) = d
+        d = d/rscale
+        fr(1) = fr(0)*d
+        do i=2,nterms+1
+          fr(i) = fr(i-1)*d
+          ephi(i)=ephi(i-1)*ephi1
+        enddo
+c
+c    get the associated Legendre functions:
+c
+
+        call ylgndrfw(nterms,ctheta,ynm,wlege,nlege)
+        do l = 0,nterms
+          rs = sqrt(1.0d0/(2*l+1))
+          do m=0,l
+            ynm(l,m) = ynm(l,m)*rs
+          enddo
+        enddo
+
+        do idim=1,nd
+          pot(idim,itarg) = pot(idim,itarg) +
+     1                 real(mpole(idim,0,0))*fr(0)
+        enddo
+        do n=1,nterms
+          rtmp1 = fr(n)*ynm(n,0)
+          do idim=1,nd
+            pot(idim,itarg)=pot(idim,itarg)+real(mpole(idim,n,0))*rtmp1
+          enddo
+	      do m=1,n
+            rtmp1 = fr(n)*ynm(n,m)
+            do idim=1,nd
+              rtmp2 = 2*real(mpole(idim,n,m)*ephi(m)) 
+              pot(idim,itarg)=pot(idim,itarg)+rtmp1*rtmp2
+            enddo
+          enddo
+        enddo
+ 1000 continue
+      enddo
+
+      return
+      end
+c
+c
+c
+c**********************************************************************
+      subroutine l3devallist3g(nd,rscale,center,mpole,nterms,
+     1		ztarg,ntarg,pot,grad,wlege,nlege,thresh)
+c**********************************************************************
+c
+c
+c     this subroutine evaluates the potential and gradient of  
+c     of an outgoing multipole expansioni and adds
+c     to existing quantities
+c
+c     pot =  pot + sum sum  mpole(n,m) Y_nm(theta,phi) / r^{n+1} 
+c                   n   m
+c
+c     grad =  grad + Gradient( sum sum  mpole(n,m) Y_nm(theta,phi)/r^{n+1})
+c                               n   m
+c
+c-----------------------------------------------------------------------
+c     INPUT:
+c
+c     nd     :    number of multipole expansions
+c     rscale :    scaling parameter 
+c     center :    expansion center
+c     mpole  :    multipole expansion 
+c     nterms :    order of the multipole expansion
+c     ztarg  :    target location
+c     ntarg  :    number of target locations
+c     wlege  :    precomputed array of scaling coeffs for Pnm
+c     nlege  :    dimension parameter for wlege
+c     thresh :    threshold for computing outgoing expansion,
+c                 potential and gradient at target location
+c                 won't be updated if |t-c| <= thresh, where
+c                 t is the target location and c is the expansion
+c                 center location
+c-----------------------------------------------------------------------
+c     OUTPUT:
+c
+c     pot    :   updated potential at ztarg
+c     grad   :   updated gradient at ztarg 
+c
+c----------------------------------------------------------------------
+      implicit none
+
+c
+cc     calling sequence variables
+c
+
+      integer nterms,nlege,ntarg,nd
+      real *8 rscale,center(3),ztarg(3,ntarg)
+      real *8 pot(nd,ntarg),grad(nd,3,ntarg)
+      complex *16 mpole(nd,0:nterms,-nterms:nterms)
+      real *8 wlege(0:nlege,0:nlege), thresh
+
+c
+cc     temporary variables
+c
+      integer idim
+      real *8, allocatable :: ynm(:,:),ynmd(:,:),fr(:),frder(:)
+      complex *16, allocatable :: ephi(:)
+      integer i,j,k,l,m,n,itarg
+      real *8 done,r,theta,phi,zdiff(3)
+      real *8 ctheta,stheta,cphi,sphi
+      real *8 d,rx,ry,rz,thetax,thetay,thetaz,phix,phiy,phiz,rs
+      real *8 rtmp1,rtmp2,rtmp3,rtmp4,rtmp5,rtmp6
+      complex *16 ephi1
+      real *8 ur(nd),utheta(nd),uphi(nd)
+c
+      complex *16 eye
+c
+      data eye/(0.0d0,1.0d0)/
+c
+      done=1.0d0
+
+      allocate(ephi(0:nterms+1))
+      allocate(fr(0:nterms+1),frder(0:nterms))
+      allocate(ynm(0:nterms,0:nterms))
+      allocate(ynmd(0:nterms,0:nterms))
+
+      do itarg=1,ntarg
+        zdiff(1)=ztarg(1,itarg)-center(1)
+        zdiff(2)=ztarg(2,itarg)-center(2)
+        zdiff(3)=ztarg(3,itarg)-center(3)
+c
+        call cart2polar(zdiff,r,theta,phi)
+
+        if(abs(r).lt.thresh) goto 1000 
+
+        ctheta = dcos(theta)
+        stheta = dsin(theta)
+        cphi = dcos(phi)
+        sphi = dsin(phi)
+        ephi1 = dcmplx(cphi,sphi)
+c
+c     compute exp(eye*m*phi) array
+c
+        ephi(0)=done
+        ephi(1)=ephi1
+        cphi = dreal(ephi1)
+        sphi = dimag(ephi1)
+        d = 1.0d0/r
+        fr(0) = d
+        d = d/rscale
+        fr(1) = fr(0)*d
+        do i=2,nterms+1
+          fr(i) = fr(i-1)*d
+          ephi(i)=ephi(i-1)*ephi1
+        enddo
+        do i=0,nterms
+          frder(i) = -(i+1.0d0)*fr(i+1)*rscale
+        enddo
+c
+c    get the associated Legendre functions:
+c
+
+        call ylgndr2sfw(nterms,ctheta,ynm,ynmd,wlege,nlege)
+        do l = 0,nterms
+          rs = sqrt(1.0d0/(2*l+1))
+          do m=0,l
+            ynm(l,m) = ynm(l,m)*rs
+            ynmd(l,m) = ynmd(l,m)*rs
+          enddo
+        enddo
+
+c
+c     compute coefficients in change of variables from spherical
+c     to Cartesian gradients. In phix, phiy, we leave out the 
+c     1/sin(theta) contribution, since we use values of Ynm (which
+c     multiplies phix and phiy) that are scaled by 
+c     1/sin(theta).
+c
+        rx = stheta*cphi
+        thetax = ctheta*cphi/r
+        phix = -sphi/r
+        ry = stheta*sphi
+        thetay = ctheta*sphi/r
+        phiy = cphi/r
+        rz = ctheta
+        thetaz = -stheta/r
+        phiz = 0.0d0
+
+        do idim=1,nd
+          ur(idim) = real(mpole(idim,0,0))*frder(0)
+          utheta(idim) = 0.0d0
+          uphi(idim) = 0.0d0
+          pot(idim,itarg) = pot(idim,itarg) + 
+     1        real(mpole(idim,0,0))*fr(0)
+        enddo
+
+        do n=1,nterms
+          rtmp1 = fr(n)*ynm(n,0)
+          rtmp2 = frder(n)*ynm(n,0)
+          rtmp3 = -fr(n)*ynmd(n,0)*stheta
+          do idim=1,nd
+            pot(idim,itarg)=pot(idim,itarg)+real(mpole(idim,n,0))*rtmp1
+            ur(idim)=ur(idim)+real(mpole(idim,n,0))*rtmp2
+            utheta(idim)=utheta(idim)+real(mpole(idim,n,0))*rtmp3
+          enddo
+
+	      do m=1,n
+            rtmp1 = fr(n)*ynm(n,m)*stheta
+            rtmp4 = frder(n)*ynm(n,m)*stheta
+            rtmp5 = -fr(n)*ynmd(n,m)
+            rtmp6 = -m*fr(n)*ynm(n,m)
+
+            do idim=1,nd
+              rtmp2 = 2*real(mpole(idim,n,m)*ephi(m)) 
+
+              pot(idim,itarg)=pot(idim,itarg)+rtmp1*rtmp2
+              ur(idim) = ur(idim) + rtmp4*rtmp2
+              utheta(idim) = utheta(idim)+rtmp5*rtmp2
+              rtmp2 = 2*imag(mpole(idim,n,m)*ephi(m))
+              uphi(idim) = uphi(idim) + rtmp6*rtmp2
+            enddo
+          enddo
+        enddo
+
+        do idim=1,nd
+          grad(idim,1,itarg)=grad(idim,1,itarg)+ur(idim)*rx+
+     1          utheta(idim)*thetax+uphi(idim)*phix
+          grad(idim,2,itarg)=grad(idim,2,itarg)+ur(idim)*ry+
+     1          utheta(idim)*thetay+uphi(idim)*phiy
+          grad(idim,3,itarg)=grad(idim,3,itarg)+ur(idim)*rz+
+     1          utheta(idim)*thetaz+uphi(idim)*phiz
+        enddo
+
+ 1000 continue
+      enddo
+
+      return
+      end
+c
+c
+c
+c
+c
+c

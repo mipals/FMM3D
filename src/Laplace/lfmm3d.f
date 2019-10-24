@@ -1262,6 +1262,12 @@ C$OMP$PRIVATE(nw2,w2,nw4,w4,nw6,w6,nw8,w8)
      9         fexpback,rlsc,rscpow)
 
             endif
+            
+ccc merge step 6(list 3) to m2l
+            nlist3 = itree(ipointer(24)+ibox-1)
+            if(nlist3.gt.0) then
+              call getlist3pwlistall()
+            endif
 
          enddo
 C$OMP END PARALLEL DO         

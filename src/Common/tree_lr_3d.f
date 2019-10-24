@@ -4851,3 +4851,79 @@ c-------------------------------------------------------------------
       return
       end
 c--------------------------------------------------------------------      
+
+      subroutine getlist3pwlistall(ibox,nboxes,nlist3,list3,
+     1           nchild,ichild,centers,isep,nuall,uall,ndall,dall,nnall,
+     2           nall,nsall,sall,neall,eall,nwall,wall)
+c-------------------------------------------------------------------
+      implicit none
+      integer ibox
+      integer nboxes,nlist3,list3(nlist3)
+      double precision centers(3,nboxes)
+      integer nuall,ndall,nnall,nsall,neall,nwall,nu1234
+      integer uall(1),dall(1),nall(1),sall(1),eall(1),wall(1)
+
+      integer jbox
+      integer c1,c2,c3,c4,c5,c6
+      integer j
+
+      nuall = 0
+      ndall = 0
+      nnall = 0
+      nsall = 0
+      neall = 0
+      nwall = 0
+      do j=1,nlist3
+         jbox = list3(j)
+         if(jbox.gt.0) then
+            c1 = 0
+            c2 = 0
+            c3 = 0
+            c4 = 0
+            c5 = 0
+            c6 = 0
+            if((centers(3,jbox)-centers(3,ibox)).ge.0.0d0) c1 = 1
+            if((centers(3,jbox)-centers(3,ibox)).le.0.0d0) c2 = 1
+            if((centers(2,jbox)-centers(2,ibox)).ge.0.0d0) c3 = 1
+            if((centers(2,jbox)-centers(2,ibox)).le.0.0d0) c4 = 1
+            if((centers(1,jbox)-centers(1,ibox)).ge.0.0d0) c5 = 1
+            if((centers(1,jbox)-centers(1,ibox)).le.0.0d0) c6 = 1
+
+            if(c1.eq.1) then
+               nuall = nuall + 1
+               uall(nuall) = jbox
+            endif
+
+            if(c2.eq.1) then
+               ndall = ndall + 1
+               dall(ndall) = jbox
+            endif
+
+            if(c3.eq.1.and.c1.eq.0.and.c2.eq.0) then
+               nnall = nnall + 1
+               nall(nnall) = jbox
+            endif
+
+            if(c4.eq.1.and.c1.eq.0.and.c2.eq.0) then   
+               nsall = nsall + 1
+               sall(nsall) = jbox
+            endif
+
+            if(c5.eq.1.and.c1.eq.0.and.c2.eq.0.and.c3.eq.0.and.
+     1         c4.eq.0) then
+               neall = neall + 1
+               eall(neall) = jbox
+            endif
+
+            if(c6.eq.1.and.c1.eq.0.and.c2.eq.0.and.c3.eq.0.and.
+     1         c4.eq.0) then
+               nwall = nwall + 1
+               wall(nwall) = jbox
+            endif
+         endif
+      enddo
+      
+
+      return
+      end
+c--------------------------------------------------------------------      
