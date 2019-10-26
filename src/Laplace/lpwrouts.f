@@ -2036,8 +2036,8 @@ c--------------------------------------------------------------------
 c
 c
 c--------------------------------------------------------------------
-      subroutine processlist3udexp(nd,ibox,ilev,nboxes,centers,ichild,
-     1           rscale,nterms,iaddr,rmlexp,rlams,whts,nlams,nfourier,
+      subroutine processlist3udexp(nd,ibox,nboxes,centers,
+     1           rscale,nterms,rmlexp,rlams,whts,nlams,nfourier,
      2           nphysical,nthmax,nexptot,nexptotp,mexp,nuall,uall,
      3           ndall,dall,mexpup,mexpdown,
      4           mexpupphys,mexpdownphys,mexpuall,mexpdall,
@@ -2047,13 +2047,11 @@ c      process up down expansions for box ibox
 c-------------------------------------------------------------------
       implicit none
       integer idim,nd
-      integer ibox,ilev,nboxes,nterms,nlams,nthmax
+      integer ibox,nboxes,nterms,nlams,nthmax
       integer nphysical(nlams),nfourier(nlams)
-      integer *8 iaddr(2,nboxes)
-      integer ichild(8,nboxes)
-      integer nexptot,nexptotp,nmax
-      integer nuall,ndall,nu1234,nd5678
-      integer uall(*),dall(*),u1234(*),d5678(*)
+      integer nexptot,nexptotp
+      integer nuall,ndall
+      integer uall(*),dall(*)
       double precision rscale
       double precision rlams(*),whts(*)
       double complex, allocatable :: tloc(:,:,:)  
@@ -2151,7 +2149,7 @@ c
 c         NOTE: fix rscpow to be 1/rscpow
 c
         call mpscale(nd,nterms,tloc,rscpow,tloc)
-        call mpadd(nd,tloc,rmlexp(iaddr(2,jbox)),nterms)
+        call mpadd(nd,tloc,rmlexp,nterms)
 
       endif
 

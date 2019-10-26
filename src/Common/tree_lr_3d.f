@@ -5068,6 +5068,8 @@ c     end of the array
       enddo
       
       istart=1
+      iboxfl=0
+      subcenters=0.0d0
       do i=1,8
          ii = 2
          jj = 2
