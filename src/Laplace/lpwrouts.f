@@ -806,6 +806,7 @@ c         NOTE: fix rscpow to be 1/rscpow
 c
         call mpscale(nd,nterms,tloc,rscpow,tloc)
         call mpadd(nd,tloc,rmlexp(iaddr(2,jbox)),nterms)
+C        print *,tloc
 
       endif
 
@@ -2056,7 +2057,8 @@ c-------------------------------------------------------------------
       double precision rlams(*),whts(*)
       double complex, allocatable :: tloc(:,:,:)  
       double complex mexp(nd,nexptotp,nboxes,6)
-      double precision rmlexp(*),centers(3,*)
+      double complex rmlexp(nd*(nterms+1)*(2*nterms+1),8)
+      double precision centers(3,*)
       double complex mexpup(nd,nexptot),mexpdown(nd,nexptot)
       double complex mexpupphys(nd,nexptotp),mexpdownphys(nd,nexptotp)
       double complex mexpuall(nd,nexptotp),mexpdall(nd,nexptotp)
@@ -2066,8 +2068,8 @@ c-------------------------------------------------------------------
       double complex fexpback(*)
 
 c      temp variables
-      integer jbox,ctr,ii,jj,i,ix,iy,iz,j
-      double precision rtmp,rtmp2
+      integer jbox,i,ix,iy,iz,j
+      double precision rtmp
       double complex ztmp,zmul,ztmp2
      
       double precision ctmp(3)
@@ -2086,9 +2088,11 @@ c      temp variables
       ctmp(1) = centers(1,ibox) - rscale/2.0d0
       ctmp(2) = centers(2,ibox) - rscale/2.0d0
       ctmp(3) = centers(3,ibox) - rscale/2.0d0
-       
+  
+      
       do i=1,nuall
         jbox = uall(i)
+C        print *,"ulist j: ",jbox
         ix = 1.05d0*(centers(1,jbox)-ctmp(1))/rscale
         iy = 1.05d0*(centers(2,jbox)-ctmp(2))/rscale
         iz = 1.05d0*(centers(3,jbox)-ctmp(3))/rscale
@@ -2097,14 +2101,14 @@ c      temp variables
           zmul = zs(iz,j)*xs(ix,j)*ys(iy,j)
           do idim=1,nd
             mexpdall(idim,j) = mexpdall(idim,j) + 
-     1          mexp(idim,j,jbox,2)*zmul
+     1                         mexp(idim,j,jbox,2)*zmul
           enddo
         enddo
       enddo
 
       do i=1,ndall
         jbox = dall(i)
-
+C        print *,"dlist j: ",jbox
         ix = 1.05d0*(centers(1,jbox)-ctmp(1))/rscale
         iy = 1.05d0*(centers(2,jbox)-ctmp(2))/rscale
         iz = 1.05d0*(centers(3,jbox)-ctmp(3))/rscale
@@ -2113,20 +2117,22 @@ c      temp variables
           zmul = zs(-iz,j)*xs(-ix,j)*ys(-iy,j)
           do idim=1,nd
             mexpuall(idim,j) = mexpuall(idim,j) + 
-     1          mexp(idim,j,jbox,1)*zmul
+     1                         mexp(idim,j,jbox,1)*zmul
           enddo
         enddo
       enddo
+  
+C      print *,mexpuall
+C      print *,mexpdall
+
 
 c
 cc       move contributions to the children
 c
 
-
+      jbox=1
 c      add contributions due to child 1
-
-      jbox = ichild(1,ibox)
-
+C      jbox = ichild(1,ibox)
       if(jbox.gt.0) then
         do i=1,nexptotp
           do idim=1,nd
@@ -2141,6 +2147,7 @@ c      add contributions due to child 1
        call phystof(nd,mexpdown,nlams,nfourier,nphysical,
      1              mexpdownphys,fexpback)
 
+C        print *,tloc
         call exptolocal(nd,tloc,nterms,rlams,whts,
      1         nlams,nfourier,nthmax,nexptot,mexpup,mexpdown,
      2         rscale,rlsc)
@@ -2149,12 +2156,11 @@ c
 c         NOTE: fix rscpow to be 1/rscpow
 c
         call mpscale(nd,nterms,tloc,rscpow,tloc)
-        call mpadd(nd,tloc,rmlexp,nterms)
-
+        call mpadd(nd,tloc,rmlexp(1,1),nterms)
       endif
-
+      
 c      add contributions due to child 2
-      jbox = ichild(2,ibox)
+C      jbox = ichild(2,ibox)
       if(jbox.gt.0) then
         do i=1,nexptotp
           do idim=1,nd
@@ -2175,12 +2181,12 @@ c      add contributions due to child 2
      2         rscale,rlsc)
 
         call mpscale(nd,nterms,tloc,rscpow,tloc)
-        call mpadd(nd,tloc,rmlexp(iaddr(2,jbox)),nterms)
+        call mpadd(nd,tloc,rmlexp(1,2),nterms)
 
       endif
   
 c      add contributions due to child 3
-      jbox = ichild(3,ibox)
+C      jbox = ichild(3,ibox)
       if(jbox.gt.0) then
 
         do i=1,nexptotp
@@ -2202,12 +2208,12 @@ c      add contributions due to child 3
 
 
         call mpscale(nd,nterms,tloc,rscpow,tloc)
-        call mpadd(nd,tloc,rmlexp(iaddr(2,jbox)),nterms)
+        call mpadd(nd,tloc,rmlexp(1,3),nterms)
 
       endif
 
 c      add contributions due to child 4
-      jbox = ichild(4,ibox)
+C      jbox = ichild(4,ibox)
       if(jbox.gt.0) then
 
         do i=1,nexptotp
@@ -2231,12 +2237,12 @@ c      add contributions due to child 4
 
 
         call mpscale(nd,nterms,tloc,rscpow,tloc)
-        call mpadd(nd,tloc,rmlexp(iaddr(2,jbox)),nterms)
+        call mpadd(nd,tloc,rmlexp(1,4),nterms)
 
       endif
 
 c      add contributions due to child 5
-      jbox = ichild(5,ibox)
+C      jbox = ichild(5,ibox)
       if(jbox.gt.0) then
 
         do i=1,nexptotp
@@ -2259,12 +2265,12 @@ c      add contributions due to child 5
 
 
         call mpscale(nd,nterms,tloc,rscpow,tloc)
-        call mpadd(nd,tloc,rmlexp(iaddr(2,jbox)),nterms)
+        call mpadd(nd,tloc,rmlexp(1,5),nterms)
 
       endif
 
 c      add contributions due to child 6
-      jbox = ichild(6,ibox)
+C      jbox = ichild(6,ibox)
 
       if(jbox.gt.0) then
 
@@ -2288,14 +2294,13 @@ c      add contributions due to child 6
      2         rscale,rlsc)
 
         call mpscale(nd,nterms,tloc,rscpow,tloc)
-        call mpadd(nd,tloc,rmlexp(iaddr(2,jbox)),nterms)
+        call mpadd(nd,tloc,rmlexp(1,6),nterms)
 
 
       endif
 
 c      add contributions due to child 7
- 
-      jbox = ichild(7,ibox)
+C      jbox = ichild(7,ibox)
       if(jbox.gt.0) then
 
         do i=1,nexptotp
@@ -2318,19 +2323,19 @@ c      add contributions due to child 7
      2         rscale,rlsc)
 
         call mpscale(nd,nterms,tloc,rscpow,tloc)
-        call mpadd(nd,tloc,rmlexp(iaddr(2,jbox)),nterms)
+        call mpadd(nd,tloc,rmlexp(1,7),nterms)
 
       endif
 
 c      add contributions due to child 8
-      jbox = ichild(8,ibox)
+C      jbox = ichild(8,ibox)
       if(jbox.gt.0) then
 
         do i=1,nexptotp
           ztmp = zs(1,i)*ys(1,i)*xs(1,i)
           ztmp2 = xs(-1,i)*ys(-1,i)/zs(1,i)
           do idim=1,nd
-            mexpupphys(idim,i)  =  mexpuall(idim,i)+*ztmp
+            mexpupphys(idim,i)  =  mexpuall(idim,i)*ztmp
             mexpdownphys(idim,i) = mexpdall(idim,i)*ztmp2
           enddo
         enddo
@@ -2347,7 +2352,7 @@ c      add contributions due to child 8
      2         rscale,rlsc)
 
         call mpscale(nd,nterms,tloc,rscpow,tloc)
-        call mpadd(nd,tloc,rmlexp(iaddr(2,jbox)),nterms)
+        call mpadd(nd,tloc,rmlexp(1,8),nterms)
 
       endif
 
@@ -2355,51 +2360,42 @@ c      add contributions due to child 8
       end
 c--------------------------------------------------------------------      
 
-      subroutine processlist3nsexp(nd,ibox,ilev,nboxes,centers,ichild,
-     1           rscale,nterms,iaddr,rmlexp,rlams,whts,nlams,nfourier,
+      subroutine processlist3nsexp(nd,ibox,nboxes,centers,
+     1           rscale,nterms,rmlexp,rlams,whts,nlams,nfourier,
      2           nphysical,nthmax,nexptot,nexptotp,mexp,nnall,nall,
-     3           nn1256,n1256,nn12,n12,nn56,n56,
-     4           nsall,sall,ns3478,s3478,ns34,s34,ns78,s78,mexpup,
-     5           mexpdown,mexpupphys,mexpdownphys,
-     6           mexpnall,mexpn3478,mexpn34,mexpn78,mexpsall,
-     7           mexps1256,mexps12,mexps56,rdplus,
-     8           xs,ys,zs,fexpback,rlsc,rscpow)
+     3           nsall,sall,mexpup,mexpdown,
+     4           mexpupphys,mexpdownphys,mexpnall,mexpsall,
+     5           rdplus,xs,ys,zs,fexpback,rlsc,rscpow)
 c--------------------------------------------------------------------
 c      create up down expansions for box ibox
 c-------------------------------------------------------------------
       implicit none
       integer nd
-      integer ibox,ilev,nboxes,nterms,nlams,nthmax
+      integer ibox,nboxes,nterms,nlams,nthmax
       integer nphysical(nlams),nfourier(nlams)
-      integer *8 iaddr(2,nboxes)
-      integer ichild(8,nboxes)
-      integer nexptot,nexptotp,nmax
-      integer nnall,nsall,nn1256,ns3478,nn12,nn56,ns34,ns78
-      integer nall(*),sall(*),n1256(*),s3478(*)
-      integer n12(*),n56(*),s34(*),s78(*)
+      integer nexptot,nexptotp
+      integer nnall,nsall
+      integer nall(*),sall(*)
       double precision rscale
-      double complex zk2
       double precision rlams(*),whts(*)
       double complex, allocatable :: tloc(:,:,:)
       double complex, allocatable :: tloc2(:,:,:)
       double complex mexp(nd,nexptotp,nboxes,6)
       double precision rdplus(0:nterms,0:nterms,-nterms:nterms)
-      double precision rmlexp(*),centers(3,*)
+      double complex rmlexp(nd*(nterms+1)*(2*nterms+1),8)
+      double precision centers(3,*)
       double complex mexpup(nd,nexptot),mexpdown(nd,nexptot)
       double complex mexpupphys(nd,nexptotp),mexpdownphys(nd,nexptotp)
       double complex mexpnall(nd,nexptotp),mexpsall(nd,nexptotp)
-      double complex mexps1256(nd,nexptotp),mexpn3478(nd,nexptotp)
-      double complex mexps12(nd,nexptotp),mexps56(nd,nexptotp)
-      double complex mexpn34(nd,nexptotp),mexpn78(nd,nexptotp)
       double complex xs(-5:5,nexptotp),ys(-5:5,nexptotp)
       double precision zs(5,nexptotp)
       double precision rlsc(0:nterms,0:nterms,nlams),rscpow(0:nterms)
       double complex fexpback(*)
 
 c      temp variables
-      integer jbox,ctr,ii,jj,i,ix,iy,iz,j,idim
+      integer jbox,i,ix,iy,iz,j,idim
       double complex ztmp,zmul,ztmp2
-      double precision rtmp,rtmp2
+      double precision rtmp
     
       double precision ctmp(3)
       allocate(tloc(nd,0:nterms,-nterms:nterms))
@@ -2410,12 +2406,6 @@ c      temp variables
         do idim=1,nd
           mexpnall(idim,i) = 0
           mexpsall(idim,i) = 0
-          mexpn3478(idim,i) = 0
-          mexpn34(idim,i) = 0
-          mexpn78(idim,i) = 0
-          mexps1256(idim,i) = 0
-          mexps12(idim,i) = 0
-          mexps56(idim,i) = 0
         enddo
       enddo
       
@@ -2435,56 +2425,11 @@ c      temp variables
            zmul = zs(iy,j)*xs(iz,j)*ys(ix,j)
            do idim=1,nd
              mexpsall(idim,j) = mexpsall(idim,j) + 
-     1           mexp(idim,j,jbox,4)*zmul
+     1                          mexp(idim,j,jbox,4)*zmul
            enddo
         enddo
 
       enddo
-
-      do i=1,nn1256
-        jbox = n1256(i)
-        ix = 1.05d0*(centers(1,jbox)-ctmp(1))/rscale
-        iy = 1.05d0*(centers(2,jbox)-ctmp(2))/rscale
-        iz = 1.05d0*(centers(3,jbox)-ctmp(3))/rscale
-         
-        do j=1,nexptotp
-          zmul = zs(iy,j)*xs(iz,j)*ys(ix,j)
-          do idim=1,nd
-            mexps1256(idim,j) = mexps1256(idim,j) + 
-     1          mexp(idim,j,jbox,4)*zmul
-          enddo
-        enddo
-      enddo
-
-      do i=1,nn12
-        jbox = n12(i)
-        ix = 1.05d0*(centers(1,jbox)-ctmp(1))/rscale
-        iy = 1.05d0*(centers(2,jbox)-ctmp(2))/rscale
-        iz = 1.05d0*(centers(3,jbox)-ctmp(3))/rscale
-         
-        do j=1,nexptotp
-          zmul = zs(iy,j)*xs(iz,j)*ys(ix,j)
-          do idim=1,nd
-            mexps12(idim,j) = mexps12(idim,j)+mexp(idim,j,jbox,4)*zmul
-          enddo
-        enddo
-      enddo
-
-
-      do i=1,nn56
-        jbox = n56(i)
-        ix = 1.05d0*(centers(1,jbox)-ctmp(1))/rscale
-        iy = 1.05d0*(centers(2,jbox)-ctmp(2))/rscale
-        iz = 1.05d0*(centers(3,jbox)-ctmp(3))/rscale
-         
-        do j=1,nexptotp
-          zmul = zs(iy,j)*xs(iz,j)*ys(ix,j)
-          do idim=1,nd
-            mexps56(idim,j) = mexps56(idim,j)+mexp(idim,j,jbox,4)*zmul
-          enddo
-        enddo
-      enddo
-
 
       do i=1,nsall
         jbox = sall(i)
@@ -2497,50 +2442,7 @@ c      temp variables
           zmul = zs(-iy,j)*xs(-iz,j)*ys(-ix,j)
           do idim=1,nd
             mexpnall(idim,j) = mexpnall(idim,j) + 
-     1         mexp(idim,j,jbox,3)*zmul
-          enddo
-        enddo
-      enddo
-
-      do i=1,ns3478
-        jbox = s3478(i)
-        ix = 1.05d0*(centers(1,jbox)-ctmp(1))/rscale
-        iy = 1.05d0*(centers(2,jbox)-ctmp(2))/rscale
-        iz = 1.05d0*(centers(3,jbox)-ctmp(3))/rscale
-         
-        do j=1,nexptotp
-          zmul = zs(-iy,j)*xs(-iz,j)*ys(-ix,j)
-          do idim=1,nd
-            mexpn3478(idim,j) = mexpn3478(idim,j) + 
-     1         mexp(idim,j,jbox,3)*zmul
-          enddo
-        enddo
-      enddo
-
-      do i=1,ns34
-        jbox = s34(i)
-        ix = 1.05d0*(centers(1,jbox)-ctmp(1))/rscale
-        iy = 1.05d0*(centers(2,jbox)-ctmp(2))/rscale
-        iz = 1.05d0*(centers(3,jbox)-ctmp(3))/rscale
-         
-        do j=1,nexptotp
-          zmul = zs(-iy,j)*xs(-iz,j)*ys(-ix,j)
-          do idim=1,nd
-            mexpn34(idim,j) = mexpn34(idim,j)+mexp(idim,j,jbox,3)*zmul
-          enddo
-        enddo
-      enddo
-
-      do i=1,ns78
-        jbox = s78(i)
-        ix = 1.05d0*(centers(1,jbox)-ctmp(1))/rscale
-        iy = 1.05d0*(centers(2,jbox)-ctmp(2))/rscale
-        iz = 1.05d0*(centers(3,jbox)-ctmp(3))/rscale
-         
-        do j=1,nexptotp
-          zmul = zs(-iy,j)*xs(-iz,j)*ys(-ix,j)
-          do idim=1,nd
-            mexpn78(idim,j) = mexpn78(idim,j)+mexp(idim,j,jbox,3)*zmul
+     1                         mexp(idim,j,jbox,3)*zmul
           enddo
         enddo
       enddo
@@ -2551,15 +2453,14 @@ c
 
 
 c      add contributions due to child 1
-      jbox = ichild(1,ibox)
-
+C      jbox = ichild(1,ibox)
+      jbox=1
       if(jbox.gt.0) then
 
         do i=1,nexptotp
           do idim=1,nd
             mexpupphys(idim,i)  = mexpnall(idim,i)
-            mexpdownphys(idim,i) = mexpsall(idim,i)+mexps1256(idim,i)+ 
-     1         mexps12(idim,i)
+            mexpdownphys(idim,i) = mexpsall(idim,i)
           enddo
         enddo
 
@@ -2576,19 +2477,18 @@ c      add contributions due to child 1
         call rotytoz(nd,nterms,tloc,tloc2,rdplus)
 
         call mpscale(nd,nterms,tloc2,rscpow,tloc2)
-        call mpadd(nd,tloc2,rmlexp(iaddr(2,jbox)),nterms)
+        call mpadd(nd,tloc2,rmlexp(1,1),nterms)
 
       endif
 
 c      add contributions due to child 2
-      jbox = ichild(2,ibox)
+C      jbox = ichild(2,ibox)
       if(jbox.gt.0) then
 
         do i=1,nexptotp
           do idim=1,nd
             mexpupphys(idim,i)  = mexpnall(idim,i)*ys(1,i)
-            mexpdownphys(idim,i) = (mexpsall(idim,i) + 
-     1         mexps1256(idim,i) + mexps12(idim,i))*ys(-1,i)      
+            mexpdownphys(idim,i) = mexpsall(idim,i)*ys(-1,i)      
           enddo
         enddo
 
@@ -2606,20 +2506,19 @@ c      add contributions due to child 2
         call rotytoz(nd,nterms,tloc,tloc2,rdplus)
 
         call mpscale(nd,nterms,tloc2,rscpow,tloc2)
-        call mpadd(nd,tloc2,rmlexp(iaddr(2,jbox)),nterms)
+        call mpadd(nd,tloc2,rmlexp(1,2),nterms)
 
 
       endif
   
 c      add contributions due to child 3
-      jbox = ichild(3,ibox)
+C      jbox = ichild(3,ibox)
       if(jbox.gt.0) then
 
         do i=1,nexptotp
           rtmp = 1/zs(1,i)
           do idim=1,nd
-            mexpupphys(idim,i)  = (mexpnall(idim,i)+mexpn34(idim,i)+
-     1          mexpn3478(idim,i))*zs(1,i)
+            mexpupphys(idim,i)  =  mexpnall(idim,i)*zs(1,i)
             mexpdownphys(idim,i) = mexpsall(idim,i)*rtmp
           enddo
         enddo
@@ -2637,20 +2536,19 @@ c      add contributions due to child 3
         call rotytoz(nd,nterms,tloc,tloc2,rdplus)
 
         call mpscale(nd,nterms,tloc2,rscpow,tloc2)
-        call mpadd(nd,tloc2,rmlexp(iaddr(2,jbox)),nterms)
+        call mpadd(nd,tloc2,rmlexp(1,3),nterms)
 
       endif
 
 c      add contributions due to child 4
-      jbox = ichild(4,ibox)
+C      jbox = ichild(4,ibox)
       if(jbox.gt.0) then
 
         do i=1,nexptotp
           ztmp = ys(1,i)*zs(1,i)
           ztmp2 = ys(-1,i)/zs(1,i)
           do idim=1,nd
-            mexpupphys(idim,i)  = (mexpnall(idim,i)+mexpn34(idim,i)+
-     1         mexpn3478(idim,i))*ztmp
+            mexpupphys(idim,i)  =  mexpnall(idim,i)*ztmp
             mexpdownphys(idim,i) = mexpsall(idim,i)*ztmp2
           enddo
         enddo
@@ -2668,19 +2566,18 @@ c      add contributions due to child 4
         call rotytoz(nd,nterms,tloc,tloc2,rdplus)
 
         call mpscale(nd,nterms,tloc2,rscpow,tloc2)
-        call mpadd(nd,tloc2,rmlexp(iaddr(2,jbox)),nterms)
+        call mpadd(nd,tloc2,rmlexp(1,4),nterms)
 
       endif
 
 c      add contributions due to child 5
-      jbox = ichild(5,ibox)
+C      jbox = ichild(5,ibox)
       if(jbox.gt.0) then
 
         do i=1,nexptotp
           do idim=1,nd
             mexpupphys(idim,i)  = mexpnall(idim,i)*xs(1,i)
-            mexpdownphys(idim,i) = (mexpsall(idim,i) + 
-     1          mexps1256(idim,i) + mexps56(idim,i))*xs(-1,i)      
+            mexpdownphys(idim,i) = mexpsall(idim,i)*xs(-1,i)      
           enddo
         enddo
 
@@ -2697,12 +2594,12 @@ c      add contributions due to child 5
         call rotytoz(nd,nterms,tloc,tloc2,rdplus)
 
         call mpscale(nd,nterms,tloc2,rscpow,tloc2)
-        call mpadd(nd,tloc2,rmlexp(iaddr(2,jbox)),nterms)
+        call mpadd(nd,tloc2,rmlexp(1,5),nterms)
 
       endif
 
 c      add contributions due to child 6
-      jbox = ichild(6,ibox)
+C      jbox = ichild(6,ibox)
       if(jbox.gt.0) then
 
         do i=1,nexptotp
@@ -2710,8 +2607,7 @@ c      add contributions due to child 6
           ztmp2 = ys(-1,i)*xs(-1,i)
           do idim=1,nd
             mexpupphys(idim,i)  = mexpnall(idim,i)*ztmp
-            mexpdownphys(idim,i) = (mexpsall(idim,i) + 
-     1          mexps1256(idim,i) + mexps56(idim,i))*ztmp2      
+            mexpdownphys(idim,i) = mexpsall(idim,i)*ztmp2      
           enddo
         enddo
 
@@ -2728,20 +2624,18 @@ c      add contributions due to child 6
         call rotytoz(nd,nterms,tloc,tloc2,rdplus)
 
         call mpscale(nd,nterms,tloc2,rscpow,tloc2)
-        call mpadd(nd,tloc2,rmlexp(iaddr(2,jbox)),nterms)
+        call mpadd(nd,tloc2,rmlexp(1,6),nterms)
       endif
 
 c      add contributions due to child 7
- 
-      jbox = ichild(7,ibox)
+C      jbox = ichild(7,ibox)
       if(jbox.gt.0) then
 
         do i=1,nexptotp
           ztmp = xs(1,i)*zs(1,i)
           ztmp2 = xs(-1,i)/zs(1,i)
           do idim=1,nd
-            mexpupphys(idim,i)  = (mexpnall(idim,i)+mexpn78(idim,i)+
-     1          mexpn3478(idim,i))*ztmp
+            mexpupphys(idim,i)  = mexpnall(idim,i)*ztmp
             mexpdownphys(idim,i) = mexpsall(idim,i)*ztmp2      
           enddo
         enddo
@@ -2759,19 +2653,18 @@ c      add contributions due to child 7
         call rotytoz(nd,nterms,tloc,tloc2,rdplus)
 
         call mpscale(nd,nterms,tloc2,rscpow,tloc2)
-        call mpadd(nd,tloc2,rmlexp(iaddr(2,jbox)),nterms)
+        call mpadd(nd,tloc2,rmlexp(1,7),nterms)
       endif
 
 c      add contributions due to child 8
-      jbox = ichild(8,ibox)
+C      jbox = ichild(8,ibox)
       if(jbox.gt.0) then
 
         do i=1,nexptotp
           ztmp = ys(1,i)*zs(1,i)*xs(1,i)
           ztmp2 = ys(-1,i)*xs(-1,i)/zs(1,i)
           do idim=1,nd
-            mexpupphys(idim,i)  = (mexpnall(idim,i)+mexpn78(idim,i)+
-     1         mexpn3478(idim,i))*ztmp
+            mexpupphys(idim,i)  =  mexpnall(idim,i)*ztmp
             mexpdownphys(idim,i) = mexpsall(idim,i)*ztmp2      
           enddo
         enddo
@@ -2790,65 +2683,48 @@ c      add contributions due to child 8
 
 
         call mpscale(nd,nterms,tloc2,rscpow,tloc2)
-        call mpadd(nd,tloc2,rmlexp(iaddr(2,jbox)),nterms)
+        call mpadd(nd,tloc2,rmlexp(1,8),nterms)
       endif
 
       return
       end
 c--------------------------------------------------------------------      
 
-      subroutine processlist3ewexp(nd,ibox,ilev,nboxes,centers,ichild,
-     1           rscale,nterms,iaddr,rmlexp,rlams,whts,nlams,nfourier,
+      subroutine processlist3ewexp(nd,ibox,nboxes,centers,
+     1           rscale,nterms,rmlexp,rlams,whts,nlams,nfourier,
      2           nphysical,nthmax,nexptot,nexptotp,mexp,neall,eall,
-     3           ne1357,e1357,ne13,e13,ne57,e57,ne1,e1,ne3,e3,ne5,e5,
-     4           ne7,e7,nwall,wall,nw2468,w2468,nw24,w24,nw68,w68,
-     5           nw2,w2,nw4,w4,nw6,w6,nw8,w8,
-     6           mexpup,mexpdown,mexpupphys,mexpdownphys,
-     7           mexpeall,mexpe2468,mexpe24,mexpe68,mexpe2,mexpe4,
-     8           mexpe6,mexpe8,mexpwall,mexpw1357,mexpw13,mexpw57,
-     9           mexpw1,mexpw3,mexpw5,mexpw7,rdminus,
-     9           xs,ys,zs,fexpback,rlsc,rscpow)
+     3           nwall,wall,mexpup,mexpdown,
+     4           mexpupphys,mexpdownphys,mexpeall,mexpwall,
+     5           rdminus,xs,ys,zs,fexpback,rlsc,rscpow)
 c--------------------------------------------------------------------
 c      create up down expansions for box ibox
 c-------------------------------------------------------------------
       implicit none
       integer nd
-      integer ibox,ilev,nboxes,nterms,nlams,nthmax
+      integer ibox,nboxes,nterms,nlams,nthmax
       integer nphysical(nlams),nfourier(nlams)
-      integer *8 iaddr(2,nboxes)
-      integer ichild(8,nboxes)
-      integer nexptot,nexptotp,nmax
-      integer neall,nwall,ne1357,nw2468,ne13,ne57,nw24,nw68
-      integer ne1,ne3,ne5,ne7,nw2,nw4,nw6,nw8
-      integer eall(*),wall(*),e1357(*),w2468(*)
-      integer e13(*),e57(*),w24(*),w68(*)
-      integer e1(*),e3(*),e5(*),e7(*),w2(*),w4(*),w6(*),w8(*)
+      integer nexptot,nexptotp
+      integer neall,nwall
+      integer eall(*),wall(*)
       double precision rscale
-      double complex zk2
       double precision rlams(*),whts(*)
       double complex, allocatable :: tloc(:,:,:),tloc2(:,:,:)
       double complex mexp(nd,nexptotp,nboxes,6)
       double precision rdminus(0:nterms,0:nterms,-nterms:nterms)
-      double precision rmlexp(*),centers(3,*)
+      double complex rmlexp(nd*(nterms+1)*(2*nterms+1),8)
+      double precision centers(3,*)
       double complex mexpup(nd,nexptot),mexpdown(nexptot)
       double complex mexpupphys(nd,nexptotp),mexpdownphys(nd,nexptotp)
       double complex mexpeall(nd,nexptotp),mexpwall(nd,nexptotp)
-      double complex mexpw1357(nd,nexptotp),mexpe2468(nd,nexptotp)
-      double complex mexpw13(nd,nexptotp),mexpw57(nd,nexptotp)
-      double complex mexpe24(nd,nexptotp),mexpe68(nd,nexptotp)
-      double complex mexpw1(nd,nexptotp),mexpw3(nd,nexptotp)
-      double complex mexpw5(nd,nexptotp),mexpw7(nd,nexptotp)
-      double complex mexpe2(nd,nexptotp),mexpe4(nd,nexptotp)
-      double complex mexpe6(nd,nexptotp),mexpe8(nd,nexptotp)
       double complex xs(-5:5,nexptotp),ys(-5:5,nexptotp)
       double precision zs(5,nexptotp)
       double precision rlsc(0:nterms,0:nterms,nlams),rscpow(0:nterms)
       double complex fexpback(*)
 
 c      temp variables
-      integer jbox,ctr,ii,jj,i,ix,iy,iz,j,l,idim
+      integer jbox,i,ix,iy,iz,j,l,idim
       double complex ztmp,zmul,ztmp2
-      double precision rtmp,rtmp2
+      double precision rtmp
      
       double precision ctmp(3)
 
@@ -2860,20 +2736,6 @@ c      temp variables
         do idim=1,nd
           mexpeall(idim,i) = 0
           mexpwall(idim,i) = 0
-          mexpe2468(idim,i) = 0
-          mexpe24(idim,i) = 0
-          mexpe68(idim,i) = 0
-          mexpe2(idim,i) = 0
-          mexpe4(idim,i) = 0
-          mexpe6(idim,i) = 0
-          mexpe8(idim,i) = 0
-          mexpw1357(idim,i) = 0
-          mexpw13(idim,i) = 0
-          mexpw57(idim,i) = 0
-          mexpw1(idim,i) = 0
-          mexpw3(idim,i) = 0
-          mexpw5(idim,i) = 0
-          mexpw7(idim,i) = 0
         enddo
       enddo
       
@@ -2892,109 +2754,7 @@ c      temp variables
           zmul = zs(ix,j)*xs(-iz,j)*ys(iy,j)
           do idim=1,nd
             mexpwall(idim,j) = mexpwall(idim,j) + 
-     1         mexp(idim,j,jbox,6)*zmul
-          enddo
-        enddo
-      enddo
-
-      do i=1,ne1357
-        jbox = e1357(i)
-        ix = 1.05d0*(centers(1,jbox)-ctmp(1))/rscale
-        iy = 1.05d0*(centers(2,jbox)-ctmp(2))/rscale
-        iz = 1.05d0*(centers(3,jbox)-ctmp(3))/rscale
-         
-        do j=1,nexptotp
-          zmul = zs(ix,j)*xs(-iz,j)*ys(iy,j)
-          do idim=1,nd
-            mexpw1357(idim,j) = mexpw1357(idim,j) + 
-     1         mexp(idim,j,jbox,6)*zmul
-          enddo
-        enddo
-      enddo
-
-      do i=1,ne13
-        jbox = e13(i)
-        ix = 1.05d0*(centers(1,jbox)-ctmp(1))/rscale
-        iy = 1.05d0*(centers(2,jbox)-ctmp(2))/rscale
-        iz = 1.05d0*(centers(3,jbox)-ctmp(3))/rscale
-         
-        do j=1,nexptotp
-          zmul = zs(ix,j)*xs(-iz,j)*ys(iy,j)
-          do idim=1,nd
-            mexpw13(idim,j) = mexpw13(idim,j)+mexp(idim,j,jbox,6)*zmul
-          enddo
-        enddo
-      enddo
-
-
-      do i=1,ne57
-        jbox = e57(i)
-        ix = 1.05d0*(centers(1,jbox)-ctmp(1))/rscale
-        iy = 1.05d0*(centers(2,jbox)-ctmp(2))/rscale
-        iz = 1.05d0*(centers(3,jbox)-ctmp(3))/rscale
-         
-        do j=1,nexptotp
-          zmul = zs(ix,j)*xs(-iz,j)*ys(iy,j)
-          do idim=1,nd
-            mexpw57(idim,j) = mexpw57(idim,j)+mexp(idim,j,jbox,6)*zmul
-          enddo
-        enddo
-      enddo
-
-      do i=1,ne1
-        jbox = e1(i)
-        ix = 1.05d0*(centers(1,jbox)-ctmp(1))/rscale
-        iy = 1.05d0*(centers(2,jbox)-ctmp(2))/rscale
-        iz = 1.05d0*(centers(3,jbox)-ctmp(3))/rscale
-         
-        do j=1,nexptotp
-          zmul = zs(ix,j)*xs(-iz,j)*ys(iy,j)
-          do idim=1,nd
-            mexpw1(idim,j) = mexpw1(idim,j) + mexp(idim,j,jbox,6)*zmul
-          enddo
-        enddo
-      enddo
-
-
-      do i=1,ne3
-        jbox = e3(i)
-        ix = 1.05d0*(centers(1,jbox)-ctmp(1))/rscale
-        iy = 1.05d0*(centers(2,jbox)-ctmp(2))/rscale
-        iz = 1.05d0*(centers(3,jbox)-ctmp(3))/rscale
-         
-        do j=1,nexptotp
-          zmul = zs(ix,j)*xs(-iz,j)*ys(iy,j)
-          do idim=1,nd
-             mexpw3(idim,j) = mexpw3(idim,j) + mexp(idim,j,jbox,6)*zmul
-          enddo
-        enddo
-      enddo
-
-      do i=1,ne5
-        jbox = e5(i)
-        ix = 1.05d0*(centers(1,jbox)-ctmp(1))/rscale
-        iy = 1.05d0*(centers(2,jbox)-ctmp(2))/rscale
-        iz = 1.05d0*(centers(3,jbox)-ctmp(3))/rscale
-         
-        do j=1,nexptotp
-          zmul = zs(ix,j)*xs(-iz,j)*ys(iy,j)
-          do idim=1,nd
-             mexpw5(idim,j) = mexpw5(idim,j) + mexp(idim,j,jbox,6)*zmul
-          enddo
-        enddo
-      enddo
-
-
-      do i=1,ne7
-        jbox = e7(i)
-        ix = 1.05d0*(centers(1,jbox)-ctmp(1))/rscale
-        iy = 1.05d0*(centers(2,jbox)-ctmp(2))/rscale
-        iz = 1.05d0*(centers(3,jbox)-ctmp(3))/rscale
-         
-        do j=1,nexptotp
-          zmul = zs(ix,j)*xs(-iz,j)*ys(iy,j)
-          do idim=1,nd
-            mexpw7(idim,j) = mexpw7(idim,j) + mexp(idim,j,jbox,6)*zmul
+     1                         mexp(idim,j,jbox,6)*zmul
           enddo
         enddo
       enddo
@@ -3011,109 +2771,7 @@ c      temp variables
           zmul = zs(-ix,j)*xs(iz,j)*ys(-iy,j)
           do idim=1,nd
             mexpeall(idim,j) = mexpeall(idim,j) + 
-     1         mexp(idim,j,jbox,5)*zmul
-          enddo
-        enddo
-      enddo
-
-      do i=1,nw2468
-        jbox = w2468(i)
-        ix = 1.05d0*(centers(1,jbox)-ctmp(1))/rscale
-        iy = 1.05d0*(centers(2,jbox)-ctmp(2))/rscale
-        iz = 1.05d0*(centers(3,jbox)-ctmp(3))/rscale
-         
-        do j=1,nexptotp
-          zmul = zs(-ix,j)*xs(iz,j)*ys(-iy,j)
-          do idim=1,nd
-            mexpe2468(idim,j) = mexpe2468(idim,j) + 
-     1          mexp(idim,j,jbox,5)*zmul
-          enddo
-        enddo
-      enddo
-
-      do i=1,nw24
-        jbox = w24(i)
-        ix = 1.05d0*(centers(1,jbox)-ctmp(1))/rscale
-        iy = 1.05d0*(centers(2,jbox)-ctmp(2))/rscale
-        iz = 1.05d0*(centers(3,jbox)-ctmp(3))/rscale
-         
-        do j=1,nexptotp
-          zmul = zs(-ix,j)*xs(iz,j)*ys(-iy,j)
-          do idim=1,nd
-            mexpe24(idim,j) = mexpe24(idim,j)+mexp(idim,j,jbox,5)*zmul
-          enddo
-        enddo
-      enddo
-
-       
-
-      do i=1,nw68
-        jbox = w68(i)
-        ix = 1.05d0*(centers(1,jbox)-ctmp(1))/rscale
-        iy = 1.05d0*(centers(2,jbox)-ctmp(2))/rscale
-        iz = 1.05d0*(centers(3,jbox)-ctmp(3))/rscale
-         
-        do j=1,nexptotp
-          zmul = zs(-ix,j)*xs(iz,j)*ys(-iy,j)
-          do idim=1,nd
-            mexpe68(idim,j) = mexpe68(idim,j)+mexp(idim,j,jbox,5)*zmul
-          enddo
-        enddo
-      enddo
-
-      do i=1,nw2
-        jbox = w2(i)
-        ix = 1.05d0*(centers(1,jbox)-ctmp(1))/rscale
-        iy = 1.05d0*(centers(2,jbox)-ctmp(2))/rscale
-        iz = 1.05d0*(centers(3,jbox)-ctmp(3))/rscale
-         
-        do j=1,nexptotp
-          zmul = zs(-ix,j)*xs(iz,j)*ys(-iy,j)
-          do idim=1,nd
-            mexpe2(idim,j) = mexpe2(idim,j) + mexp(idim,j,jbox,5)*zmul
-          enddo
-        enddo
-      enddo
-
-
-      do i=1,nw4
-        jbox = w4(i)
-        ix = 1.05d0*(centers(1,jbox)-ctmp(1))/rscale
-        iy = 1.05d0*(centers(2,jbox)-ctmp(2))/rscale
-        iz = 1.05d0*(centers(3,jbox)-ctmp(3))/rscale
-         
-        do j=1,nexptotp
-          zmul = zs(-ix,j)*xs(iz,j)*ys(-iy,j)
-          do idim=1,nd
-            mexpe4(idim,j) = mexpe4(idim,j) + mexp(idim,j,jbox,5)*zmul
-          enddo
-        enddo
-      enddo
-
-      do i=1,nw6
-        jbox = w6(i)
-        ix = 1.05d0*(centers(1,jbox)-ctmp(1))/rscale
-        iy = 1.05d0*(centers(2,jbox)-ctmp(2))/rscale
-        iz = 1.05d0*(centers(3,jbox)-ctmp(3))/rscale
-         
-        do j=1,nexptotp
-          zmul = zs(-ix,j)*xs(iz,j)*ys(-iy,j)
-          do idim=1,nd
-            mexpe6(idim,j) = mexpe6(idim,j) + mexp(idim,j,jbox,5)*zmul
-          enddo
-        enddo
-      enddo
-
-      do i=1,nw8
-        jbox = w8(i)
-        ix = 1.05d0*(centers(1,jbox)-ctmp(1))/rscale
-        iy = 1.05d0*(centers(2,jbox)-ctmp(2))/rscale
-        iz = 1.05d0*(centers(3,jbox)-ctmp(3))/rscale
-         
-        do j=1,nexptotp
-          zmul = zs(-ix,j)*xs(iz,j)*ys(-iy,j)
-          do idim=1,nd
-            mexpe8(idim,j) = mexpe8(idim,j) + mexp(idim,j,jbox,5)*zmul
+     1                         mexp(idim,j,jbox,5)*zmul
           enddo
         enddo
       enddo
@@ -3124,14 +2782,13 @@ c
 
 
 c      add contributions due to child 1
-      jbox = ichild(1,ibox)
-
+C      jbox = ichild(1,ibox)
+      jbox=1
       if(jbox.gt.0) then
         do i=1,nexptotp
           do idim=1,nd
             mexpupphys(idim,i)  = mexpeall(idim,i)
-            mexpdownphys(idim,i) = mexpwall(idim,i)+mexpw1357(idim,i)+
-     1         mexpw13(idim,i)+mexpw1(idim,i)
+            mexpdownphys(idim,i) = mexpwall(idim,i)
           enddo
         enddo
 
@@ -3149,20 +2806,18 @@ c      add contributions due to child 1
         call rotztox(nd,nterms,tloc,tloc2,rdminus)
 
         call mpscale(nd,nterms,tloc2,rscpow,tloc2)
-        call mpadd(nd,tloc2,rmlexp(iaddr(2,jbox)),nterms)
+        call mpadd(nd,tloc2,rmlexp(1,1),nterms)
 
       endif
 
 c      add contributions due to child 2
-      jbox = ichild(2,ibox)
-
+C      jbox = ichild(2,ibox)
       if(jbox.gt.0) then
 
         do i=1,nexptotp
           rtmp = 1/zs(1,i)
           do idim=1,nd
-            mexpupphys(idim,i)  = (mexpeall(idim,i)+mexpe2468(idim,i)+
-     1         mexpe24(idim,i)+mexpe2(idim,i))*zs(1,i)      
+            mexpupphys(idim,i)  =  mexpeall(idim,i)*zs(1,i)      
             mexpdownphys(idim,i) = mexpwall(idim,i)*rtmp
           enddo
         enddo
@@ -3182,19 +2837,18 @@ c      add contributions due to child 2
         call rotztox(nd,nterms,tloc,tloc2,rdminus)
 
         call mpscale(nd,nterms,tloc2,rscpow,tloc2)
-        call mpadd(nd,tloc2,rmlexp(iaddr(2,jbox)),nterms)
+        call mpadd(nd,tloc2,rmlexp(1,2),nterms)
 
       endif
   
 c      add contributions due to child 3
-      jbox = ichild(3,ibox)
+C      jbox = ichild(3,ibox)
       if(jbox.gt.0) then
 
         do i=1,nexptotp
           do idim=1,nd
             mexpupphys(idim,i)  = mexpeall(idim,i)*ys(1,i)
-            mexpdownphys(idim,i) = (mexpwall(idim,i)+mexpw1357(idim,i)+
-     1         mexpw13(idim,i)+mexpw3(idim,i))*ys(-1,i)
+            mexpdownphys(idim,i) = mexpwall(idim,i)*ys(-1,i)
           enddo
         enddo
 
@@ -3211,20 +2865,19 @@ c      add contributions due to child 3
         call rotztox(nd,nterms,tloc,tloc2,rdminus)
 
         call mpscale(nd,nterms,tloc2,rscpow,tloc2)
-        call mpadd(nd,tloc2,rmlexp(iaddr(2,jbox)),nterms)
+        call mpadd(nd,tloc2,rmlexp(1,3),nterms)
 
       endif
 
 c      add contributions due to child 4
-      jbox = ichild(4,ibox)
+C      jbox = ichild(4,ibox)
       if(jbox.gt.0) then
 
         do i=1,nexptotp
           ztmp = zs(1,i)*ys(1,i)
           ztmp2 = ys(-1,i)/zs(1,i)
           do idim=1,nd
-            mexpupphys(idim,i)  = (mexpeall(idim,i)+mexpe2468(idim,i)+
-     1         mexpe24(idim,i)+mexpe4(idim,i))*ztmp      
+            mexpupphys(idim,i)  =  mexpeall(idim,i)*ztmp      
             mexpdownphys(idim,i) = mexpwall(idim,i)*ztmp2
           enddo
         enddo
@@ -3242,19 +2895,18 @@ c      add contributions due to child 4
         call rotztox(nd,nterms,tloc,tloc2,rdminus)
 
         call mpscale(nd,nterms,tloc2,rscpow,tloc2)
-        call mpadd(nd,tloc2,rmlexp(iaddr(2,jbox)),nterms)
+        call mpadd(nd,tloc2,rmlexp(1,4),nterms)
 
       endif
 
 c      add contributions due to child 5
-      jbox = ichild(5,ibox)
+C      jbox = ichild(5,ibox)
       if(jbox.gt.0) then
 
         do i=1,nexptotp
           do idim=1,nd
             mexpupphys(idim,i)  = mexpeall(idim,i)*xs(-1,i)
-            mexpdownphys(idim,i) = (mexpwall(idim,i)+mexpw1357(idim,i)+
-     1             mexpw57(idim,i)+mexpw5(idim,i))*xs(1,i)
+            mexpdownphys(idim,i) = mexpwall(idim,i)*xs(1,i)
           enddo
         enddo
 
@@ -3271,19 +2923,18 @@ c      add contributions due to child 5
         call rotztox(nd,nterms,tloc,tloc2,rdminus)
 
         call mpscale(nd,nterms,tloc2,rscpow,tloc2)
-        call mpadd(nd,tloc2,rmlexp(iaddr(2,jbox)),nterms)
+        call mpadd(nd,tloc2,rmlexp(1,5),nterms)
       endif
 
 c      add contributions due to child 6
-      jbox = ichild(6,ibox)
+C      jbox = ichild(6,ibox)
       if(jbox.gt.0) then
 
         do i=1,nexptotp
           ztmp = xs(-1,i)*zs(1,i)
           ztmp2 = xs(1,i)/zs(1,i)
           do idim=1,nd
-            mexpupphys(idim,i)  = (mexpeall(idim,i)+mexpe2468(idim,i)+
-     1           mexpe68(idim,i)+mexpe6(idim,i))*ztmp      
+            mexpupphys(idim,i)  =  mexpeall(idim,i)*ztmp      
             mexpdownphys(idim,i) = mexpwall(idim,i)*ztmp2
           enddo
         enddo
@@ -3301,12 +2952,11 @@ c      add contributions due to child 6
         call rotztox(nd,nterms,tloc,tloc2,rdminus)
 
         call mpscale(nd,nterms,tloc2,rscpow,tloc2)
-        call mpadd(nd,tloc2,rmlexp(iaddr(2,jbox)),nterms)
+        call mpadd(nd,tloc2,rmlexp(1,6),nterms)
       endif
 
 c      add contributions due to child 7
- 
-      jbox = ichild(7,ibox)
+C      jbox = ichild(7,ibox)
       if(jbox.gt.0) then
 
         do i=1,nexptotp
@@ -3314,38 +2964,6 @@ c      add contributions due to child 7
           ztmp2 = xs(1,i)*ys(-1,i)
           do idim=1,nd
             mexpupphys(idim,i)  = mexpeall(idim,i)*ztmp
-            mexpdownphys(idim,i) = (mexpwall(idim,i)+mexpw1357(idim,i)+
-     1          mexpw57(idim,i)+mexpw7(idim,i))*ztmp2
-          enddo
-        enddo
-
-        call phystof(nd,mexpup,nlams,nfourier,nphysical,
-     1               mexpupphys,fexpback)
- 
-        call phystof(nd,mexpdown,nlams,nfourier,nphysical,
-     1              mexpdownphys,fexpback)
-
-        call exptolocal(nd,tloc,nterms,rlams,whts,
-     1         nlams,nfourier,nthmax,nexptot,mexpup,mexpdown,
-     2         rscale,rlsc)
-
-        call rotztox(nd,nterms,tloc,tloc2,rdminus)
-
-        call mpscale(nd,nterms,tloc2,rscpow,tloc2)
-        call mpadd(nd,tloc2,rmlexp(iaddr(2,jbox)),nterms)
-
-      endif
-
-c      add contributions due to child 8
-      jbox = ichild(8,ibox)
-      if(jbox.gt.0) then
-
-        do i=1,nexptotp
-          ztmp = xs(-1,i)*ys(1,i)*zs(1,i)
-          ztmp2 = xs(1,i)*ys(-1,i)/zs(1,i)
-          do idim=1,nd
-            mexpupphys(idim,i)  = (mexpeall(idim,i)+mexpe2468(idim,i)+
-     1         mexpe68(idim,i)+mexpe8(idim,i))*ztmp      
             mexpdownphys(idim,i) = mexpwall(idim,i)*ztmp2
           enddo
         enddo
@@ -3363,7 +2981,37 @@ c      add contributions due to child 8
         call rotztox(nd,nterms,tloc,tloc2,rdminus)
 
         call mpscale(nd,nterms,tloc2,rscpow,tloc2)
-        call mpadd(nd,tloc2,rmlexp(iaddr(2,jbox)),nterms)
+        call mpadd(nd,tloc2,rmlexp(1,7),nterms)
+
+      endif
+
+c      add contributions due to child 8
+C      jbox = ichild(8,ibox)
+      if(jbox.gt.0) then
+
+        do i=1,nexptotp
+          ztmp = xs(-1,i)*ys(1,i)*zs(1,i)
+          ztmp2 = xs(1,i)*ys(-1,i)/zs(1,i)
+          do idim=1,nd
+            mexpupphys(idim,i)  = mexpeall(idim,i)*ztmp      
+            mexpdownphys(idim,i) = mexpwall(idim,i)*ztmp2
+          enddo
+        enddo
+
+        call phystof(nd,mexpup,nlams,nfourier,nphysical,
+     1               mexpupphys,fexpback)
+ 
+        call phystof(nd,mexpdown,nlams,nfourier,nphysical,
+     1              mexpdownphys,fexpback)
+
+        call exptolocal(nd,tloc,nterms,rlams,whts,
+     1         nlams,nfourier,nthmax,nexptot,mexpup,mexpdown,
+     2         rscale,rlsc)
+
+        call rotztox(nd,nterms,tloc,tloc2,rdminus)
+
+        call mpscale(nd,nterms,tloc2,rscpow,tloc2)
+        call mpadd(nd,tloc2,rmlexp(1,8),nterms)
 
       endif
 

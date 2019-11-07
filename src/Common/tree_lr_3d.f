@@ -4852,15 +4852,17 @@ c-------------------------------------------------------------------
       end
 c--------------------------------------------------------------------      
 
-      subroutine getlist3pwlistall(ibox,nboxes,nlist3,list3,
-     1           centers,nuall,uall,ndall,dall,nnall,
+      subroutine getlist3pwlistall(ibox,bs,nboxes,nlist3,list3,
+     1           isep,centers,nuall,uall,ndall,dall,nnall,
      2           nall,nsall,sall,neall,eall,nwall,wall)
 c-------------------------------------------------------------------
       implicit none
       integer ibox
+      integer isep
       integer nboxes,nlist3,list3(nlist3)
       double precision centers(3,nboxes)
-      integer nuall,ndall,nnall,nsall,neall,nwall,nu1234
+      double precision sepdist,bs
+      integer nuall,ndall,nnall,nsall,neall,nwall
       integer uall(1),dall(1),nall(1),sall(1),eall(1),wall(1)
 
       integer jbox
@@ -4873,8 +4875,10 @@ c-------------------------------------------------------------------
       nsall = 0
       neall = 0
       nwall = 0
+      sepdist = 1.01d0*isep*bs+bs/2.0d0
       do j=1,nlist3
          jbox = list3(j)
+C         print *,"jbox: ",jbox
          if(jbox.gt.0) then
             c1 = 0
             c2 = 0
@@ -4882,12 +4886,14 @@ c-------------------------------------------------------------------
             c4 = 0
             c5 = 0
             c6 = 0
-            if((centers(3,jbox)-centers(3,ibox)).ge.0.0d0) c1 = 1
-            if((centers(3,jbox)-centers(3,ibox)).le.0.0d0) c2 = 1
-            if((centers(2,jbox)-centers(2,ibox)).ge.0.0d0) c3 = 1
-            if((centers(2,jbox)-centers(2,ibox)).le.0.0d0) c4 = 1
-            if((centers(1,jbox)-centers(1,ibox)).ge.0.0d0) c5 = 1
-            if((centers(1,jbox)-centers(1,ibox)).le.0.0d0) c6 = 1
+            if((centers(3,jbox)-centers(3,ibox)).ge.sepdist) c1 = 1
+            if((centers(3,jbox)-centers(3,ibox)).le.-sepdist) c2 = 1
+            if((centers(2,jbox)-centers(2,ibox)).ge.sepdist) c3 = 1
+            if((centers(2,jbox)-centers(2,ibox)).le.-sepdist) c4 = 1
+            if((centers(1,jbox)-centers(1,ibox)).ge.sepdist) c5 = 1
+            if((centers(1,jbox)-centers(1,ibox)).le.-sepdist) c6 = 1
+
+C            print *,c1,c2,c3,c4,c5,c6
 
             if(c1.eq.1) then
                nuall = nuall + 1
@@ -4929,18 +4935,19 @@ c-------------------------------------------------------------------
 c--------------------------------------------------------------------      
 c--------------------------------------------------------------
 c
-      subroutine subdividebox(pos,npts,center,isorted,iboxfl,subcenters)
+      subroutine subdividebox(pos,npts,center,boxsize,
+     1           isorted,iboxfl,subcenters)
       implicit none
       double precision pos(3,npts)
       double precision center(3)
       double precision subcenters(3,8)
       double precision boxsize
       integer npts
-      integer isorted(1)
+      integer isorted(*)
       integer iboxfl(2,8)
 
 c     Temporary variables
-      integer isrctmp(npts)
+      integer isortedtmp(npts)
       integer i,j,i12,i34,istart,jstart,kstart,ii,iii,nss,nee
       integer jj,irefinebox,ntt
       integer i56, i78, i1234, i5678
@@ -5004,12 +5011,12 @@ c     End of reordering i5678
       nc = 0
 c     Sort into boxes 1 and 2
       do i = 1,i12
-         if(pos(1,i)-centers(1).lt.0) then
+         if(pos(1,i)-center(1).lt.0) then
             nc(1) = nc(1) + 1
             isorted(nc(1)) = i
          else
             nc(2) = nc(2) + 1
-            isortedtmp(nsc(2)) = i
+            isortedtmp(nc(2)) = i
          endif
       enddo
 c     Reorder sources so that sources in 2 are at the
@@ -5020,7 +5027,7 @@ c     end of this part of the array
 
 c     Sort into boxes 3 and 4
       do i = i12+1, i1234
-         if(pos(1,i)-centers(1).lt.0) then
+         if(pos(1,i)-center(1).lt.0) then
             nc(3) = nc(3) + 1
             isorted(i12+nc(3)) = i
          else
@@ -5036,7 +5043,7 @@ c     end of this part of the array
 
 c     Sort into boxes 5 and 6
       do i = i1234+1,i56
-         if(pos(1,i)-centers(1).lt.0) then
+         if(pos(1,i)-center(1).lt.0) then
             nc(5) = nc(5) + 1
             isorted(i1234+nc(5)) = i
          else
@@ -5053,18 +5060,18 @@ c     End of sorting sources into boxes 5 and 6
 
 c     Sort into boxes 7 and 8
       do i=i56+1,npts
-         if(pos(1,i)-centers(1).lt.0) then
+         if(pos(1,i)-center(1).lt.0) then
             nc(7) = nc(7) + 1
             isorted(i56+nc(7)) = i
          else
             nc(8) = nc(8) + 1
-            isortedtmp(nsc(8)) = i
+            isortedtmp(nc(8)) = i
          endif
       enddo
 c     Reorder sources so that sources in 8 are at the
 c     end of the array
-      do i=1,nsc(8)
-         isorted(i56+nc(7)+i) = isrctmp(i)
+      do i=1,nc(8)
+         isorted(i56+nc(7)+i) = isortedtmp(i)
       enddo
       
       istart=1
@@ -5076,9 +5083,9 @@ c     end of the array
          if(i.eq.1.or.i.eq.2.or.i.eq.5.or.i.eq.6) ii = 1
          if(i.lt.5) jj = 1
          if(nc(i).gt.0) then
-            subcenters(1,i) = center(1)+(-1)**i*boxsize/2.0
-            subcenters(2,i) = center(2)+(-1)**ii*boxsize/2.0
-            subcenters(3,i) = center(3)+(-1)**jj*boxsize/2.0
+            subcenters(1,i) = center(1)+(-1)**i*boxsize/2.0d0
+            subcenters(2,i) = center(2)+(-1)**ii*boxsize/2.0d0
+            subcenters(3,i) = center(3)+(-1)**jj*boxsize/2.0d0
 
             iboxfl(1,i) = istart
             iboxfl(2,i) = istart+nc(i)-1

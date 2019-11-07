@@ -186,6 +186,7 @@ c
        else
          ndiv = nsource+ntarg
        endif
+       ndiv = 3
 
 
 c
@@ -618,7 +619,11 @@ c     PW variables
       double complex, allocatable :: mexpf1(:,:),mexpf2(:,:)
       double complex, allocatable ::
      1       mexpp1(:,:),mexpp2(:,:),mexppall(:,:,:)
-      double complex, allocatable :: iboxlexp(:,:,:,:)
+      double complex, allocatable :: iboxlexp(:,:)
+      double complex, allocatable :: iboxmpexp(:,:,:,:)
+      double precision iboxsubcenters(3,8)
+      double precision, allocatable :: iboxpot(:,:)
+      double precision, allocatable :: iboxsrc(:,:)
       integer, allocatable :: isrcbox(:)
       integer iboxfl(2,8)
 
@@ -657,7 +662,7 @@ c     Prints timing breakdown and other things if ifprint=1.
 c     Prints timing breakdown, list information, 
 c     and other things if ifprint=2.
 c       
-      ifprint=0
+      ifprint=1
       
 
 c     Initialize routines for plane wave mp loc translation
@@ -745,6 +750,9 @@ c     Compute total number of plane waves
 
       allocate(isrcbox(ndiv))
       allocate(iboxlexp(nd*(nmax+1)*(2*nmax+1),8))
+      allocate(iboxmpexp(nd,nexptotp,6,8))
+      allocate(iboxpot(nd,ndiv))
+      allocate(iboxsrc(3,ndiv))
 
 c
 cc      NOTE: there can be some memory savings here
@@ -1197,7 +1205,8 @@ C$OMP$PRIVATE(nn1256,n1256,ns3478,s3478,ne1357,e1357,nw2468,w2468)
 C$OMP$PRIVATE(nn12,n12,nn56,n56,ns34,s34,ns78,s78,ne13,e13,ne57,e57)
 C$OMP$PRIVATE(nw24,w24,nw68,w68,ne1,e1,ne3,e3,ne5,e5,ne7,e7)
 C$OMP$PRIVATE(nw2,w2,nw4,w4,nw6,w6,nw8,w8)
-C$OMP$PRIVATE(isrcbox,iboxfl,iboxlexp)
+C$OMP$PRIVATE(isrcbox,iboxfl,iboxsubcenters,iboxlexp,npts0)
+C$OMP$PRIVATE(iboxpot,iboxsrc,jstart,jend)
          do ibox = laddr(1,ilev-1),laddr(2,ilev-1)
            npts = 0
            if(ifpghtarg.gt.0) then
@@ -1272,29 +1281,109 @@ C$OMP$PRIVATE(isrcbox,iboxfl,iboxlexp)
             
 ccc merge step 6(list 3) to m2l
             nlist3 = itree(ipointer(24)+ibox-1)
-            if(nlist3.gt.0) then
-              call getlist3pwlistall(ibox,nboxes,nlist3,
-     1               itree(ipointer(25)+(ibox-1)*mnlist3),
-     2               centers,nuall,uall,ndall,dall,nnall,nall,
-     3                       nsall,sall,neall,eall,nwall,wall)
+            if(nlist3.gt.0.and.npts.gt.0) then
+C              print *,"list3", nlist3
+              call getlist3pwlistall(ibox,boxsize(ilev),nboxes,
+     1             nlist3,itree(ipointer(25)+(ibox-1)*mnlist3),isep,
+     2             centers,nuall,uall,ndall,dall,nnall,nall,
+     3                     nsall,sall,neall,eall,nwall,wall)
+              print *,"diff3",nuall,ndall,nnall,nsall,neall,nwall,nlist3
 
-C              call processlist3udexp()
-C              call processlist3nsexp()
-C              call processlist3ewexp()
+C              istart = itree(ipointer(10)+ibox-1)
+C              iend = itree(ipointer(11)+ibox-1)
+C              npts = iend-istart+1
+C              call subdividebox(sourcesort(1,istart),npts,
+C     1             centers(1,ibox),boxsize(ilev),
+C     2             isrcbox,iboxfl,iboxsubcenters)
+C              print *,"center: ", 
+C     1        centers(1,ibox),centers(2,ibox),centers(3,ibox)
+C              print *,"box size: ", boxsize(ilev)
+C              print *,"subcenters: ",iboxsubcenters
               
-              istart = itree(ipointer(10)+ibox-1)
-              iend = itree(ipointer(11)+ibox-1)
-              npts = iend-istart+1
-              call subdividebox(sourcesort(1,istart),npts,center,
-     1               isrcbox,iboxfl,subcenters)
+              iboxlexp=0
+              call processlist3udexp(nd,ibox,nboxes,centers,
+     1             rscales(ilev),nterms(ilev),iboxlexp,rlams,whts,
+     2             nlams,nfourier,nphysical,nthmax,nexptot,
+     3             nexptotp,mexp,nuall,uall,ndall,dall,
+     4             mexpf1,mexpf2,mexpp1,mexpp2,
+     5             mexppall(1,1,1),mexppall(1,1,2),
+     6             xshift,yshift,zshift,fexpback,rlsc,rscpow)
 
-C              call l3dmpevalp(nd,rscales(ilev+1),centers(1,jbox),
-C     1          rmlexp(iaddr(1,jbox)),nterms(ilev+1),
-C     2          sourcesort(1,istart),npts,pot(1,istart),wlege,nlege,
-C     3          thresh)
+              call processlist3nsexp(nd,ibox,nboxes,centers,
+     1             rscales(ilev),nterms(ilev),iboxlexp,rlams,whts,
+     2             nlams,nfourier,nphysical,nthmax,nexptot,
+     3             nexptotp,mexp,nnall,nall,nsall,sall,
+     4             mexpf1,mexpf2,mexpp1,mexpp2,
+     5             mexppall(1,1,1),mexppall(1,1,2),rdplus,
+     6             xshift,yshift,zshift,fexpback,rlsc,rscpow)
 
-C              call l3dpwevalp
-C              call l3dpwevalg
+              call processlist3ewexp(nd,ibox,nboxes,centers,
+     1             rscales(ilev),nterms(ilev),iboxlexp,rlams,whts,
+     2             nlams,nfourier,nphysical,nthmax,nexptot,
+     3             nexptotp,mexp,neall,eall,nwall,wall,
+     4             mexpf1,mexpf2,mexpp1,mexpp2,
+     5             mexppall(1,1,1),mexppall(1,1,2),rdminus,
+     6             xshift,yshift,zshift,fexpback,rlsc,rscpow)
+
+               if(ifpgh.eq.1) then
+                 iboxpot=0
+                 istart = itree(ipointer(10)+ibox-1)
+                 iend = itree(ipointer(11)+ibox-1)
+                 npts0 = iend-istart+1
+                 if(npts0.gt.0) then
+                   isrcbox = 0
+                   call subdividebox(sourcesort(1,istart),npts0,
+     1                  centers(1,ibox),boxsize(ilev),
+     2                  isrcbox,iboxfl,iboxsubcenters)
+C                   print *,"npts:",npts0
+C                   print *,"isrcbox:",isrcbox
+C                   print *,"iboxfl:",iboxfl
+C                   print *,"iboxsubcenters:",iboxsubcenters
+C                   print *,"centers:",centers(1,ibox),centers(2,ibox),
+C     1                                centers(3,ibox)
+C                   print *,"boxsize:",boxsize(ilev)
+                   call dreorderf(3,npts0,sourcesort(1,istart),
+     1                  iboxsrc,isrcbox)
+                   call dreorderf(nd,npts0,pot(1,istart),
+     1                  iboxpot,isrcbox)
+C                   print *, isrcbox,istart,npts0
+C                   print *,"pot0:",iboxpot
+                   do i=1,8
+                     if(iboxfl(1,i).gt.0) then
+                       jstart=iboxfl(1,i)
+                       jend=iboxfl(2,i)
+                       npts0=jend-jstart+1
+                       if(npts0.gt.0) then
+                         call l3dtaevalp(nd,rscales(ilev),
+     1                        iboxsubcenters(1,i),iboxlexp(1,i),
+     2                        nterms(ilev),iboxsrc(1,jstart),npts0,
+     3                        iboxpot(1,jstart),wlege,nlege)
+                       endif
+                     endif
+                   enddo
+C                   print *,"pot1:",iboxpot
+                   call dreorderi(nd,npts,iboxpot,pot(1,istart),
+     1                  isrcbox)
+                 endif
+               endif
+               if(ifpghtarg.eq.3) then
+                 istart = itree(ipointer(12)+ibox-1)
+                 iend = itree(ipointer(13)+ibox-1)
+                 npts = iend-istart+1
+                 print *,"targ npts: ",npts
+                 call subdividebox(targsort(1,istart),npts,
+     1                centers(1,ibox),boxsize(ilev),
+     2                isrcbox,iboxfl,iboxsubcenters)
+                  do i=1,8
+                   if(iboxfl(1,i).gt.0) then
+                     npts0=iboxfl(2,i)-iboxfl(1,i)+1
+                     call l3dtaevalp(nd,rscales(ilev),
+     1                    iboxsubcenters(1,i),iboxlexp(1,i),
+     2                    nterms(ilev),targsort(1,istart),npts0,
+     3                    pottarg(1,istart),wlege,nlege)
+                   endif
+                 enddo
+               endif
             endif
 
          enddo
@@ -1398,7 +1487,7 @@ cc       evaluate multipole expansions at source locations
 c
 
       do ilev=1,nlevels
-        if(ifpgh.eq.1) then         
+        if(ifpgh.eq.3) then         
 C$OMP PARALLEL DO DEFAULT(SHARED)
 C$OMP$PRIVATE(ibox,nlist3,istart,iend,npts,i,jbox)
 C$OMP$SCHEDULE(DYNAMIC)
