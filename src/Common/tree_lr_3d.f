@@ -4958,7 +4958,7 @@ c     Temporary variables
       i1234 = 0
       i5678 = 0
       do i = 1,npts
-         if(pos(3,i) - center(3).lt.0) then
+         if(pos(3,i)-center(3).lt.0) then
             i1234 = i1234 + 1
             isorted(i1234) = i
          else
@@ -4974,12 +4974,12 @@ c     Sort i1234 into i12 and i34
       i12 = 0
       i34 = 0
       do i = 1,i1234
-         if(pos(2,i)-center(2).lt.0) then
+         if(pos(2,isorted(i))-center(2).lt.0) then
             i12 = i12 + 1
-            isorted(i12) = i
+            isorted(i12) = isorted(i)
          else
             i34 = i34 + 1
-            isortedtmp(i34) = i
+            isortedtmp(i34) = isorted(i)
          endif
       enddo
 c     Note at the end of the loop, i12 is where the particles
@@ -4994,12 +4994,12 @@ c     sort i5678 into i56 and i78
       i56 = i1234
       i78 = 0
       do i=i1234+1,npts
-         if(pos(2,i)-center(2).lt.0) then
+         if(pos(2,isorted(i))-center(2).lt.0) then
             i56 = i56 + 1
-            isorted(i56) = i
+            isorted(i56) = isorted(i)
          else
             i78 = i78 + 1
-            isortedtmp(i78) = i
+            isortedtmp(i78) = isorted(i)
          endif
       enddo
 c     Reorder sources to include 78 in the array
@@ -5011,12 +5011,12 @@ c     End of reordering i5678
       nc = 0
 c     Sort into boxes 1 and 2
       do i = 1,i12
-         if(pos(1,i)-center(1).lt.0) then
+         if(pos(1,isorted(i))-center(1).lt.0) then
             nc(1) = nc(1) + 1
-            isorted(nc(1)) = i
+            isorted(nc(1)) = isorted(i)
          else
             nc(2) = nc(2) + 1
-            isortedtmp(nc(2)) = i
+            isortedtmp(nc(2)) = isorted(i)
          endif
       enddo
 c     Reorder sources so that sources in 2 are at the
@@ -5027,12 +5027,12 @@ c     end of this part of the array
 
 c     Sort into boxes 3 and 4
       do i = i12+1, i1234
-         if(pos(1,i)-center(1).lt.0) then
+         if(pos(1,isorted(i))-center(1).lt.0) then
             nc(3) = nc(3) + 1
-            isorted(i12+nc(3)) = i
+            isorted(i12+nc(3)) = isorted(i)
          else
             nc(4) = nc(4)+1
-            isortedtmp(nc(4)) = i
+            isortedtmp(nc(4)) = isorted(i)
          endif
       enddo
 c     Reorder sources so that sources in 4 are at the
@@ -5043,12 +5043,12 @@ c     end of this part of the array
 
 c     Sort into boxes 5 and 6
       do i = i1234+1,i56
-         if(pos(1,i)-center(1).lt.0) then
+         if(pos(1,isorted(i))-center(1).lt.0) then
             nc(5) = nc(5) + 1
-            isorted(i1234+nc(5)) = i
+            isorted(i1234+nc(5)) = isorted(i)
          else
             nc(6) = nc(6) + 1
-            isortedtmp(nc(6)) = i
+            isortedtmp(nc(6)) = isorted(i)
          endif
       enddo
 c     Reorder sources so that sources in 6 are at the
@@ -5060,12 +5060,12 @@ c     End of sorting sources into boxes 5 and 6
 
 c     Sort into boxes 7 and 8
       do i=i56+1,npts
-         if(pos(1,i)-center(1).lt.0) then
+         if(pos(1,isorted(i))-center(1).lt.0) then
             nc(7) = nc(7) + 1
-            isorted(i56+nc(7)) = i
+            isorted(i56+nc(7)) = isorted(i)
          else
             nc(8) = nc(8) + 1
-            isortedtmp(nc(8)) = i
+            isortedtmp(nc(8)) = isorted(i)
          endif
       enddo
 c     Reorder sources so that sources in 8 are at the

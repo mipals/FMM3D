@@ -186,7 +186,6 @@ c
        else
          ndiv = nsource+ntarg
        endif
-       ndiv = 3
 
 
 c
@@ -1287,7 +1286,6 @@ C              print *,"list3", nlist3
      1             nlist3,itree(ipointer(25)+(ibox-1)*mnlist3),isep,
      2             centers,nuall,uall,ndall,dall,nnall,nall,
      3                     nsall,sall,neall,eall,nwall,wall)
-              print *,"diff3",nuall,ndall,nnall,nsall,neall,nwall,nlist3
 
 C              istart = itree(ipointer(10)+ibox-1)
 C              iend = itree(ipointer(11)+ibox-1)
@@ -1329,25 +1327,37 @@ C              print *,"subcenters: ",iboxsubcenters
                  iboxpot=0
                  istart = itree(ipointer(10)+ibox-1)
                  iend = itree(ipointer(11)+ibox-1)
-                 npts0 = iend-istart+1
-                 if(npts0.gt.0) then
+                 npts = iend-istart+1
+C                 print *,"nlist3:",nlist3
+C                 print *,"list3:",nuall,ndall,nnall,nsall,neall,nwall
+C                 print *,"ibox:",ibox
+C                 print *,"npts in ibox:",npts
+                 if(npts.gt.0) then
+C                   print *,"points:"
+                   do i=1,npts
+C                     print *,sourcesort(1,istart+i-1),
+C     1             sourcesort(2,istart+i-1),sourcesort(3,istart+i-1)
+                   enddo
                    isrcbox = 0
-                   call subdividebox(sourcesort(1,istart),npts0,
+                   call subdividebox(sourcesort(1,istart),npts,
      1                  centers(1,ibox),boxsize(ilev),
      2                  isrcbox,iboxfl,iboxsubcenters)
-C                   print *,"npts:",npts0
 C                   print *,"isrcbox:",isrcbox
 C                   print *,"iboxfl:",iboxfl
-C                   print *,"iboxsubcenters:",iboxsubcenters
-C                   print *,"centers:",centers(1,ibox),centers(2,ibox),
-C     1                                centers(3,ibox)
-C                   print *,"boxsize:",boxsize(ilev)
-                   call dreorderf(3,npts0,sourcesort(1,istart),
+C                   print *,"   centers:",centers(1,ibox),
+C     1             centers(2,ibox),centers(3,ibox)
+C                   do i=1,8
+C                    print *,"subcenters:",iboxsubcenters(1,i),
+C     1              iboxsubcenters(2,i),iboxsubcenters(3,i)
+C                   enddo
+C                   print *,"boxsize:",boxsize(ilev-1),
+C     1             "scale:",rscales(ilev-1)
+C                   print *,"subboxsize:",boxsize(ilev),
+C     1             "subscale:",rscales(ilev)
+                   call dreorderf(3,npts,sourcesort(1,istart),
      1                  iboxsrc,isrcbox)
-                   call dreorderf(nd,npts0,pot(1,istart),
+                   call dreorderf(nd,npts,pot(1,istart),
      1                  iboxpot,isrcbox)
-C                   print *, isrcbox,istart,npts0
-C                   print *,"pot0:",iboxpot
                    do i=1,8
                      if(iboxfl(1,i).gt.0) then
                        jstart=iboxfl(1,i)
@@ -1361,7 +1371,6 @@ C                   print *,"pot0:",iboxpot
                        endif
                      endif
                    enddo
-C                   print *,"pot1:",iboxpot
                    call dreorderi(nd,npts,iboxpot,pot(1,istart),
      1                  isrcbox)
                  endif
