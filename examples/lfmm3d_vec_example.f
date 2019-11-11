@@ -2,12 +2,13 @@
       integer ns,nt,nd
       double precision, allocatable :: source(:,:),targ(:,:)
       double precision, allocatable :: charge(:,:),dipvec(:,:,:)
-      double precision, allocatable :: pot(:,:)
-      double precision, allocatable :: potex(:,:)
-      double precision, allocatable :: pottarg(:,:)
+      double precision, allocatable :: pot(:,:),grad(:,:,:)
+      double precision, allocatable :: potex(:,:),gradex(:,:,:)
+      double precision, allocatable :: pottarg(:,:),gradtarg(:,:,:)
+      double precision, allocatable :: pottargex(:,:),gradtargex(:,:,:)
 
       double precision eps
-      integer i,j,k,idim
+      integer i,j,k,idim,ntest
       double precision hkrand,thresh,erra,ra
       
 
@@ -24,8 +25,10 @@ c
       write(*,*)
       write(*,*)
 
-      ns = 13
+      ns = 100000
       nt = 19
+
+      ntest = 10
       
       nd = 1
 
@@ -33,9 +36,19 @@ c
       allocate(targ(3,nt))
       allocate(charge(nd,ns))
       allocate(dipvec(nd,3,ns))
+
       allocate(pot(nd,ns))
-      allocate(potex(nd,ns))
+      allocate(potex(nd,ntest))
+
+      allocate(grad(nd,3,ns))
+      allocate(gradex(nd,3,ntest))
+      
+      
       allocate(pottarg(nd,nt))
+      allocate(pottargex(nd,ntest))
+      
+      allocate(gradtarg(nd,3,nt))
+      allocate(gradtargex(nd,3,ntest))
 
       thresh =1.0d-16
 
@@ -57,7 +70,7 @@ c
 c
       do i=1,ns
         source(1,i) = hkrand(0)**2
-        source(2,i) = hkrand(0)**2*0
+        source(2,i) = hkrand(0)**2
         source(3,i) = hkrand(0)**2
 
         do idim=1,nd
@@ -66,7 +79,6 @@ c
           dipvec(idim,2,i) = hkrand(0) 
           dipvec(idim,3,i) = hkrand(0) 
           pot(idim,i) = 0
-          potex(idim,i) = 0
         enddo
       enddo
 
@@ -81,31 +93,59 @@ c
       enddo
 
 
-C       call lfmm3d_st_cd_p_vec(nd,eps,ns,source,charge,
-C     1      dipvec,pot,nt,targ,pottarg)
 
-       call lfmm3d_s_cd_p_vec(nd,eps,ns,source,charge,
-     1      dipvec,pot)
+       call lfmm3d_s_cd_g_vec(nd,eps,ns,source,charge,
+     1      dipvec,pot,grad)
 
-       call l3ddirectcdp(nd,source,charge,
-     1      dipvec,ns,source,ns,potex,thresh)
+       do i=1,ntest
+         do idim=1,nd
+           potex(1,i) = 0
+           gradex(idim,1,i) = 0
+           gradex(idim,2,i) = 0
+           gradex(idim,3,i) = 0
 
-cc       call prin2_long("potential at sources=*",pot,20)
-cc       call prin2_long("potential at sources=*",potex,20)
-C       print *, pot
-C       print *, potex
+           pottargex(idim,i) = 0
+           gradtargex(idim,1,i) = 0
+           gradtargex(idim,2,i) = 0
+           gradtargex(idim,3,i) = 0
+         enddo
+
+       enddo
+
+       call l3ddirectcdg(nd,source,charge,
+     1      dipvec,ns,source,ntest,potex,gradex,thresh)
+
+       call prin2("potential at sources=*",pot,6)
+       call prin2("potential at sources=*",potex,6)
 
 
        erra = 0
        ra = 0
-       do i=1,ns
+       do i=1,ntest
          ra = ra + potex(1,i)**2
          erra = erra + (potex(1,i)-pot(1,i))**2
-
        enddo
 
        erra = sqrt(erra/ra)
-       call prin2("error=*",erra,1)
+       call prin2("error pot=*",erra,1)
+
+      erra = 0
+      ra = 0
+      do i=1,ntest
+        do j=1,3
+          erra = erra + (gradex(1,j,i)-grad(1,j,i))**2
+          ra = ra + (gradex(1,j,i))**2
+        enddo
+      enddo
+
+      erra = sqrt(erra/ra)
+
+      call prin2('error grad=*',erra,1)
+
+      call prin2_long('grad=*',grad,3*ntest)
+      call prin2_long('gradex=*',gradex,3*ntest)
+
+
 
 
       stop
