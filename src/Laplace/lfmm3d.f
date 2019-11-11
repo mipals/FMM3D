@@ -1205,7 +1205,7 @@ C$OMP$PRIVATE(nn12,n12,nn56,n56,ns34,s34,ns78,s78,ne13,e13,ne57,e57)
 C$OMP$PRIVATE(nw24,w24,nw68,w68,ne1,e1,ne3,e3,ne5,e5,ne7,e7)
 C$OMP$PRIVATE(nw2,w2,nw4,w4,nw6,w6,nw8,w8)
 C$OMP$PRIVATE(isrcbox,iboxfl,iboxsubcenters,iboxlexp,npts0)
-C$OMP$PRIVATE(iboxpot,iboxsrc,jstart,jend)
+C$OMP$PRIVATE(iboxpot,iboxsrc,jstart,jend,nlist3)
          do ibox = laddr(1,ilev-1),laddr(2,ilev-1)
            npts = 0
            if(ifpghtarg.gt.0) then
