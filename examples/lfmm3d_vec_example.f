@@ -25,12 +25,12 @@ c
       write(*,*)
       write(*,*)
 
-      ns = 100000
-      nt = 19
+      ns = 23
+      nt = 27
 
       ntest = 10
       
-      nd = 1
+      nd = 3
 
       allocate(source(3,ns))
       allocate(targ(3,nt))
@@ -83,23 +83,26 @@ c
       enddo
 
       do i=1,nt
-        targ(1,i) = hkrand(0)**3
-        targ(2,i) = hkrand(0)**3
-        targ(3,i) = hkrand(0)**3
+        targ(1,i) = hkrand(0)**2
+        targ(2,i) = hkrand(0)**2
+        targ(3,i) = hkrand(0)**2
 
         do idim=1,nd
           pottarg(idim,i) = 0
+          gradtarg(idim,1,i) = 0
+          gradtarg(idim,2,i) = 0
+          gradtarg(idim,3,i) = 0
         enddo
       enddo
 
 
 
-       call lfmm3d_s_cd_g_vec(nd,eps,ns,source,charge,
-     1      dipvec,pot,grad)
+       call lfmm3d_st_cd_g_vec(nd,eps,ns,source,charge,
+     1      dipvec,pot,grad,nt,targ,pottarg,gradtarg)
 
        do i=1,ntest
          do idim=1,nd
-           potex(1,i) = 0
+           potex(idim,i) = 0
            gradex(idim,1,i) = 0
            gradex(idim,2,i) = 0
            gradex(idim,3,i) = 0
@@ -115,6 +118,10 @@ c
        call l3ddirectcdg(nd,source,charge,
      1      dipvec,ns,source,ntest,potex,gradex,thresh)
 
+
+       call l3ddirectcdg(nd,source,charge,
+     1      dipvec,ns,targ,ntest,pottargex,gradtargex,thresh)
+
        call prin2("potential at sources=*",pot,6)
        call prin2("potential at sources=*",potex,6)
 
@@ -122,28 +129,58 @@ c
        erra = 0
        ra = 0
        do i=1,ntest
-         ra = ra + potex(1,i)**2
-         erra = erra + (potex(1,i)-pot(1,i))**2
+         do idim=1,nd
+           ra = ra + potex(idim,i)**2
+           erra = erra + (potex(idim,i)-pot(idim,i))**2
+         enddo
        enddo
 
        erra = sqrt(erra/ra)
-       call prin2("error pot=*",erra,1)
+       call prin2("error pot src=*",erra,1)
 
       erra = 0
       ra = 0
       do i=1,ntest
         do j=1,3
-          erra = erra + (gradex(1,j,i)-grad(1,j,i))**2
-          ra = ra + (gradex(1,j,i))**2
+          do idim=1,nd
+            erra = erra + (gradex(idim,j,i)-grad(idim,j,i))**2
+            ra = ra + (gradex(idim,j,i))**2
+          enddo
         enddo
       enddo
 
       erra = sqrt(erra/ra)
 
-      call prin2('error grad=*',erra,1)
+      call prin2('error grad src=*',erra,1)
 
-      call prin2_long('grad=*',grad,3*ntest)
-      call prin2_long('gradex=*',gradex,3*ntest)
+
+
+       erra = 0
+       ra = 0
+       do i=1,ntest
+         do idim=1,nd
+           ra = ra + pottargex(idim,i)**2
+           erra = erra + (pottargex(idim,i)-pottarg(idim,i))**2
+         enddo
+       enddo
+
+       erra = sqrt(erra/ra)
+       call prin2("error pot targ=*",erra,1)
+
+      erra = 0
+      ra = 0
+      do i=1,ntest
+        do j=1,3
+          do idim=1,nd
+            erra = erra + (gradtargex(idim,j,i)-gradtarg(idim,j,i))**2
+            ra = ra + (gradtargex(idim,j,i))**2
+          enddo
+        enddo
+      enddo
+
+      erra = sqrt(erra/ra)
+
+      call prin2('error grad targ=*',erra,1)
 
 
 

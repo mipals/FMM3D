@@ -187,7 +187,7 @@ c
          ndiv = nsource+ntarg
        endif
 
-cc       ndiv = 3
+       ndiv = 3
 
 
 c
@@ -1355,6 +1355,54 @@ ccc merge step 6(list 3) to m2l
      3               pot(1,istart),grad(1,1,istart))
                  endif
                endif
+
+
+               if(ifpghtarg.eq.1) then
+                 istart = itree(ipointer(12)+ibox-1)
+                 iend = itree(ipointer(13)+ibox-1)
+                 npts0 = iend-istart+1
+                 if(npts0.gt.0) then
+                   call lpw_ud_eval_p(nd,ctmp,boxsize(ilev),npts0,
+     1               targsort(1,istart),nlams,rlams,whts,nphysical,
+     2               nexptotp,nphmax,mexppall(1,1,1),mexppall(1,1,2),
+     3               pottarg(1,istart))
+
+                   call lpw_ns_eval_p(nd,ctmp,boxsize(ilev),npts0,
+     1               targsort(1,istart),nlams,rlams,whts,nphysical,
+     2               nexptotp,nphmax,mexppall(1,1,3),mexppall(1,1,4),
+     3               pottarg(1,istart))
+
+                   call lpw_ew_eval_p(nd,ctmp,boxsize(ilev),npts0,
+     1               targsort(1,istart),nlams,rlams,whts,nphysical,
+     2               nexptotp,nphmax,mexppall(1,1,5),mexppall(1,1,6),
+     3               pottarg(1,istart))
+                 endif
+               endif
+
+               if(ifpghtarg.eq.2) then
+                 istart = itree(ipointer(12)+ibox-1)
+                 iend = itree(ipointer(13)+ibox-1)
+                 npts0 = iend-istart+1
+                 if(npts0.gt.0) then
+                   call lpw_ud_eval_g(nd,ctmp,boxsize(ilev),npts0,
+     1               targsort(1,istart),nlams,rlams,whts,nphysical,
+     2               nexptotp,nphmax,mexppall(1,1,1),mexppall(1,1,2),
+     3               pottarg(1,istart),gradtarg(1,1,istart))
+
+                   call lpw_ns_eval_g(nd,ctmp,boxsize(ilev),npts0,
+     1               targsort(1,istart),nlams,rlams,whts,nphysical,
+     2               nexptotp,nphmax,mexppall(1,1,3),mexppall(1,1,4),
+     3               pottarg(1,istart),gradtarg(1,1,istart))
+
+                   call lpw_ew_eval_g(nd,ctmp,boxsize(ilev),npts0,
+     1               targsort(1,istart),nlams,rlams,whts,nphysical,
+     2               nexptotp,nphmax,mexppall(1,1,5),mexppall(1,1,6),
+     3               pottarg(1,istart),gradtarg(1,1,istart))
+                 endif
+               endif
+
+
+
             endif
 
          enddo
@@ -1419,6 +1467,9 @@ C$        time2=omp_get_wtime()
       call cpu_time(time1)
 C$        time1=omp_get_wtime()
 
+c
+c       already taken care in step 4
+c 
    
       call cpu_time(time2)
 C$        time2=omp_get_wtime()

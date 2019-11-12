@@ -2,18 +2,18 @@
       integer ns,nt,nd
       double precision, allocatable :: source(:,:),targ(:,:)
       double complex, allocatable :: charge(:,:),dipvec(:,:,:)
-      double complex, allocatable :: pot(:,:)
-      double complex, allocatable :: pottarg(:,:)
+      double complex, allocatable :: pot(:,:),grad(:,:,:)
+      double complex, allocatable :: potex(:,:),gradex(:,:,:)
+      double complex, allocatable :: pottarg(:,:),gradtarg(:,:,:)
+      double complex, allocatable :: pottargex(:,:),gradtargex(:,:,:)
 
       double precision eps
-      double complex eye,zk
-      integer i,j,k,idim
-      double precision hkrand,pi,thet,phi
+      double complex ima,zk
+      integer i,j,k,idim,ntest
+      double precision hkrand,thresh,erra,ra
+      data ima/(0.0d0,1.0d0)/
       
 
-      data eye/(0.0d0,1.0d0)/
-
-      pi = 4.0d0*atan(1.0d0)
 
 c
 cc      initialize printing routine
@@ -27,10 +27,12 @@ c
       write(*,*)
       write(*,*)
 
-      zk = 2.2d0
+      ns = 23
+      nt = 27
 
-      ns = 2000
-      nt = 2000
+      ntest = 10
+
+      zk = 1.1d0 + ima*0.01d0
       
       nd = 1
 
@@ -38,9 +40,21 @@ c
       allocate(targ(3,nt))
       allocate(charge(nd,ns))
       allocate(dipvec(nd,3,ns))
-      allocate(pot(nd,ns))
-      allocate(pottarg(nd,nt))
 
+      allocate(pot(nd,ns))
+      allocate(potex(nd,ntest))
+
+      allocate(grad(nd,3,ns))
+      allocate(gradex(nd,3,ntest))
+      
+      
+      allocate(pottarg(nd,nt))
+      allocate(pottargex(nd,ntest))
+      
+      allocate(gradtarg(nd,3,nt))
+      allocate(gradtargex(nd,3,ntest))
+
+      thresh =1.0d-16
 
       eps = 0.5d-9
 
@@ -59,37 +73,126 @@ cc      generate sources uniformly in the unit cube
 c
 c
       do i=1,ns
-        thet = hkrand(0)*pi
-        phi = hkrand(0)*2*pi
-        source(1,i) = sin(thet)*cos(phi) 
-        source(2,i) = sin(thet)*sin(phi)
-        source(3,i) = cos(thet)
+        source(1,i) = hkrand(0)**2
+        source(2,i) = hkrand(0)**2*0
+        source(3,i) = hkrand(0)**2*0
 
         do idim=1,nd
-          charge(idim,i) = hkrand(0) + eye*hkrand(0)
-          dipvec(idim,1,i) = hkrand(0) + eye*hkrand(0)
-          dipvec(idim,2,i) = hkrand(0) + eye*hkrand(0)
-          dipvec(idim,3,i) = hkrand(0) + eye*hkrand(0)
+          charge(idim,i) = hkrand(0) + ima*hkrand(0) 
+          dipvec(idim,1,i) = hkrand(0) + ima*hkrand(0)
+          dipvec(idim,2,i) = hkrand(0) + ima*hkrand(0) 
+          dipvec(idim,3,i) = hkrand(0) + ima*hkrand(0) 
           pot(idim,i) = 0
         enddo
       enddo
 
       do i=1,nt
-        targ(1,i) = source(1,i) + 10.0d0
-        targ(2,i) = source(2,i)
-        targ(3,i) = source(3,i)
+        targ(1,i) = hkrand(0)**2
+        targ(2,i) = hkrand(0)**2*0
+        targ(3,i) = hkrand(0)**2*0
 
         do idim=1,nd
           pottarg(idim,i) = 0
+          gradtarg(idim,1,i) = 0
+          gradtarg(idim,2,i) = 0
+          gradtarg(idim,3,i) = 0
         enddo
       enddo
 
 
+
+cc       call hfmm3d_st_cd_g_vec(nd,eps,zk,ns,source,charge,
+cc     1      dipvec,pot,grad,nt,targ,pottarg,gradtarg)
+
        call hfmm3d_st_cd_p_vec(nd,eps,zk,ns,source,charge,
      1      dipvec,pot,nt,targ,pottarg)
+       do i=1,ntest
+         do idim=1,nd
+           potex(idim,i) = 0
+           gradex(idim,1,i) = 0
+           gradex(idim,2,i) = 0
+           gradex(idim,3,i) = 0
 
-       call prin2("potential at sources=*",pot,12)
-       call prin2("potential at targets=*",pottarg,12)
+           pottargex(idim,i) = 0
+           gradtargex(idim,1,i) = 0
+           gradtargex(idim,2,i) = 0
+           gradtargex(idim,3,i) = 0
+         enddo
+
+       enddo
+
+       call h3ddirectcdg(nd,zk,source,charge,
+     1      dipvec,ns,source,ntest,potex,gradex,thresh)
+
+
+       call h3ddirectcdg(nd,source,charge,
+     1      dipvec,ns,targ,ntest,pottargex,gradtargex,thresh)
+
+       call prin2("potential at sources=*",pot,2*ntest)
+       call prin2("potential at sources=*",potex,2*ntest)
+
+
+       erra = 0
+       ra = 0
+       do i=1,ntest
+         do idim=1,nd
+           ra = ra + abs(potex(idim,i))**2
+           erra = erra + abs(potex(idim,i)-pot(idim,i))**2
+
+           print *, i, abs(potex(idim,i)-pot(idim,i))
+         enddo
+       enddo
+
+       erra = sqrt(erra/ra)
+       call prin2("error pot src=*",erra,1)
+
+       stop
+
+      erra = 0
+      ra = 0
+      do i=1,ntest
+        do j=1,3
+          do idim=1,nd
+            erra = erra + (gradex(idim,j,i)-grad(idim,j,i))**2
+            ra = ra + (gradex(idim,j,i))**2
+          enddo
+        enddo
+      enddo
+
+      erra = sqrt(erra/ra)
+
+      call prin2('error grad src=*',erra,1)
+
+
+
+       erra = 0
+       ra = 0
+       do i=1,ntest
+         do idim=1,nd
+           ra = ra + pottargex(idim,i)**2
+           erra = erra + (pottargex(idim,i)-pottarg(idim,i))**2
+         enddo
+       enddo
+
+       erra = sqrt(erra/ra)
+       call prin2("error pot targ=*",erra,1)
+
+      erra = 0
+      ra = 0
+      do i=1,ntest
+        do j=1,3
+          do idim=1,nd
+            erra = erra + (gradtargex(idim,j,i)-gradtarg(idim,j,i))**2
+            ra = ra + (gradtargex(idim,j,i))**2
+          enddo
+        enddo
+      enddo
+
+      erra = sqrt(erra/ra)
+
+      call prin2('error grad targ=*',erra,1)
+
+
 
 
       stop
