@@ -1358,20 +1358,20 @@ ccc merge step 6(list 3) to m2l
                  iend = itree(ipointer(11)+ibox-1)
                  npts0 = iend-istart+1
                  if(npts0.gt.0) then
-cc                   call hpw_ud_eval_g(nd,ctmp,boxsize(ilev),npts0,
-cc     1               sourcesort(1,istart),nlams,rlams,whts,nphysical,
-cc     2               nexptotp,nphmax,mexppall(1,1,1),mexppall(1,1,2),
-cc     3               pot(1,istart),grad(1,1,istart))
+                   call hpw_ud_eval_g(nd,zk2,ctmp,boxsize(ilev),npts0,
+     1               sourcesort(1,istart),nlams,rlams,whts,nphysical,
+     2               nexptotp,nphmax,mexppall(1,1,1),mexppall(1,1,2),
+     3               pot(1,istart),grad(1,1,istart))
 
-cc                   call hpw_ns_eval_g(nd,ctmp,boxsize(ilev),npts0,
-cc     1               sourcesort(1,istart),nlams,rlams,whts,nphysical,
-cc     2               nexptotp,nphmax,mexppall(1,1,3),mexppall(1,1,4),
-cc     3               pot(1,istart),grad(1,1,istart))
+                   call hpw_ns_eval_g(nd,zk2,ctmp,boxsize(ilev),npts0,
+     1               sourcesort(1,istart),nlams,rlams,whts,nphysical,
+     2               nexptotp,nphmax,mexppall(1,1,3),mexppall(1,1,4),
+     3               pot(1,istart),grad(1,1,istart))
 
-cc                   call hpw_ew_eval_g(nd,ctmp,boxsize(ilev),npts0,
-cc     1               sourcesort(1,istart),nlams,rlams,whts,nphysical,
-cc     2               nexptotp,nphmax,mexppall(1,1,5),mexppall(1,1,6),
-cc     3               pot(1,istart),grad(1,1,istart))
+                   call hpw_ew_eval_g(nd,zk2,ctmp,boxsize(ilev),npts0,
+     1               sourcesort(1,istart),nlams,rlams,whts,nphysical,
+     2               nexptotp,nphmax,mexppall(1,1,5),mexppall(1,1,6),
+     3               pot(1,istart),grad(1,1,istart))
                  endif
                endif
 
@@ -1381,20 +1381,20 @@ cc     3               pot(1,istart),grad(1,1,istart))
                  iend = itree(ipointer(13)+ibox-1)
                  npts0 = iend-istart+1
                  if(npts0.gt.0) then
-cc                   call hpw_ud_eval_p(nd,ctmp,boxsize(ilev),npts0,
-cc     1               targsort(1,istart),nlams,rlams,whts,nphysical,
-cc     2               nexptotp,nphmax,mexppall(1,1,1),mexppall(1,1,2),
-cc     3               pottarg(1,istart))
+                   call hpw_ud_eval_p(nd,zk2,ctmp,boxsize(ilev),npts0,
+     1               targsort(1,istart),nlams,rlams,whts,nphysical,
+     2               nexptotp,nphmax,mexppall(1,1,1),mexppall(1,1,2),
+     3               pottarg(1,istart))
 
-cc                   call hpw_ns_eval_p(nd,ctmp,boxsize(ilev),npts0,
-cc     1               targsort(1,istart),nlams,rlams,whts,nphysical,
-cc     2               nexptotp,nphmax,mexppall(1,1,3),mexppall(1,1,4),
-cc     3               pottarg(1,istart))
+                   call hpw_ns_eval_p(nd,zk2,ctmp,boxsize(ilev),npts0,
+     1               targsort(1,istart),nlams,rlams,whts,nphysical,
+     2               nexptotp,nphmax,mexppall(1,1,3),mexppall(1,1,4),
+     3               pottarg(1,istart))
 
-cc                   call hpw_ew_eval_p(nd,ctmp,boxsize(ilev),npts0,
-cc     1               targsort(1,istart),nlams,rlams,whts,nphysical,
-cc     2               nexptotp,nphmax,mexppall(1,1,5),mexppall(1,1,6),
-cc     3               pottarg(1,istart))
+                   call hpw_ew_eval_p(nd,zk2,ctmp,boxsize(ilev),npts0,
+     1               targsort(1,istart),nlams,rlams,whts,nphysical,
+     2               nexptotp,nphmax,mexppall(1,1,5),mexppall(1,1,6),
+     3               pottarg(1,istart))
                  endif
                endif
 
@@ -1403,20 +1403,20 @@ cc     3               pottarg(1,istart))
                  iend = itree(ipointer(13)+ibox-1)
                  npts0 = iend-istart+1
                  if(npts0.gt.0) then
-cc                   call hpw_ud_eval_g(nd,ctmp,boxsize(ilev),npts0,
-cc     1               targsort(1,istart),nlams,rlams,whts,nphysical,
-cc     2               nexptotp,nphmax,mexppall(1,1,1),mexppall(1,1,2),
-cc     3               pottarg(1,istart),gradtarg(1,1,istart))
+                   call hpw_ud_eval_g(nd,zk2,ctmp,boxsize(ilev),npts0,
+     1               targsort(1,istart),nlams,rlams,whts,nphysical,
+     2               nexptotp,nphmax,mexppall(1,1,1),mexppall(1,1,2),
+     3               pottarg(1,istart),gradtarg(1,1,istart))
 
-cc                   call hpw_ns_eval_g(nd,ctmp,boxsize(ilev),npts0,
-cc     1               targsort(1,istart),nlams,rlams,whts,nphysical,
-cc     2               nexptotp,nphmax,mexppall(1,1,3),mexppall(1,1,4),
-cc     3               pottarg(1,istart),gradtarg(1,1,istart))
+                   call hpw_ns_eval_g(nd,zk2,ctmp,boxsize(ilev),npts0,
+     1               targsort(1,istart),nlams,rlams,whts,nphysical,
+     2               nexptotp,nphmax,mexppall(1,1,3),mexppall(1,1,4),
+     3               pottarg(1,istart),gradtarg(1,1,istart))
 
-cc                   call hpw_ew_eval_g(nd,ctmp,boxsize(ilev),npts0,
-cc     1               targsort(1,istart),nlams,rlams,whts,nphysical,
-cc     2               nexptotp,nphmax,mexppall(1,1,5),mexppall(1,1,6),
-cc     3               pottarg(1,istart),gradtarg(1,1,istart))
+                   call hpw_ew_eval_g(nd,zk2,ctmp,boxsize(ilev),npts0,
+     1               targsort(1,istart),nlams,rlams,whts,nphysical,
+     2               nexptotp,nphmax,mexppall(1,1,5),mexppall(1,1,6),
+     3               pottarg(1,istart),gradtarg(1,1,istart))
                  endif
                endif
              endif

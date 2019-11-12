@@ -2307,7 +2307,7 @@ c-------------------------------------------------------------------
       double precision centers(3,*)
       double complex mexpeall(nd,nexptotp),mexpwall(nd,nexptotp)
       double complex xs(-5:5,nexptotp),ys(-5:5,nexptotp)
-      double precision zs(5,nexptotp)
+      double complex zs(5,nexptotp)
 
 c      temp variables
       integer jbox,i,ix,iy,iz,j,l,idim
@@ -2590,30 +2590,32 @@ c
 c
 c--------------------------------------------------------------------     
 
-      subroutine hpw_ud_eval_g(nd,center,boxsize,ntarg,targ,nlam,rlams,
-     1   whts,nphys,nexptotp,nphmax,mexpupphys,mexpdownphys,pot,grad)
+      subroutine hpw_ud_eval_g(nd,zk2,center,boxsize,ntarg,targ,nlam,
+     1   rlams,whts,nphys,nexptotp,nphmax,mexpupphys,mexpdownphys,pot,
+     2   grad)
       implicit none
       integer nd
-      real *8 center(3),boxsize,targ(3,ntarg),rlams(nlam),pot(nd,ntarg)
-      real *8 grad(nd,3,ntarg)
-      real *8 whts(nlam)
+      real *8 center(3),boxsize,targ(3,ntarg)
+      complex *16 rlams(nlam),pot(nd,ntarg)
+      complex *16 grad(nd,3,ntarg),whts(nlam),zk2
       integer ntarg,nlam,nphys(nlam),nexptotp,nphmax
       complex *16 mexpupphys(nd,nexptotp),mexpdownphys(nd,nexptotp)
       complex *16 ima
-      complex *16, allocatable :: cc(:),crc(:),crs(:)
+      complex *16, allocatable :: cc(:),crc(:),crs(:),cc2(:)
       integer itarg,i,j,k,l,il,ii,iphys,istart,idim
       real *8 pi2inv,rexp1,alpha,pi2,x,y,z
       real *8 h,hh,rr,binv
-      complex *16 rz,rz1,rz2
-      real *8, allocatable :: rexp(:),rexpinv(:)
+      complex *16 rz,rz1,rz2,zsc,rk
+      complex *16, allocatable :: zexp(:),zexpinv(:)
       data pi2inv/0.15915494309189535d0/
       data pi2/6.283185307179586d0/
       data ima/(0.0d0,1.0d0)/
 
-      allocate(rexp(nlam),rexpinv(nlam),cc(nphmax))
+      allocate(zexp(nlam),zexpinv(nlam),cc(nphmax),cc2(nphmax))
       allocate(crc(nphmax),crs(nphmax))
 
       binv = 1.0d0/boxsize
+      zsc = -ima/zk2
 
 
       do itarg=1,ntarg
@@ -2621,15 +2623,9 @@ c--------------------------------------------------------------------
         y = (targ(2,itarg) - center(2))/boxsize
         z = (targ(3,itarg) - center(3))/boxsize
 
-c
-c         note: using vectorized notation to ensure simd instruction use
-c
-        rexpinv = 1.0d0/rexp
-
         do i=1,nlam
-          rr = exp(-z*rlams(i))
-          rexp(i) = rr*whts(i) 
-          rexpinv(i) = whts(i)/rr
+          zexp(i) = exp(-z*rlams(i))*whts(i)
+          zexpinv(i) = exp(z*rlams(i))*whts(i)
         enddo
 
 
@@ -2638,26 +2634,28 @@ c
           h = pi2/nphys(il)
           hh = 1.0d0/nphys(il)
 
+          rk = sqrt(rlams(il)**2 + zk2**2)
+
           do iphys = 1,nphys(il)
             alpha = (iphys-1)*h
-            crc(iphys) = rlams(il)*cos(alpha)*ima
-            crs(iphys) = rlams(il)*sin(alpha)*ima
+            crc(iphys) = rk*cos(alpha)*ima
+            crs(iphys) = rk*sin(alpha)*ima
             cc(iphys) = exp(crc(iphys)*x + crs(iphys)*y)
+            cc2(iphys) = exp(-(crc(iphys)*x + crs(iphys)*y))
           enddo
           do iphys = 1,nphys(il)
             ii = istart + iphys
             do idim=1,nd
-              rz1 = mexpupphys(idim,ii)*rexp(il)*cc(iphys)*hh
-              rz2 = mexpdownphys(idim,ii)*rexpinv(il)*conjg(cc(iphys))*
-     1              hh
+              rz1 = mexpupphys(idim,ii)*zexp(il)*cc(iphys)*hh*zsc
+              rz2 = mexpdownphys(idim,ii)*zexpinv(il)*cc2(iphys)*hh*zsc
               rz = rz1 + rz2
-              pot(idim,itarg) = pot(idim,itarg) + real(rz)
+              pot(idim,itarg) = pot(idim,itarg) + rz
               grad(idim,1,itarg) = grad(idim,1,itarg) + 
-     1            real((rz1-rz2)*crc(iphys))*binv
+     1            (rz1-rz2)*crc(iphys)*binv
               grad(idim,2,itarg) = grad(idim,2,itarg) + 
-     1            real((rz1-rz2)*crs(iphys))*binv
+     1            (rz1-rz2)*crs(iphys)*binv
               grad(idim,3,itarg) = grad(idim,3,itarg) - 
-     1            real(rz1-rz2)*binv*rlams(il)
+     1            (rz1-rz2)*binv*rlams(il)
             enddo
           enddo
           istart = istart + nphys(il)
@@ -2676,46 +2674,42 @@ c
 c
 c--------------------------------------------------------------------     
 
-      subroutine hpw_ns_eval_g(nd,center,boxsize,ntarg,targ,nlam,rlams,
-     1   whts,nphys,nexptotp,nphmax,mexpupphys,mexpdownphys,pot,grad)
+      subroutine hpw_ns_eval_g(nd,zk2,center,boxsize,ntarg,targ,nlam,
+     1  rlams,whts,nphys,nexptotp,nphmax,mexpupphys,mexpdownphys,pot,
+     2  grad)
       implicit none
       integer nd
-      real *8 center(3),boxsize,targ(3,ntarg),rlams(nlam),pot(nd,ntarg)
-      real *8 grad(nd,3,ntarg)
-      real *8 whts(nlam)
+      real *8 center(3),boxsize,targ(3,ntarg)
+      complex *16 rlams(nlam),pot(nd,ntarg)
+      complex *16 grad(nd,3,ntarg),whts(nlam),zk2
       integer ntarg,nlam,nphys(nlam),nexptotp,nphmax
       complex *16 mexpupphys(nd,nexptotp),mexpdownphys(nd,nexptotp)
       complex *16 ima
-      complex *16, allocatable :: cc(:),crc(:),crs(:)
+      complex *16, allocatable :: cc(:),crc(:),crs(:),cc2(:)
       integer itarg,i,j,k,l,il,ii,iphys,istart,idim
       real *8 pi2inv,rexp1,alpha,pi2,x,y,z
       real *8 h,hh,rr,binv
-      complex *16 rz,rz1,rz2
-      real *8, allocatable :: rexp(:),rexpinv(:)
+      complex *16 rz,rz1,rz2,zsc,rk
+      complex *16, allocatable :: zexp(:),zexpinv(:)
       data pi2inv/0.15915494309189535d0/
       data pi2/6.283185307179586d0/
       data ima/(0.0d0,1.0d0)/
 
-      allocate(rexp(nlam),rexpinv(nlam),cc(nphmax))
+      allocate(zexp(nlam),zexpinv(nlam),cc(nphmax),cc2(nphmax))
       allocate(crc(nphmax),crs(nphmax))
 
       binv = 1.0d0/boxsize
 
+      zsc = -ima/zk2
 
       do itarg=1,ntarg
         x = (targ(1,itarg) - center(1))/boxsize
         y = (targ(2,itarg) - center(2))/boxsize
         z = (targ(3,itarg) - center(3))/boxsize
 
-c
-c         note: using vectorized notation to ensure simd instruction use
-c
-        rexpinv = 1.0d0/rexp
-
         do i=1,nlam
-          rr = exp(-y*rlams(i))
-          rexp(i) = rr*whts(i) 
-          rexpinv(i) = whts(i)/rr
+          zexp(i) = exp(-y*rlams(i))*whts(i)
+          zexpinv(i) = exp(y*rlams(i))*whts(i)
         enddo
 
 
@@ -2724,26 +2718,28 @@ c
           h = pi2/nphys(il)
           hh = 1.0d0/nphys(il)
 
+          rk = sqrt(rlams(il)**2 + zk2**2) 
+
           do iphys = 1,nphys(il)
             alpha = (iphys-1)*h
-            crc(iphys) = rlams(il)*cos(alpha)*ima
-            crs(iphys) = rlams(il)*sin(alpha)*ima
+            crc(iphys) = rk*cos(alpha)*ima
+            crs(iphys) = rk*sin(alpha)*ima
             cc(iphys) = exp(crc(iphys)*z + crs(iphys)*x)
+            cc2(iphys) = exp(-(crc(iphys)*z + crs(iphys)*x))
           enddo
           do iphys = 1,nphys(il)
             ii = istart + iphys
             do idim=1,nd
-              rz1 = mexpupphys(idim,ii)*rexp(il)*cc(iphys)*hh
-              rz2 = mexpdownphys(idim,ii)*rexpinv(il)*conjg(cc(iphys))*
-     1              hh
+              rz1 = mexpupphys(idim,ii)*zexp(il)*cc(iphys)*hh*zsc
+              rz2 = mexpdownphys(idim,ii)*zexpinv(il)*cc2(iphys)*hh*zsc
               rz = rz1 + rz2
-              pot(idim,itarg) = pot(idim,itarg) + real(rz)
+              pot(idim,itarg) = pot(idim,itarg) + rz
               grad(idim,1,itarg) = grad(idim,1,itarg) + 
-     1            real((rz1-rz2)*crs(iphys))*binv
+     1            (rz1-rz2)*crs(iphys)*binv
               grad(idim,2,itarg) = grad(idim,2,itarg) - 
-     1            real(rz1-rz2)*binv*rlams(il)
+     1            (rz1-rz2)*binv*rlams(il)
               grad(idim,3,itarg) = grad(idim,3,itarg) + 
-     1            real((rz1-rz2)*crc(iphys))*binv
+     1            (rz1-rz2)*crc(iphys)*binv
 
             enddo
           enddo
@@ -2760,30 +2756,32 @@ c
 c
 c--------------------------------------------------------------------     
 
-      subroutine hpw_ew_eval_g(nd,center,boxsize,ntarg,targ,nlam,rlams,
-     1   whts,nphys,nexptotp,nphmax,mexpupphys,mexpdownphys,pot,grad)
+      subroutine hpw_ew_eval_g(nd,zk2,center,boxsize,ntarg,targ,nlam,
+     1  rlams,whts,nphys,nexptotp,nphmax,mexpupphys,mexpdownphys,pot,
+     2  grad)
       implicit none
       integer nd
-      real *8 center(3),boxsize,targ(3,ntarg),rlams(nlam),pot(nd,ntarg)
-      real *8 grad(nd,3,ntarg)
-      real *8 whts(nlam)
+      real *8 center(3),boxsize,targ(3,ntarg)
+      complex *16 rlams(nlam),pot(nd,ntarg)
+      complex *16 grad(nd,3,ntarg),whts(nlam),zk2
       integer ntarg,nlam,nphys(nlam),nexptotp,nphmax
       complex *16 mexpupphys(nd,nexptotp),mexpdownphys(nd,nexptotp)
       complex *16 ima
-      complex *16, allocatable :: cc(:),crc(:),crs(:)
+      complex *16, allocatable :: cc(:),crc(:),crs(:),cc2(:)
       integer itarg,i,j,k,l,il,ii,iphys,istart,idim
       real *8 pi2inv,rexp1,alpha,pi2,x,y,z
       real *8 h,hh,rr,binv
-      complex *16 rz,rz1,rz2
-      real *8, allocatable :: rexp(:),rexpinv(:)
+      complex *16 rz,rz1,rz2,rk,zsc
+      complex *16, allocatable :: zexp(:),zexpinv(:)
       data pi2inv/0.15915494309189535d0/
       data pi2/6.283185307179586d0/
       data ima/(0.0d0,1.0d0)/
 
-      allocate(rexp(nlam),rexpinv(nlam),cc(nphmax))
+      allocate(zexp(nlam),zexpinv(nlam),cc(nphmax),cc2(nphmax))
       allocate(crc(nphmax),crs(nphmax))
 
       binv = 1.0d0/boxsize
+      zsc = -ima/zk2
 
 
       do itarg=1,ntarg
@@ -2791,15 +2789,9 @@ c--------------------------------------------------------------------
         y = (targ(2,itarg) - center(2))/boxsize
         z = (targ(3,itarg) - center(3))/boxsize
 
-c
-c         note: using vectorized notation to ensure simd instruction use
-c
-        rexpinv = 1.0d0/rexp
-
         do i=1,nlam
-          rr = exp(-x*rlams(i))
-          rexp(i) = rr*whts(i) 
-          rexpinv(i) = whts(i)/rr
+          zexp(i) = exp(-x*rlams(i))*whts(i)
+          zexpinv(i) = exp(x*rlams(i))*whts(i)
         enddo
 
 
@@ -2807,27 +2799,29 @@ c
         do il=1,nlam
           h = pi2/nphys(il)
           hh = 1.0d0/nphys(il)
+          
+          rk = sqrt(rlams(il)**2 + zk2**2)
 
           do iphys = 1,nphys(il)
             alpha = (iphys-1)*h
-            crc(iphys) = rlams(il)*cos(alpha)*ima
-            crs(iphys) = rlams(il)*sin(alpha)*ima
+            crc(iphys) = rk*cos(alpha)*ima
+            crs(iphys) = rk*sin(alpha)*ima
             cc(iphys) = exp(-crc(iphys)*z + crs(iphys)*y)
+            cc2(iphys) = exp(crc(iphys)*z - crs(iphys)*y)
           enddo
           do iphys = 1,nphys(il)
             ii = istart + iphys
             do idim=1,nd
-              rz1 = mexpupphys(idim,ii)*rexp(il)*cc(iphys)*hh
-              rz2 = mexpdownphys(idim,ii)*rexpinv(il)*conjg(cc(iphys))*
-     1              hh
+              rz1 = mexpupphys(idim,ii)*zexp(il)*cc(iphys)*hh*zsc
+              rz2 = mexpdownphys(idim,ii)*zexpinv(il)*cc2(iphys)*hh*zsc
               rz = rz1 + rz2
-              pot(idim,itarg) = pot(idim,itarg) + real(rz)
+              pot(idim,itarg) = pot(idim,itarg) + rz
               grad(idim,1,itarg) = grad(idim,1,itarg) - 
-     1            real(rz1-rz2)*binv*rlams(il)
+     1            (rz1-rz2)*binv*rlams(il)
               grad(idim,2,itarg) = grad(idim,2,itarg) + 
-     1            real((rz1-rz2)*crs(iphys))*binv
+     1            (rz1-rz2)*crs(iphys)*binv
               grad(idim,3,itarg) = grad(idim,3,itarg) - 
-     1            real((rz1-rz2)*crc(iphys))*binv
+     1            (rz1-rz2)*crc(iphys)*binv
 
             enddo
           enddo

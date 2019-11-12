@@ -27,7 +27,7 @@ c
       write(*,*)
       write(*,*)
 
-      ns = 23
+      ns = 50
       nt = 27
 
       ntest = 10
@@ -74,8 +74,8 @@ c
 c
       do i=1,ns
         source(1,i) = hkrand(0)**2
-        source(2,i) = hkrand(0)**2*0
-        source(3,i) = hkrand(0)**2*0
+        source(2,i) = hkrand(0)**2
+        source(3,i) = hkrand(0)**2
 
         do idim=1,nd
           charge(idim,i) = hkrand(0) + ima*hkrand(0) 
@@ -88,8 +88,8 @@ c
 
       do i=1,nt
         targ(1,i) = hkrand(0)**2
-        targ(2,i) = hkrand(0)**2*0
-        targ(3,i) = hkrand(0)**2*0
+        targ(2,i) = hkrand(0)**2
+        targ(3,i) = hkrand(0)**2
 
         do idim=1,nd
           pottarg(idim,i) = 0
@@ -101,11 +101,11 @@ c
 
 
 
-cc       call hfmm3d_st_cd_g_vec(nd,eps,zk,ns,source,charge,
-cc     1      dipvec,pot,grad,nt,targ,pottarg,gradtarg)
+       call hfmm3d_st_cd_g_vec(nd,eps,zk,ns,source,charge,
+     1      dipvec,pot,grad,nt,targ,pottarg,gradtarg)
 
-       call hfmm3d_st_cd_p_vec(nd,eps,zk,ns,source,charge,
-     1      dipvec,pot,nt,targ,pottarg)
+cc       call hfmm3d_st_cd_p_vec(nd,eps,zk,ns,source,charge,
+cc     1      dipvec,pot,nt,targ,pottarg)
        do i=1,ntest
          do idim=1,nd
            potex(idim,i) = 0
@@ -125,7 +125,7 @@ cc     1      dipvec,pot,grad,nt,targ,pottarg,gradtarg)
      1      dipvec,ns,source,ntest,potex,gradex,thresh)
 
 
-       call h3ddirectcdg(nd,source,charge,
+       call h3ddirectcdg(nd,zk,source,charge,
      1      dipvec,ns,targ,ntest,pottargex,gradtargex,thresh)
 
        call prin2("potential at sources=*",pot,2*ntest)
@@ -146,15 +146,13 @@ cc     1      dipvec,pot,grad,nt,targ,pottarg,gradtarg)
        erra = sqrt(erra/ra)
        call prin2("error pot src=*",erra,1)
 
-       stop
-
       erra = 0
       ra = 0
       do i=1,ntest
         do j=1,3
           do idim=1,nd
-            erra = erra + (gradex(idim,j,i)-grad(idim,j,i))**2
-            ra = ra + (gradex(idim,j,i))**2
+            erra = erra + abs(gradex(idim,j,i)-grad(idim,j,i))**2
+            ra = ra + abs(gradex(idim,j,i))**2
           enddo
         enddo
       enddo
@@ -164,26 +162,31 @@ cc     1      dipvec,pot,grad,nt,targ,pottarg,gradtarg)
       call prin2('error grad src=*',erra,1)
 
 
+       call prin2("potential at targets=*",pottarg,2*ntest)
+       call prin2("potential at targets=*",pottargex,2*ntest)
 
-       erra = 0
-       ra = 0
-       do i=1,ntest
-         do idim=1,nd
-           ra = ra + pottargex(idim,i)**2
-           erra = erra + (pottargex(idim,i)-pottarg(idim,i))**2
-         enddo
-       enddo
 
-       erra = sqrt(erra/ra)
-       call prin2("error pot targ=*",erra,1)
+      erra = 0
+      ra = 0
+      do i=1,ntest
+        do idim=1,nd
+          ra = ra + abs(pottargex(idim,i))**2
+          erra = erra + abs(pottargex(idim,i)-pottarg(idim,i))**2
+          print *, i, abs(pottargex(idim,i)-pottarg(idim,i))
+        enddo
+      enddo
+
+      erra = sqrt(erra/ra)
+      call prin2("error pot targ=*",erra,1)
 
       erra = 0
       ra = 0
       do i=1,ntest
         do j=1,3
           do idim=1,nd
-            erra = erra + (gradtargex(idim,j,i)-gradtarg(idim,j,i))**2
-            ra = ra + (gradtargex(idim,j,i))**2
+            erra = erra + abs(gradtargex(idim,j,i)-
+     1         gradtarg(idim,j,i))**2
+            ra = ra + abs(gradtargex(idim,j,i))**2
           enddo
         enddo
       enddo
