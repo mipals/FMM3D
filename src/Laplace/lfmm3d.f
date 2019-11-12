@@ -92,7 +92,7 @@ c                supported
        integer ifpgh,ifpghtarg
 
        integer ntarg,nsource
-
+       
 
        double precision source(3,*),targ(3,*)
        double precision charge(nd,*)
@@ -186,8 +186,6 @@ c
        else
          ndiv = nsource+ntarg
        endif
-
-       ndiv = 3
 
 
 c
@@ -291,6 +289,8 @@ c
       allocate(scales(0:nlevels),nterms(0:nlevels))
       do ilev = 0,nlevels
         scales(ilev) = boxsize(ilev)
+        scales(ilev) = 1.0d0
+        scales(ilev) = 1.1d0
       enddo
 c
 cc      initialize potential and gradient at source
@@ -620,13 +620,6 @@ c     PW variables
       double complex, allocatable :: mexpf1(:,:),mexpf2(:,:)
       double complex, allocatable ::
      1       mexpp1(:,:),mexpp2(:,:),mexppall(:,:,:)
-      double complex, allocatable :: iboxlexp(:,:)
-      double complex, allocatable :: iboxmpexp(:,:,:,:)
-      double precision iboxsubcenters(3,8)
-      double precision, allocatable :: iboxpot(:,:)
-      double precision, allocatable :: iboxsrc(:,:)
-      integer, allocatable :: isrcbox(:)
-      integer iboxfl(2,8)
 
       double complex, allocatable :: tmp(:,:,:)
 
@@ -665,7 +658,7 @@ c     Prints timing breakdown and other things if ifprint=1.
 c     Prints timing breakdown, list information, 
 c     and other things if ifprint=2.
 c       
-      ifprint=1
+      ifprint=0
       
 
 c     Initialize routines for plane wave mp loc translation
@@ -750,12 +743,6 @@ c     Compute total number of plane waves
       allocate(mexpf1(nd,nexptot),mexpf2(nd,nexptot),
      1   mexpp1(nd,nexptotp))
       allocate(mexpp2(nd,nexptotp),mexppall(nd,nexptotp,16))
-
-      allocate(isrcbox(ndiv))
-      allocate(iboxlexp(nd*(nmax+1)*(2*nmax+1),8))
-      allocate(iboxmpexp(nd,nexptotp,6,8))
-      allocate(iboxpot(nd,ndiv))
-      allocate(iboxsrc(3,ndiv))
 
 c
 cc      NOTE: there can be some memory savings here
@@ -1117,8 +1104,8 @@ C$OMP END PARALLEL DO
 
       do ilev=2,nlevels
 
-         rscpow(0) = 1.0d0/rscales(ilev)
-         rtmp = 1.0d0/rscales(ilev)**2
+         rscpow(0) = 1.0d0/boxsize(ilev)
+         rtmp = rscales(ilev)/boxsize(ilev)
          do i=1,nterms(ilev)
             rscpow(i) = rscpow(i-1)*rtmp
          enddo
@@ -1195,7 +1182,7 @@ c
 c          
 c
          rscpow(0) = 1.0d0
-         rtmp = 1.0d0/rscales(ilev)**2
+         rtmp = rscales(ilev)/boxsize(ilev)
          do i=1,nterms(ilev)
             rscpow(i) = rscpow(i-1)*rtmp
          enddo
@@ -1242,7 +1229,8 @@ C$OMP$PRIVATE(npts0,nlist3,ctmp)
      7         ne1,e1,ne3,e3,ne5,e5,ne7,e7,nw2,w2,nw4,w4,nw6,w6,nw8,w8)
 
                call processudexp(nd,ibox,ilev,nboxes,centers,
-     1         itree(ipointer(4)),rscales(ilev),nterms(ilev),
+     1         itree(ipointer(4)),rscales(ilev),boxsize(ilev),
+     2         nterms(ilev),
      2         iaddr,rmlexp,rlams,whts,
      3         nlams,nfourier,nphysical,nthmax,nexptot,nexptotp,mexp,
      4         nuall,uall,nu1234,u1234,ndall,dall,nd5678,d5678,
@@ -1251,7 +1239,8 @@ C$OMP$PRIVATE(npts0,nlist3,ctmp)
      7         yshift,zshift,fexpback,rlsc,rscpow)
                
                call processnsexp(nd,ibox,ilev,nboxes,centers,
-     1         itree(ipointer(4)),rscales(ilev),nterms(ilev),
+     1         itree(ipointer(4)),rscales(ilev),boxsize(ilev),
+     2         nterms(ilev),
      2         iaddr,rmlexp,rlams,whts,
      3         nlams,nfourier,nphysical,nthmax,nexptot,nexptotp,mexp,
      4         nnall,nall,nn1256,n1256,nn12,n12,nn56,n56,nsall,sall,
@@ -1263,7 +1252,8 @@ C$OMP$PRIVATE(npts0,nlist3,ctmp)
      9         fexpback,rlsc,rscpow)
                
                call processewexp(nd,ibox,ilev,nboxes,centers,
-     1         itree(ipointer(4)),rscales(ilev),nterms(ilev),
+     1         itree(ipointer(4)),rscales(ilev),boxsize(ilev),
+     2         nterms(ilev),
      2         iaddr,rmlexp,rlams,whts,
      3         nlams,nfourier,nphysical,nthmax,nexptot,nexptotp,mexp,
      4         neall,eall,ne1357,e1357,ne13,e13,ne57,e57,ne1,e1,
@@ -1280,8 +1270,6 @@ C$OMP$PRIVATE(npts0,nlist3,ctmp)
      9         fexpback,rlsc,rscpow)
 
             endif
-            
-ccc merge step 6(list 3) to m2l
 
             nlist3 = itree(ipointer(24)+ibox-1)
             if(nlist3.gt.0.and.npts.gt.0) then
@@ -1400,11 +1388,7 @@ ccc merge step 6(list 3) to m2l
      3               pottarg(1,istart),gradtarg(1,1,istart))
                  endif
                endif
-
-
-
             endif
-
          enddo
 C$OMP END PARALLEL DO         
       enddo
@@ -1461,25 +1445,10 @@ C$        time2=omp_get_wtime()
       timeinfo(5) = time2-time1
 
 
-
       if(ifprint.ge.1)
-     $    call prinf('=== step 6 (mp eval) ===*',i,0)
-      call cpu_time(time1)
-C$        time1=omp_get_wtime()
+     $    call prinf('=== step 6 (eval lo) ===*',i,0)
 
-c
-c       already taken care in step 4
-c 
-   
-      call cpu_time(time2)
-C$        time2=omp_get_wtime()
-      timeinfo(6) = time2-time1
-
-
-      if(ifprint.ge.1)
-     $    call prinf('=== step 7 (eval lo) ===*',i,0)
-
-c     ... step 7, evaluate all local expansions
+c     ... step 6, evaluate all local expansions
 c
 
       call cpu_time(time1)
@@ -1594,11 +1563,11 @@ C$OMP END PARALLEL DO
     
       call cpu_time(time2)
 C$        time2=omp_get_wtime()
-      timeinfo(7) = time2 - time1
+      timeinfo(6) = time2 - time1
 
 
       if(ifprint .ge. 1)
-     $     call prinf('=== STEP 8 (direct) =====*',i,0)
+     $     call prinf('=== STEP 7 (direct) =====*',i,0)
       call cpu_time(time1)
 C$        time1=omp_get_wtime()
 
@@ -1625,8 +1594,6 @@ C$OMP$PRIVATE(jstart,jend)
 
                jstart = itree(ipointer(10)+jbox-1)
                jend = itree(ipointer(11)+jbox-1)
-
-cc               call prinf('nexpc=*',nexpc,1)
 
                call lfmm3dexpc_direct(nd,jstart,jend,istarte,
      1         iende,sourcesort,ifcharge,chargesort,ifdipole,
@@ -1934,10 +1901,10 @@ C$OMP END PARALLEL DO
  
       call cpu_time(time2)
 C$        time2=omp_get_wtime()
-      timeinfo(8) = time2-time1
-      if(ifprint.ge.1) call prin2('timeinfo=*',timeinfo,8)
+      timeinfo(7) = time2-time1
+      if(ifprint.ge.1) call prin2('timeinfo=*',timeinfo,7)
       d = 0
-      do i = 1,8
+      do i = 1,7
          d = d + timeinfo(i)
       enddo
 

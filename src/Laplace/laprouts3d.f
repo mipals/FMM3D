@@ -180,7 +180,7 @@ c
         ephi(1)=ephi1
         d = 1.0d0/r
         fr(0) = d
-        d = d/rscale
+        d = d*rscale
         fr(1) = fr(0)*d
         do i=2,nterms+1
           fr(i) = fr(i-1)*d
@@ -323,14 +323,14 @@ c
         sphi = dimag(ephi1)
         d = 1.0d0/r
         fr(0) = d
-        d = d/rscale
+        d = d*rscale
         fr(1) = fr(0)*d
         do i=2,nterms+1
           fr(i) = fr(i-1)*d
           ephi(i)=ephi(i-1)*ephi1
         enddo
         do i=0,nterms
-          frder(i) = -(i+1.0d0)*fr(i+1)*rscale
+          frder(i) = -(i+1.0d0)*fr(i+1)/rscale
         enddo
 c
 c    get the associated Legendre functions:
@@ -495,7 +495,7 @@ c
         ephi(1)=ephi1
         ephi(-1)=dconjg(ephi1)
         fr(0) = 1.0d0
-        d = r*rscale
+        d = r/rscale
         fr(1) = d
         do i=2,nterms+1
           fr(i) = fr(i-1)*d
@@ -644,7 +644,7 @@ c
         ephi(1)=ephi1
         ephi(-1)=dconjg(ephi1)
         fr(0) = 1.0d0
-        d = r*rscale
+        d = r/rscale
         fr(1) = d
         do i=2,nterms+1
           fr(i) = fr(i-1)*d
@@ -653,7 +653,7 @@ c
         enddo
         frder(0) = 0.0d0
         do i=1,nterms
-          frder(i) = i*fr(i-1)*rscale
+          frder(i) = i*fr(i-1)/rscale
         enddo
 c
 c     compute coefficients in change of variables from spherical
@@ -719,7 +719,7 @@ c
         enddo
 
         do n=1,nterms
-          fruse = fr(n-1)*rscale
+          fruse = fr(n-1)/rscale
           ur = ynm(n,0)*frder(n)
           utheta = -fruse*ynmd(n,0)*stheta
           ux = ur*rx + utheta*thetax 
@@ -850,7 +850,7 @@ c
         ephi(1)=ephi1
         ephi(-1)=dconjg(ephi1)
         fr(0) = 1.0d0
-        d = r*rscale
+        d = r/rscale
         fr(1) = d
         do i=2,nterms+1
           fr(i) = fr(i-1)*d
@@ -859,7 +859,7 @@ c
         enddo
         frder(0) = 0.0d0
         do i=1,nterms
-          frder(i) = i*fr(i-1)*rscale
+          frder(i) = i*fr(i-1)/rscale
         enddo
 c
 c     compute coefficients in change of variables from spherical
@@ -926,7 +926,7 @@ c
         enddo
 
         do n=1,nterms
-          fruse = fr(n-1)*rscale
+          fruse = fr(n-1)/rscale
           ur = ynm(n,0)*frder(n)
           utheta = -fruse*ynmd(n,0)*stheta
           ux = ur*rx + utheta*thetax 
@@ -1065,7 +1065,7 @@ c
         cphi = dreal(ephi1)
         sphi = dimag(ephi1)
         fr(0) = 1.0d0
-        d = r*rscale
+        d = r/rscale
         fr(1) = fr(0)*d
         do i=2,nterms+1
           fr(i) = fr(i-1)*d
@@ -1197,7 +1197,7 @@ c     compute exp(eye*m*phi) array
 c
         ephi(0)=done
         ephi(1)=ephi1
-        d = r*rscale
+        d = r/rscale
         fr(0) = 1.0d0
         fr(1) = fr(0)*d
         do i=2,nterms+1
@@ -1206,7 +1206,7 @@ c
         enddo
         frder(0) = 0
         do i=1,nterms
-          frder(i) = i*fr(i-1)*rscale
+          frder(i) = i*fr(i-1)/rscale
         enddo
 c
 c    get the associated Legendre functions:
@@ -1375,7 +1375,7 @@ c
         ephi(-1)=dconjg(ephi1)
         d = 1.0d0/r
         fr(0) = d
-        d = d/rscale
+        d = d*rscale
         fr(1) = fr(0)*d
         do i=2,nterms+1
           fr(i) = fr(i-1)*d
@@ -1524,7 +1524,7 @@ c
         ephi(-1)=dconjg(ephi1)
         d = 1.0d0/r
         fr(0) = d
-        d = d/rscale
+        d = d*rscale
         fr(1) = fr(0)*d
         do i=2,nterms+1
           fr(i) = fr(i-1)*d
@@ -1532,7 +1532,7 @@ c
           ephi(-i)=ephi(-i+1)*ephi(-1)
         enddo
         do i=0,nterms
-          frder(i) = -(i+1.0d0)*fr(i+1)*rscale
+          frder(i) = -(i+1.0d0)*fr(i+1)/rscale
         enddo
 c
 c     compute coefficients in change of variables from spherical
@@ -1723,7 +1723,7 @@ c
         ephi(-1)=dconjg(ephi1)
         d = 1.0d0/r
         fr(0) = d
-        d = d/rscale
+        d = d*rscale
         fr(1) = fr(0)*d
         do i=2,nterms+1
           fr(i) = fr(i-1)*d
@@ -1731,7 +1731,7 @@ c
           ephi(-i)=ephi(-i+1)*ephi(-1)
         enddo
         do i=0,nterms
-          frder(i) = -(i+1.0d0)*fr(i+1)*rscale
+          frder(i) = -(i+1.0d0)*fr(i+1)/rscale
         enddo
 c
 c     compute coefficients in change of variables from spherical

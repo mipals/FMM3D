@@ -197,8 +197,6 @@ c
          ndiv = nsource+ntarg
        endif
 
-       ndiv = 3
-
 
 
 
@@ -307,7 +305,10 @@ c     scaling factor for multipole and local expansions at all levels
 c
       allocate(scales(0:nlevels),nterms(0:nlevels))
       do ilev = 0,nlevels
-        scales(ilev) = boxsize(ilev)
+       scales(ilev) = boxsize(ilev)*abs(zk)
+       if(scales(ilev).gt.1) scales(ilev) = 1
+
+cc       scales(ilev) = boxsize(ilev)
       enddo
 
 c
@@ -664,12 +665,12 @@ c     temp variables
       double precision, allocatable :: xnodes(:),wts(:)
       double precision radius
       integer nquad2
-      integer max_nodes
-      double precision ctmp(3)
+      integer maX_nodes
       double precision pi
       
       integer istart0,istart1,istartm1,nprin
       double precision rtmp1,rtmp2,rtmp3,rtmp4
+      double precision ctmp(3)
       double complex ima
 
       integer *8 bigint
@@ -701,10 +702,7 @@ c      which satisfy |r| < thresh
 c      where r is the disance between them
 
       thresh = 2.0d0**(-52)*boxsize(0)
-
-      call prini(6,13)
-      write(13,*) thresh
-
+      
 
       allocate(zeyep(-nmax:nmax),zmone(0:2*nmax))
       
@@ -878,6 +876,7 @@ C$OMP END PARALLEL DO
 C$    time2=omp_get_wtime()
       timeinfo(1)=time2-time1
 
+
       if(ifprint.ge.1)
      $   call prinf('=== STEP 2 (form lo) ===*',i,0)
       call cpu_time(time1)
@@ -1021,7 +1020,7 @@ C$    time2=omp_get_wtime()
 
 
       if(ifprint.ge.1)
-     $    call prinf('=== Step 4 (mp to loc) ===*',i,0)
+     $    call prinf('=== Step 4 (mp to loc + mpeval) ===*',i,0)
 c      ... step 3, convert multipole expansions into local
 c       expansions
 
@@ -1103,7 +1102,8 @@ c     generate rotation matrices and carray
             call getpwrotmat(nn,carray,rdplus,rdminus,rdsq3,rdmsq3,dc)
 
 
-            call hrlscini(rlsc,nlams,rlams,zk2,nterms(ilev))
+            call hrlscini(rlsc,nlams,rlams,rscales(ilev),zk2,
+     1         nterms(ilev))
             call hmkexps(rlams,nlams,nphysical,nexptotp,zk2,xshift,
      1           yshift,zshift)
             
@@ -1131,8 +1131,13 @@ c
 cc         compute powers of scaling parameter
 c          for rescaling the multipole expansions
 c
+c          note: the scaling for helmholtz has been eliminated
+c         since it is taken care in the scaling of the legendre
+c         functions
+c
           
-           r1 = rscales(ilev)
+cc           r1 = rscales(ilev)
+           r1 = 1.0d0
            rsc(0) = 1.0d0
            do i=1,nterms(ilev)
              rsc(i) = rsc(i-1)*r1
@@ -1153,7 +1158,7 @@ C$OMP$PRIVATE(ibox,istart,iend,npts,tmp,mexpf1,mexpf2,tmp2)
 c           rescale multipole expansion
                   call mpscale(nd,nterms(ilev),rmlexp(iaddr(1,ibox)),
      1               rsc,tmp)
-
+                
                   call hmpoletoexp(nd,tmp,nterms(ilev),
      1                  nlams,nfourier,nexptot,mexpf1,mexpf2,rlsc) 
 
@@ -1260,7 +1265,8 @@ C$OMP$PRIVATE(npts0,nlist3,ctmp)
 
 
                   call hprocessudexp(nd,zk2,ibox,ilev,nboxes,centers,
-     1            itree(ipointer(4)),rscales(ilev),nterms(ilev),
+     1            itree(ipointer(4)),rscales(ilev),boxsize(ilev),
+     2            nterms(ilev),
      2            iaddr,rmlexp,rlams,whts,
      3            nlams,nfourier,nphysical,nthmax,nexptot,nexptotp,mexp,
      4            nuall,uall,nu1234,u1234,ndall,dall,nd5678,d5678,
@@ -1270,7 +1276,8 @@ C$OMP$PRIVATE(npts0,nlist3,ctmp)
 
 
                   call hprocessnsexp(nd,zk2,ibox,ilev,nboxes,centers,
-     1            itree(ipointer(4)),rscales(ilev),nterms(ilev),
+     1            itree(ipointer(4)),rscales(ilev),boxsize(ilev),
+     2            nterms(ilev),
      2            iaddr,rmlexp,rlams,whts,
      3            nlams,nfourier,nphysical,nthmax,nexptot,nexptotp,mexp,
      4            nnall,nall,nn1256,n1256,nn12,n12,nn56,n56,nsall,sall,
@@ -1282,7 +1289,8 @@ C$OMP$PRIVATE(npts0,nlist3,ctmp)
      9            fexpback,rlsc)
 
                   call hprocessewexp(nd,zk2,ibox,ilev,nboxes,centers,
-     1            itree(ipointer(4)),rscales(ilev),nterms(ilev),
+     1            itree(ipointer(4)),rscales(ilev),boxsize(ilev),
+     2            nterms(ilev),
      2            iaddr,rmlexp,rlams,whts,
      3            nlams,nfourier,nphysical,nthmax,nexptot,nexptotp,mexp,
      4            neall,eall,ne1357,e1357,ne13,e13,ne57,e57,ne1,e1,
@@ -1299,7 +1307,10 @@ C$OMP$PRIVATE(npts0,nlist3,ctmp)
      9            fexpback,rlsc)
                endif
 
-ccc merge step 6(list 3) to m2l
+
+c
+c      handle mp eval
+c
 
             nlist3 = itree(ipointer(24)+ibox-1)
             if(nlist3.gt.0.and.npts.gt.0) then
@@ -1432,6 +1443,7 @@ C$OMP END PARALLEL DO
          else
             nquad2 = nterms(ilev)*2.2
             nquad2 = max(6,nquad2)
+
             ifinit2 = 1
             ier = 0
 
@@ -1480,7 +1492,101 @@ C$OMP$PRIVATE(ibox,istart,iend,npts,nlist2,i,jbox)
                   enddo
                endif
            enddo
-C$OMP END PARALLEL DO        
+C$OMP END PARALLEL DO     
+
+c
+c
+c         handle list 3 interactions at this level
+c
+
+
+           if(ifpgh.eq.1) then         
+C$OMP PARALLEL DO DEFAULT(SHARED)
+C$OMP$PRIVATE(ibox,nlist3,istart,iend,npts,i,jbox)
+C$OMP$SCHEDULE(DYNAMIC)
+             do ibox=laddr(1,ilev-1),laddr(2,ilev-1)
+               nlist3 = itree(ipointer(24)+ibox-1)
+               istart = itree(ipointer(10)+ibox-1)
+               iend = itree(ipointer(11)+ibox-1)
+
+               npts = iend-istart+1
+
+               do i=1,nlist3
+                 jbox = itree(ipointer(25)+(ibox-1)*mnlist3+i-1)
+                 call h3dmpevalp(nd,zk,rscales(ilev),centers(1,jbox),
+     1            rmlexp(iaddr(1,jbox)),nterms(ilev),
+     2            sourcesort(1,istart),npts,pot(1,istart),wlege,nlege,
+     3            thresh)
+               enddo
+             enddo
+C$OMP END PARALLEL DO          
+           endif
+
+           if(ifpgh.eq.2) then
+C$OMP PARALLEL DO DEFAULT(SHARED)
+C$OMP$PRIVATE(ibox,nlist3,istart,iend,npts,i,jbox)
+C$OMP$SCHEDULE(DYNAMIC)
+             do ibox=laddr(1,ilev-1),laddr(2,ilev-1)
+               nlist3 = itree(ipointer(24)+ibox-1)
+               istart = itree(ipointer(10)+ibox-1)
+               iend = itree(ipointer(11)+ibox-1)
+
+               npts = iend-istart+1
+
+               do i=1,nlist3
+                 jbox = itree(ipointer(25)+(ibox-1)*mnlist3+i-1)
+                 call h3dmpevalg(nd,zk,rscales(ilev),centers(1,jbox),
+     1             rmlexp(iaddr(1,jbox)),nterms(ilev),
+     2             sourcesort(1,istart),npts,pot(1,istart),
+     3             grad(1,1,istart),wlege,nlege,thresh)
+               enddo
+             enddo
+C$OMP END PARALLEL DO          
+           endif
+
+           if(ifpghtarg.eq.1) then         
+C$OMP PARALLEL DO DEFAULT(SHARED)
+C$OMP$PRIVATE(ibox,nlist3,istart,iend,npts,i,jbox)
+C$OMP$SCHEDULE(DYNAMIC)
+             do ibox=laddr(1,ilev-1),laddr(2,ilev-1)
+               nlist3 = itree(ipointer(24)+ibox-1)
+               istart = itree(ipointer(12)+ibox-1)
+               iend = itree(ipointer(13)+ibox-1)
+
+               npts = iend-istart+1
+
+               do i=1,nlist3
+                 jbox = itree(ipointer(25)+(ibox-1)*mnlist3+i-1)
+                 call h3dmpevalp(nd,zk,rscales(ilev),centers(1,jbox),
+     1             rmlexp(iaddr(1,jbox)),nterms(ilev),
+     2             targsort(1,istart),npts,pottarg(1,istart),
+     3             wlege,nlege,thresh)
+               enddo
+             enddo
+C$OMP END PARALLEL DO          
+           endif
+
+           if(ifpghtarg.eq.2) then
+C$OMP PARALLEL DO DEFAULT(SHARED)
+C$OMP$PRIVATE(ibox,nlist3,istart,iend,npts,i,jbox)
+C$OMP$SCHEDULE(DYNAMIC)
+             do ibox=laddr(1,ilev-1),laddr(2,ilev-1)
+               nlist3 = itree(ipointer(24)+ibox-1)
+               istart = itree(ipointer(12)+ibox-1)
+               iend = itree(ipointer(13)+ibox-1)
+
+               npts = iend-istart+1
+
+               do i=1,nlist3
+                 jbox = itree(ipointer(25)+(ibox-1)*mnlist3+i-1)
+                 call h3dmpevalg(nd,zk,rscales(ilev),centers(1,jbox),
+     1             rmlexp(iaddr(1,jbox)),nterms(ilev),
+     2             targsort(1,istart),npts,pottarg(1,istart),
+     3             gradtarg(1,1,istart),wlege,nlege,thresh)
+               enddo
+             enddo
+C$OMP END PARALLEL DO
+           endif
          endif
       enddo
       call cpu_time(time2)
@@ -1544,20 +1650,7 @@ C$        time2=omp_get_wtime()
 
 
       if(ifprint.ge.1)
-     $    call prinf('=== step 6 (mp eval) ===*',i,0)
-      call cpu_time(time1)
-C$        time1=omp_get_wtime()
-
-c
-c       taken care in step 4
-c
-
-      call cpu_time(time2)
-C$        time2=omp_get_wtime()
-      timeinfo(6) = time2-time1
-
-      if(ifprint.ge.1)
-     $    call prinf('=== step 7 (eval lo) ===*',i,0)
+     $    call prinf('=== step 6 (eval lo) ===*',i,0)
 
 c     ... step 7, evaluate all local expansions
 c
@@ -1680,11 +1773,11 @@ C$OMP END PARALLEL DO
     
       call cpu_time(time2)
 C$        time2=omp_get_wtime()
-      timeinfo(7) = time2 - time1
+      timeinfo(6) = time2 - time1
 
 
       if(ifprint .ge. 1)
-     $     call prinf('=== STEP 8 (direct) =====*',i,0)
+     $     call prinf('=== STEP 7 (direct) =====*',i,0)
       call cpu_time(time1)
 C$        time1=omp_get_wtime()
 
@@ -2004,8 +2097,8 @@ C$OMP END PARALLEL DO
  
       call cpu_time(time2)
 C$        time2=omp_get_wtime()
-      timeinfo(8) = time2-time1
-      if(ifprint.ge.1) call prin2('timeinfo=*',timeinfo,8)
+      timeinfo(7) = time2-time1
+      if(ifprint.ge.1) call prin2('timeinfo=*',timeinfo,7)
       d = 0
       do i = 1,8
          d = d + timeinfo(i)
