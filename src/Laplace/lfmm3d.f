@@ -1307,6 +1307,9 @@ C$OMP END PARALLEL DO
             rscpow(i) = rscpow(i-1)*rtmp
          enddo
 
+coo   generate ilev+1 list4 type box plane wave expansion
+coo   end of generate ilev+1 list4
+
 C$OMP PARALLEL DO DEFAULT (SHARED)
 C$OMP$PRIVATE(ibox,istart,iend,npts,tmp,mexpf1,mexpf2,mptemp)
          do ibox=laddr(1,ilev),laddr(2,ilev)

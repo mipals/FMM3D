@@ -5102,3 +5102,40 @@ c     end of the array
       return
       end
 c------------------------------------------------------------------      
+c--------------------------------------------------------------------     
+c
+c
+c
+c--------------------------------------------------------------------      
+
+      subroutine getlist4pwdir(dir,censrc,centrg,boxsize)
+c-------------------------------------------------------------------
+      implicit none
+ccc   input/output variables
+      integer dir
+      double precision censrc(3)
+      double precision centrg(3)
+      double precision boxsize
+ccc   scopded function variables
+      double precision sepdist
+
+      sepdist=1.51d0*boxsize
+
+      if(censrc(3)-centrg(3).ge.sepdist) then
+        dir=1
+      else if(censrc(3)-centrg(3).le.-sepdist) then
+        dir=2
+      else if(censrc(2)-centrg(2).ge.sepdist) then
+        dir=3
+      else if(censrc(2)-centrg(2).le.-sepdist) then
+        dir=4
+      else if(censrc(1)-centrg(1).ge.sepdist) then
+        dir=5
+      else if(censrc(1)-centrg(1).le.-sepdist) then
+        dir=6
+      else
+        dir=0
+      end if
+
+      return
+      end
