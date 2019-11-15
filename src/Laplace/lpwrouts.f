@@ -2713,5 +2713,400 @@ c
 c
 c
 c
+c--------------------------------------------------------------------      
 c
 c
+c--------------------------------------------------------------------
+      subroutine processgboxudexp(nd,mexpugbox,mexpdgbox,jbox,
+     1           nexptotp,mexpuall,mexpdall,
+     2           xs,ys,zs)
+c--------------------------------------------------------------------
+c      process up down expansions for box ibox
+c-------------------------------------------------------------------
+      implicit none
+      integer idim,nd
+      integer jbox,i
+      integer nexptotp
+      double complex mexpugbox(nd,nexptotp)
+      double complex mexpdgbox(nd,nexptotp)
+      double complex mexpuall(nd,nexptotp)
+      double complex mexpdall(nd,nexptotp)
+      double complex xs(-5:5,nexptotp),ys(-5:5,nexptotp)
+      double precision zs(5,nexptotp)
+      double precision rtmp
+      double complex ztmp,ztmp2
+
+c
+cc       move all ghost box contributions to the child 1
+c
+
+c      add contributions due to child 1
+      if(jbox.gt.1) then
+        do i=1,nexptotp
+          do idim=1,nd
+            mexpuall(idim,i) = mexpuall(idim,i) + mexpugbox(idim,i)
+            mexpdall(idim,i) = mexpdall(idim,i) + mexpdgbox(idim,i)
+          enddo
+        enddo
+      endif
+      
+c      add contributions due to child 2
+      if(jbox.gt.2) then
+        do i=1,nexptotp
+          do idim=1,nd
+            mexpuall(idim,i) = mexpuall(idim,i) + 
+     1                         mexpugbox(idim,i)*xs(-1,i)
+            mexpdall(idim,i) = mexpdall(idim,i) + 
+     1                         mexpdgbox(idim,i)*xs(1,i)
+          enddo
+        enddo
+      endif
+  
+c      add contributions due to child 3
+      if(jbox.gt.3) then
+        do i=1,nexptotp
+          do idim=1,nd
+            mexpuall(idim,i) = mexpuall(idim,i) +
+     1                         mexpugbox(idim,i)*ys(-1,i)
+            mexpdall(idim,i) = mexpdall(idim,i) + 
+     1                         mexpdgbox(idim,i)*ys(1,i)
+          enddo
+        enddo
+      endif
+
+c      add contributions due to child 4
+      if(jbox.gt.4) then
+        do i=1,nexptotp
+          ztmp = ys(1,i)*xs(1,i)
+          ztmp2 = ys(-1,i)*xs(-1,i)
+          do idim=1,nd
+            mexpuall(idim,i) = mexpuall(idim,i) + 
+     1                         mexpugbox(idim,i)*ztmp2
+            mexpdall(idim,i) = mexpdall(idim,i) + 
+     1                         mexpdgbox(idim,i)*ztmp
+          enddo
+        enddo
+      endif
+
+c      add contributions due to child 5
+      if(jbox.gt.5) then
+        do i=1,nexptotp
+          rtmp = 1.0d0/zs(1,i)
+          do idim=1,nd
+            mexpuall(idim,i) = mexpuall(idim,i) + 
+     1                         mexpugbox(idim,i)*rtmp
+            mexpdall(idim,i) = mexpdall(idim,i) + 
+     1                         mexpdgbox(idim,i)*zs(1,i)
+          enddo
+        enddo
+      endif
+
+c      add contributions due to child 6
+      if(jbox.gt.6) then
+        do i=1,nexptotp
+          ztmp = xs(1,i)*zs(1,i)
+          ztmp2 = xs(-1,i)/zs(1,i)
+          do idim=1,nd
+            mexpuall(idim,i) = mexpuall(idim,i) + 
+     1                         mexpugbox(idim,i)*ztmp2
+            mexpdall(idim,i) = mexpdall(idim,i) + 
+     1                         mexpdgbox(idim,i)*ztmp
+          enddo
+        enddo
+      endif
+
+c      add contributions due to child 7
+      if(jbox.gt.7) then
+        do i=1,nexptotp
+          ztmp = zs(1,i)*ys(1,i)
+          ztmp2 = ys(-1,i)/zs(1,i)
+          do idim=1,nd
+            mexpuall(idim,i) = mexpuall(idim,i) + 
+     1                         mexpugbox(idim,i)*ztmp2
+            mexpdall(idim,i) = mexpdall(idim,i) + 
+     1                         mexpdgbox(idim,i)*ztmp
+          enddo
+        enddo
+      endif
+
+c      add contributions due to child 8
+      if(jbox.gt.8) then
+        do i=1,nexptotp
+          ztmp = zs(1,i)*ys(1,i)*xs(1,i)
+          ztmp2 = xs(-1,i)*ys(-1,i)/zs(1,i)
+          do idim=1,nd
+            mexpuall(idim,i) = mexpuall(idim,i) + 
+     1                         mexpugbox(idim,i)*ztmp2
+            mexpdall(idim,i) = mexpdall(idim,i) + 
+     1                         mexpdgbox(idim,i)*ztmp
+          enddo
+        enddo
+      endif
+
+      return
+      end
+c--------------------------------------------------------------------      
+c
+c
+c--------------------------------------------------------------------
+      subroutine processgboxnsexp(nd,mexpngbox,mexpsgbox,jbox,
+     1           nexptotp,mexpnall,mexpsall,
+     2           xs,ys,zs)
+c--------------------------------------------------------------------
+c      process up down expansions for box ibox
+c-------------------------------------------------------------------
+      implicit none
+      integer idim,nd
+      integer jbox,i
+      integer nexptotp
+      double complex mexpngbox(nd,nexptotp)
+      double complex mexpsgbox(nd,nexptotp)
+      double complex mexpnall(nd,nexptotp)
+      double complex mexpsall(nd,nexptotp)
+      double complex xs(-5:5,nexptotp),ys(-5:5,nexptotp)
+      double precision zs(5,nexptotp)
+      double precision rtmp
+      double complex ztmp,ztmp2
+
+c
+cc       move all ghost box contributions to the child 1
+c
+
+c      add contributions due to child 1
+      if(jbox.gt.1) then
+        do i=1,nexptotp
+          do idim=1,nd
+            mexpnall(idim,i) = mexpnall(idim,i) + mexpngbox(idim,i)
+            mexpsall(idim,i) = mexpsall(idim,i) + mexpsgbox(idim,i)
+          enddo
+        enddo
+      endif
+      
+c      add contributions due to child 2
+      if(jbox.gt.2) then
+        do i=1,nexptotp
+          do idim=1,nd
+            mexpnall(idim,i) = mexpnall(idim,i) + 
+     1                         mexpngbox(idim,i)*ys(-1,i)
+            mexpsall(idim,i) = mexpsall(idim,i) + 
+     1                         mexpsgbox(idim,i)*ys(1,i)
+          enddo
+        enddo
+      endif
+  
+c      add contributions due to child 3
+      if(jbox.gt.3) then
+        do i=1,nexptotp
+          rtmp = 1/zs(1,i)
+          do idim=1,nd
+            mexpnall(idim,i) = mexpnall(idim,i) +
+     1                         mexpngbox(idim,i)*rtmp
+            mexpsall(idim,i) = mexpsall(idim,i) + 
+     1                         mexpsgbox(idim,i)*zs(1,i)
+          enddo
+        enddo
+      endif
+
+c      add contributions due to child 4
+      if(jbox.gt.4) then
+        do i=1,nexptotp
+          ztmp = ys(1,i)*zs(1,i)
+          ztmp2 = ys(-1,i)/zs(1,i)
+          do idim=1,nd
+            mexpnall(idim,i) = mexpnall(idim,i) + 
+     1                         mexpngbox(idim,i)*ztmp2
+            mexpsall(idim,i) = mexpsall(idim,i) + 
+     1                         mexpsgbox(idim,i)*ztmp
+          enddo
+        enddo
+      endif
+
+c      add contributions due to child 5
+      if(jbox.gt.5) then
+        do i=1,nexptotp
+          do idim=1,nd
+            mexpnall(idim,i) = mexpnall(idim,i) + 
+     1                         mexpngbox(idim,i)*xs(-1,i)
+            mexpsall(idim,i) = mexpsall(idim,i) + 
+     1                         mexpsgbox(idim,i)*xs(1,i)
+          enddo
+        enddo
+      endif
+
+c      add contributions due to child 6
+      if(jbox.gt.6) then
+        do i=1,nexptotp
+          ztmp = ys(1,i)*xs(1,i)
+          ztmp2 = ys(-1,i)*xs(-1,i)
+          do idim=1,nd
+            mexpnall(idim,i) = mexpnall(idim,i) + 
+     1                         mexpngbox(idim,i)*ztmp2
+            mexpsall(idim,i) = mexpsall(idim,i) + 
+     1                         mexpsgbox(idim,i)*ztmp
+          enddo
+        enddo
+      endif
+
+c      add contributions due to child 7
+      if(jbox.gt.7) then
+        do i=1,nexptotp
+          ztmp = xs(1,i)*zs(1,i)
+          ztmp2 = xs(-1,i)/zs(1,i)
+          do idim=1,nd
+            mexpnall(idim,i) = mexpnall(idim,i) + 
+     1                         mexpngbox(idim,i)*ztmp2
+            mexpsall(idim,i) = mexpsall(idim,i) + 
+     1                         mexpsgbox(idim,i)*ztmp
+          enddo
+        enddo
+      endif
+
+c      add contributions due to child 8
+      if(jbox.gt.8) then
+        do i=1,nexptotp
+          ztmp = ys(1,i)*zs(1,i)*xs(1,i)
+          ztmp2 = ys(-1,i)*xs(-1,i)/zs(1,i)
+          do idim=1,nd
+            mexpnall(idim,i) = mexpnall(idim,i) + 
+     1                         mexpngbox(idim,i)*ztmp2
+            mexpsall(idim,i) = mexpsall(idim,i) + 
+     1                         mexpsgbox(idim,i)*ztmp
+          enddo
+        enddo
+      endif
+
+      return
+      end
+c--------------------------------------------------------------------      
+c
+c
+c--------------------------------------------------------------------
+      subroutine processgboxewexp(nd,mexpegbox,mexpwgbox,jbox,
+     1           nexptotp,mexpeall,mexpwall,
+     2           xs,ys,zs)
+c--------------------------------------------------------------------
+c      process up down expansions for box ibox
+c-------------------------------------------------------------------
+      implicit none
+      integer idim,nd
+      integer jbox,i
+      integer nexptotp
+      double complex mexpegbox(nd,nexptotp)
+      double complex mexpwgbox(nd,nexptotp)
+      double complex mexpeall(nd,nexptotp)
+      double complex mexpwall(nd,nexptotp)
+      double complex xs(-5:5,nexptotp),ys(-5:5,nexptotp)
+      double precision zs(5,nexptotp)
+      double precision rtmp
+      double complex ztmp,ztmp2
+
+c
+cc       move all ghost box contributions to the child 1
+c
+
+c      add contributions due to child 1
+      if(jbox.gt.1) then
+        do i=1,nexptotp
+          do idim=1,nd
+            mexpeall(idim,i) = mexpeall(idim,i) + mexpegbox(idim,i)
+            mexpwall(idim,i) = mexpwall(idim,i) + mexpwgbox(idim,i)
+          enddo
+        enddo
+      endif
+      
+c      add contributions due to child 2
+      if(jbox.gt.2) then
+        do i=1,nexptotp
+          rtmp = 1/zs(1,i)
+          do idim=1,nd
+            mexpeall(idim,i) = mexpeall(idim,i) + 
+     1                         mexpegbox(idim,i)*rtmp
+            mexpwall(idim,i) = mexpwall(idim,i) + 
+     1                         mexpwgbox(idim,i)*zs(1,i)
+          enddo
+        enddo
+      endif
+  
+c      add contributions due to child 3
+      if(jbox.gt.3) then
+        do i=1,nexptotp
+          do idim=1,nd
+            mexpeall(idim,i) = mexpeall(idim,i) +
+     1                         mexpegbox(idim,i)*ys(-1,i)
+            mexpwall(idim,i) = mexpwall(idim,i) + 
+     1                         mexpwgbox(idim,i)*ys(1,i)
+          enddo
+        enddo
+      endif
+
+c      add contributions due to child 4
+      if(jbox.gt.4) then
+        do i=1,nexptotp
+          ztmp = zs(1,i)*ys(1,i)
+          ztmp2 = ys(-1,i)/zs(1,i)
+          do idim=1,nd
+            mexpeall(idim,i) = mexpeall(idim,i) + 
+     1                         mexpegbox(idim,i)*ztmp2
+            mexpwall(idim,i) = mexpwall(idim,i) + 
+     1                         mexpwgbox(idim,i)*ztmp
+          enddo
+        enddo
+      endif
+
+c      add contributions due to child 5
+      if(jbox.gt.5) then
+        do i=1,nexptotp
+          do idim=1,nd
+            mexpeall(idim,i) = mexpeall(idim,i) + 
+     1                         mexpegbox(idim,i)*xs(1,i)
+            mexpwall(idim,i) = mexpwall(idim,i) + 
+     1                         mexpwgbox(idim,i)*xs(-1,i)
+          enddo
+        enddo
+      endif
+
+c      add contributions due to child 6
+      if(jbox.gt.6) then
+        do i=1,nexptotp
+          ztmp = xs(-1,i)*zs(1,i)
+          ztmp2 = xs(1,i)/zs(1,i)
+          do idim=1,nd
+            mexpeall(idim,i) = mexpeall(idim,i) + 
+     1                         mexpegbox(idim,i)*ztmp2
+            mexpwall(idim,i) = mexpwall(idim,i) + 
+     1                         mexpwgbox(idim,i)*ztmp
+          enddo
+        enddo
+      endif
+
+c      add contributions due to child 7
+      if(jbox.gt.7) then
+        do i=1,nexptotp
+          ztmp = xs(-1,i)*ys(1,i)
+          ztmp2 = xs(1,i)*ys(-1,i)
+          do idim=1,nd
+            mexpeall(idim,i) = mexpeall(idim,i) + 
+     1                         mexpegbox(idim,i)*ztmp2
+            mexpwall(idim,i) = mexpwall(idim,i) + 
+     1                         mexpwgbox(idim,i)*ztmp
+          enddo
+        enddo
+      endif
+
+c      add contributions due to child 8
+      if(jbox.gt.8) then
+        do i=1,nexptotp
+          ztmp = xs(-1,i)*ys(1,i)*zs(1,i)
+          ztmp2 = xs(1,i)*ys(-1,i)/zs(1,i)
+          do idim=1,nd
+            mexpeall(idim,i) = mexpeall(idim,i) + 
+     1                         mexpegbox(idim,i)*ztmp2
+            mexpwall(idim,i) = mexpwall(idim,i) + 
+     1                         mexpwgbox(idim,i)*ztmp
+          enddo
+        enddo
+      endif
+
+      return
+      end
+c--------------------------------------------------------------------      
