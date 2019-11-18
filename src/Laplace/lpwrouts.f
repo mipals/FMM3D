@@ -3115,6 +3115,223 @@ c--------------------------------------------------------------------
       subroutine l3dlist4pw(ilev,nd,nexptotp,nexptot,nterms,nmax,
      1           nlams,nlege,nthmax,nlevels,
      1           ifcharge,ifdipole,list4,itree,laddr,ipointer,
+     1           nfourier,nphysical,rdminus,rdplus,rlsc,
+     2           rscales,boxsize,zshift,sourcesort,chargesort,
+     3           dipvecsort,centers,xshift,yshift,fexpe,fexpo,
+     4           mexpf1,mexpf2,tmp,mptemp,wlege,rlams,rscpow,
+     5           pgboxwexp,cntlist4)
+c--------------------------------------------------------------------
+c-------------------------------------------------------------------
+      implicit none
+ccc   input/output variables
+      integer ilev
+      integer nd
+      integer nexptotp,nexptot
+      integer nterms,nmax,nlams,nlege,nthmax
+      integer nlevels,cntlist4
+      integer ifcharge,ifdipole
+      integer list4(*),itree(*),laddr(2,0:nlevels)
+      integer *8 ipointer(32)
+      integer nfourier(*)
+      integer nphysical(*)
+      double precision rscales
+      double precision boxsize
+      double precision zshift(5,nexptotp)
+      double precision mptemp(*)
+      double precision wlege(*)
+      double precision rlams(*)
+      double precision rscpow(*)
+      double precision sourcesort(3,*)
+      double precision chargesort(nd,*)
+      double precision dipvecsort(nd,3,*)
+      double precision centers(3,*)
+      double precision rdminus(0:nmax,0:nmax,-nmax:nmax)
+      double precision rdplus(0:nmax,0:nmax,-nmax:nmax)
+      double precision rlsc(0:nmax,0:nmax,nlams)
+      double complex xshift(-5:5,nexptotp),yshift(-5:5,nexptotp)
+      double complex fexpe(*),fexpo(*)
+      double complex mexpf1(nd,nexptot),mexpf2(nd,nexptot)
+      double complex tmp(nd,0:nmax,-nmax:nmax)
+      double complex pgboxwexp(nd,nexptotp,cntlist4,6)
+ccc   scoped function variables
+      integer ibox,jbox,i,idim,nlist3
+      integer istart,iend,npts
+      integer jstart,jend,npts0
+      integer gboxfl(2,8)
+      integer, allocatable :: gboxind(:)
+      double precision time1,time2,omp_get_wtime
+      double precision gboxsubcenters(3,8)
+      double precision, allocatable ::  gboxsort(:,:)
+      double precision, allocatable ::  gboxcgsort(:,:)
+      double precision, allocatable ::  gboxdpsort(:,:,:)
+      double complex, allocatable :: gboxmexp(:,:)
+      double complex, allocatable :: gboxwexp(:,:,:,:)
+
+
+c
+c     count number of boxes are in list4 of this level
+      call cpu_time(time1)
+C$    time1=omp_get_wtime()
+      print *,"=== l3dlist4pw ==="
+      allocate(gboxwexp(nd,nexptotp,8,6))
+C      print *,"good here"
+c     form mexp for all list4 type box at first ghost box center
+C$OMP PARALLEL DO DEFAULT(SHARED)
+C$OMP$PRIVATE(ibox,istart,iend,jstart,jend,npts,npts0)
+C$OMP$PRIVATE(gboxind,gboxsort,gboxcgsort,gboxdpsort)
+C$OMP$PRIVATE(gboxmexp)
+C      print *,"good here0"
+      do ibox=laddr(1,ilev),laddr(2,ilev)
+C        print *,"good here1"
+        if(list4(ibox).gt.0) then
+          istart=itree(ipointer(10)+ibox-1)
+          iend=itree(ipointer(11)+ibox-1)
+          npts = iend-istart+1
+C          print *,"good here2"
+          if(npts.gt.0) then
+            allocate(gboxind(npts))
+            allocate(gboxsort(3,npts))
+            allocate(gboxmexp(nd*(nterms+1)*(2*nterms+1),8))
+C            print *,"good here3"
+            call subdividebox(sourcesort(1,istart),npts,
+     1           centers(1,ibox),boxsize,
+     2           gboxind,gboxfl,gboxsubcenters)
+C            print *,"good here4"
+            call dreorderf(3,npts,sourcesort(1,istart),
+     1           gboxsort,gboxind)
+C            print *,"good here5"
+            if(ifcharge.eq.1) then
+              allocate(gboxcgsort(nd,npts))
+              call dreorderf(nd,npts,chargesort(1,istart),
+     1             gboxcgsort,gboxind)
+            endif
+            if(ifdipole.eq.1) then
+              allocate(gboxdpsort(nd,3,npts))
+              call dreorderf(3*nd,npts,dipvecsort(1,1,istart),
+     1             gboxdpsort,gboxind)
+            endif
+C            print *,"good here6"
+cccccccccccccc  bad code, note gboxmexp is an array not scalar
+            gboxmexp=0
+            do i=1,8
+              if(gboxfl(1,i).gt.0) then
+                jstart=gboxfl(1,i)
+                jend=gboxfl(2,i)
+                npts0=jend-jstart+1
+                jbox=list4(ibox)
+                if(npts0.gt.0) then
+                  if(ifcharge.eq.1.and.ifdipole.eq.0) then
+                    call l3dformmpc(nd,rscales,
+     1                   gboxsort(1,jstart),
+     2                   gboxcgsort(1,jstart),
+     3                   npts0,gboxsubcenters(1,i),nterms,
+     4                   gboxmexp(1,i),wlege,nlege)          
+                  endif
+                  if(ifcharge.eq.0.and.ifdipole.eq.1) then
+                    call l3dformmpd(nd,rscales,
+     1                   gboxsort(1,jstart),
+     2                   gboxdpsort(1,1,jstart),
+     3                   npts0,gboxsubcenters(1,i),nterms,
+     4                   gboxmexp(1,i),wlege,nlege)          
+                  endif
+                  if(ifcharge.eq.1.and.ifdipole.eq.1) then
+                    call l3dformmpcd(nd,rscales,
+     1                   gboxsort(1,jstart),
+     2                   gboxcgsort(1,jstart),
+     3                   gboxdpsort(1,1,jstart),
+     4                   npts0,gboxsubcenters(1,i),nterms,
+     5                   gboxmexp(1,i),wlege,nlege)          
+                  endif
+C                  print *,gboxmexp
+
+C                  print *,"good here7"
+ccc    convert to plane wave
+                  call mpscale(nd,nterms,gboxmexp(1,i),
+     1                 rscpow,tmp)
+C                  print *,"good here8"
+c
+cc                process up down for current box
+c
+                  call mpoletoexp(nd,tmp,nterms,nlams,nfourier,
+     1                 nexptot,mexpf1,mexpf2,rlsc)
+C                  print *,"good here9"
+
+                  call ftophys(nd,mexpf1,nlams,rlams,nfourier,nphysical,
+     1                 nthmax,gboxwexp(1,1,i,1),fexpe,fexpo)
+C                  print *,"good here10"
+
+                  call ftophys(nd,mexpf2,nlams,rlams,nfourier,nphysical,
+     1                 nthmax,gboxwexp(1,1,i,2),fexpe,fexpo)
+C                  print *,"good here11"
+
+                  call processgboxudexp(nd,gboxwexp(1,1,i,1),
+     1                 gboxwexp(1,1,i,2),i,nexptotp,
+     2                 pgboxwexp(1,1,jbox,1),
+     3                 pgboxwexp(1,1,jbox,2),
+     4                 xshift,yshift,zshift)
+C                  print *,"good here12"
+c
+cc                process north-south for current box
+c
+                  call rotztoy(nd,nterms,tmp,mptemp,rdminus)
+                  call mpoletoexp(nd,mptemp,nterms,nlams,nfourier,
+     1                 nexptot,mexpf1,mexpf2,rlsc)
+
+                  call ftophys(nd,mexpf1,nlams,rlams,nfourier,nphysical,
+     1                 nthmax,gboxwexp(1,1,i,3),fexpe,fexpo)
+
+                  call ftophys(nd,mexpf2,nlams,rlams,nfourier,nphysical,
+     1                 nthmax,gboxwexp(1,1,i,4),fexpe,fexpo)
+
+                  call processgboxnsexp(nd,gboxwexp(1,1,i,3),
+     1                 gboxwexp(1,1,i,4),i,nexptotp,
+     2                 pgboxwexp(1,1,jbox,3),
+     3                 pgboxwexp(1,1,jbox,4),
+     4                 xshift,yshift,zshift)
+
+c
+cc                process east-west for current box
+
+                  call rotztox(nd,nterms,tmp,mptemp,rdplus)
+                  call mpoletoexp(nd,mptemp,nterms,nlams,nfourier,
+     1                 nexptot,mexpf1,mexpf2,rlsc)
+
+                  call ftophys(nd,mexpf1,nlams,rlams,nfourier,nphysical,
+     1                 nthmax,gboxwexp(1,1,i,5),fexpe,fexpo)
+
+
+                  call ftophys(nd,mexpf2,nlams,rlams,nfourier,nphysical,
+     1                 nthmax,gboxwexp(1,1,i,6),fexpe,fexpo)
+                
+                  call processgboxnsexp(nd,gboxwexp(1,1,i,5),
+     1                 gboxwexp(1,1,i,6),i,nexptotp,
+     2                 pgboxwexp(1,1,jbox,5),
+     3                 pgboxwexp(1,1,jbox,6),
+     4                 xshift,yshift,zshift)
+                endif
+              endif
+            enddo
+C            print *,gboxwexp
+            deallocate(gboxind,gboxsort,gboxcgsort,gboxdpsort)
+            deallocate(gboxmexp)
+          endif
+        endif
+      enddo
+C$OMP END PARALLEL DO
+      call cpu_time(time2)
+C$    time2=omp_get_wtime()
+C      print *,pgboxwexp
+      print *,"mexp list4 time:",time2-time1
+
+      return
+      end
+c--------------------------------------------------------------------      
+c--------------------------------------------------------------------   c
+c
+c--------------------------------------------------------------------
+      subroutine l3dlist4shift(ilev,nd,nexptotp,nexptot,nterms,nmax,
+     1           nlams,nlege,nthmax,nlevels,
+     1           ifcharge,ifdipole,list4,itree,laddr,ipointer,
      1           nfourier,nphysical,
      2           rscales,boxsize,zshift,sourcesort,chargesort,
      3           dipvecsort,centers,xshift,yshift,fexpe,fexpo,
@@ -3168,150 +3385,6 @@ ccc   scoped function variables
       double complex, allocatable :: gboxwexp(:,:,:,:)
 
 
-c
-c     count number of boxes are in list4 of this level
-      call cpu_time(time1)
-C$    time1=omp_get_wtime()
-      print *,"=== l3dlist4pw ==="
-      cntlist4=0
-      do ibox=laddr(1,ilev),laddr(2,ilev)
-        nlist3=itree(ipointer(24)+ibox-1)
-        if(nlist3.gt.0) then
-          cntlist4=cntlist4+1
-          list4(ibox)=cntlist4
-        endif
-      enddo
-      print *,"cntlist4:",cntlist4
-      allocate(pgboxwexp(nd,nexptotp,cntlist4,6))
-
-c     form mexp for all list4 type box at first ghost box center
-C$OMP PARALLEL DO DEFAULT(SHARED)
-C$OMP$PRIVATE(ibox,istart,iend,jstart,jend,npts,npts0)
-C$OMP$PRIVATE(gboxind,gboxsort,gboxcgsort,gboxdpsort)
-C$OMP$PRIVATE(gboxmexp)
-      do ibox=laddr(1,ilev),laddr(2,ilev)
-        if(list4(ibox).gt.0) then
-          istart=itree(ipointer(10)+ibox-1)
-          iend=itree(ipointer(11)+ibox-1)
-          npts = iend-istart+1
-          if(npts.gt.0) then
-            allocate(gboxind(npts))
-            allocate(gboxsort(3,npts))
-            allocate(gboxmexp(nd*(nterms+1)*(2*nterms+1),8))
-            call subdividebox(sourcesort(1,istart),npts,
-     1           centers(1,ibox),boxsize,
-     2           gboxind,gboxfl,gboxsubcenters)
-            call dreorderf(3,npts,sourcesort(1,istart),
-     1           gboxsort,gboxind)
-            if(ifcharge.eq.1) then
-              allocate(gboxcgsort(nd,npts))
-              call dreorderf(nd,npts,chargesort(1,istart),
-     1             gboxcgsort,gboxind)
-            endif
-            if(ifdipole.eq.1) then
-              allocate(gboxdpsort(nd,3,npts))
-              call dreorderf(3*nd,npts,dipvecsort(1,1,istart),
-     1             gboxdpsort,gboxind)
-            endif
-cccccccccccccc  bad code, note gboxmexp is an array not scalar
-            gboxmexp=0
-            do i=1,8
-              if(gboxfl(1,i).gt.0) then
-                jstart=gboxfl(1,i)
-                jend=gboxfl(2,i)
-                npts0=jend-jstart+1
-                jbox=list4(ibox)
-                if(npts0.gt.0) then
-                  if(ifcharge.eq.1.and.ifdipole.eq.0) then
-                    call l3dformmpc(nd,rscales,
-     1                   gboxsort(1,jstart),
-     2                   gboxcgsort(1,jstart),
-     3                   npts0,gboxsubcenters(1,i),nterms,
-     4                   gboxmexp(1,i),wlege,nlege)          
-                  endif
-                  if(ifcharge.eq.0.and.ifdipole.eq.1) then
-                    call l3dformmpd(nd,rscales,
-     1                   gboxsort(1,jstart),
-     2                   gboxdpsort(1,1,jstart),
-     3                   npts0,gboxsubcenters(1,i),nterms,
-     4                   gboxmexp(1,i),wlege,nlege)          
-                  endif
-                  if(ifcharge.eq.1.and.ifdipole.eq.1) then
-                    call l3dformmpcd(nd,rscales,
-     1                   gboxsort(1,jstart),
-     2                   gboxcgsort(1,jstart),
-     3                   gboxdpsort(1,1,jstart),
-     4                   npts0,gboxsubcenters(1,i),nterms,
-     5                   gboxmexp(1,i),wlege,nlege)          
-                  endif
-
-ccc    convert to plane wave
-                  call mpscale(nd,nterms,gboxmexp(1,i),
-     1                 rscpow,tmp)
-c
-cc                process up down for current box
-c
-                  call mpoletoexp(nd,tmp,nterms,nlams,nfourier,
-     1                 nexptot,mexpf1,mexpf2,rlsc)
-
-                  call ftophys(nd,mexpf1,nlams,rlams,nfourier,nphysical,
-     1                 nthmax,gboxwexp(1,1,i,1),fexpe,fexpo)
-
-                  call ftophys(nd,mexpf2,nlams,rlams,nfourier,nphysical,
-     1                 nthmax,gboxwexp(1,1,i,2),fexpe,fexpo)
-
-                  call processgboxudexp(nd,gboxwexp(1,1,i,1),
-     1                 gboxwexp(1,1,i,2),i,nexptotp,
-     2                 pgboxwexp(1,1,jbox,1),pgboxwexp(1,1,jbox,2),
-     3                 xshift,yshift,zshift)
-c
-cc                process north-south for current box
-c
-                  call rotztoy(nd,nterms,tmp,mptemp,rdminus)
-                  call mpoletoexp(nd,mptemp,nterms,nlams,nfourier,
-     1                 nexptot,mexpf1,mexpf2,rlsc)
-
-                  call ftophys(nd,mexpf1,nlams,rlams,nfourier,nphysical,
-     1                 nthmax,gboxwexp(1,1,i,3),fexpe,fexpo)
-
-                  call ftophys(nd,mexpf2,nlams,rlams,nfourier,nphysical,
-     1                 nthmax,gboxwexp(1,1,i,4),fexpe,fexpo)
-
-                  call processgboxnsexp(nd,gboxwexp(1,1,i,3),
-     1                 gboxwexp(1,1,i,4),i,nexptotp,
-     2                 pgboxwexp(1,1,jbox,3),pgboxwexp(1,1,jbox,4),
-     3                 xshift,yshift,zshift)
-
-c
-cc                process east-west for current box
-
-                  call rotztox(nd,nterms,tmp,mptemp,rdplus)
-                  call mpoletoexp(nd,mptemp,nterms,nlams,nfourier,
-     1                 nexptot,mexpf1,mexpf2,rlsc)
-
-                  call ftophys(nd,mexpf1,nlams,rlams,nfourier,nphysical,
-     1                 nthmax,gboxwexp(1,1,i,5),fexpe,fexpo)
-
-
-                  call ftophys(nd,mexpf2,nlams,rlams,nfourier,nphysical,
-     1                 nthmax,gboxwexp(1,1,i,6),fexpe,fexpo)
-                
-                  call processgboxnsexp(nd,gboxwexp(1,1,i,5),
-     1                 gboxwexp(1,1,i,6),i,nexptotp,
-     2                 pgboxwexp(1,1,jbox,5),pgboxwexp(1,1,jbox,6),
-     3                 xshift,yshift,zshift)
-                endif
-              endif
-            enddo
-            deallocate(gboxind,gboxsort,gboxcgsort,gboxdpsort)
-            deallocate(gboxmexp)
-          endif
-        endif
-      enddo
-C$OMP END PARALLEL DO
-      call cpu_time(time2)
-C$    time2=omp_get_wtime()
-      print *,"mexp list4 time:",time2-time1
 
       return
       end

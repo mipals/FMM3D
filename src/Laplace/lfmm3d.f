@@ -648,19 +648,21 @@ c     list 3 variables
 c     end of list 3 variables
 c     list 4 variables
       integer cntlist4
-      integer, allocatable :: list4(:), ilist4(:)
+      integer, allocatable :: list4(:),ilist4(:),list4test(:)
       double complex, allocatable :: mexplist4(:,:,:,:)
       double precision, allocatable :: cenlist4(:,:)
       double complex, allocatable :: gboxlexp(:,:)
       double complex, allocatable :: gboxmexp(:,:)
       double complex, allocatable :: gboxwexp(:,:,:,:)
       double complex, allocatable :: pgboxwexp(:,:,:,:)
+      double complex, allocatable :: pgboxwexptest(:,:,:,:)
       double precision  gboxsubcenters(3,8)
       double precision, allocatable :: gboxsort(:,:)
       integer, allocatable :: gboxind(:)
       integer gboxfl(2,8)
       double precision, allocatable :: gboxcgsort(:,:)
       double precision, allocatable :: gboxdpsort(:,:,:)
+      integer jboxtest
 c     end of list 4 variables
 
       integer *8 bigint
@@ -781,9 +783,11 @@ c
       endif
 
       allocate(list4(nboxes))
+      allocate(list4test(nboxes))
       allocate(ilist4(nboxes))
       do i=1,nboxes
         list4(i)=0
+        list4test(i)=0
         ilist4(i)=0
       enddo
       allocate(gboxwexp(nd,nexptotp,8,6))
@@ -1045,6 +1049,7 @@ ccccccccccccccccccccccccccccccc
          enddo
 C$OMP END PARALLEL DO
       enddo
+C      deallocate(pgboxwexp)
       call cpu_time(time2)
 C$    time2=omp_get_wtime()
       print *,"mexp list4 time:",time2-time1
@@ -1307,8 +1312,42 @@ C$OMP END PARALLEL DO
             rscpow(i) = rscpow(i-1)*rtmp
          enddo
 
-coo   generate ilev+1 list4 type box plane wave expansion
-coo   end of generate ilev+1 list4
+ccc   generate ilev+1 list4 type box plane wave expansion
+         cntlist4=0
+         do ibox=laddr(1,ilev-1),laddr(2,ilev-1)
+            nlist3=itree(ipointer(24)+ibox-1)
+            if(nlist3.gt.0) then
+              cntlist4=cntlist4+1
+              list4test(ibox)=cntlist4
+            endif
+         enddo
+         print *,"cntlist4:",cntlist4
+         allocate(pgboxwexptest(nd,nexptotp,cntlist4,6))
+         pgboxwexptest=0
+         call l3dlist4pw(ilev-1,nd,nexptotp,nexptot,nterms(ilev),
+     1        nmax,nlams,nlege,nthmax,nlevels,ifcharge,ifdipole,
+     2        list4test,itree,laddr,ipointer,nfourier,nphysical,
+     3        rdminus,rdplus,rlsc,
+     4        rscales(ilev),boxsize(ilev),zshift,sourcesort,
+     5        chargesort,dipvecsort,centers,xshift,yshift,fexpe,
+     6        fexpo,mexpf1,mexpf2,tmp,mptemp,wlege,rlams,rscpow,
+     7        pgboxwexptest,cntlist4)
+
+         do ibox=laddr(1,ilev-1),laddr(2,ilev-1)
+            jbox=list4(ibox)
+            jboxtest=list4test(ibox)
+            if(jbox.gt.0) then
+            print *,"jboxs:",jbox,jboxtest
+            do i=1,1
+              do idim=1,1
+                print *,pgboxwexp(idim,i,jbox,1),
+     1           pgboxwexptest(idim,i,jboxtest,1)
+              enddo
+            enddo
+            endif
+         enddo
+         deallocate(pgboxwexptest)
+ccc   end of generate ilev+1 list4
 
 C$OMP PARALLEL DO DEFAULT (SHARED)
 C$OMP$PRIVATE(ibox,istart,iend,npts,tmp,mexpf1,mexpf2,mptemp)
