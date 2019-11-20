@@ -5118,23 +5118,66 @@ ccc   input/output variables
       double precision boxsize
 ccc   scopded function variables
       double precision sepdist
+      double precision ctmp(3)
+      ctmp(1) = censrc(1)-boxsize/2.0d0
+      ctmp(2) = censrc(2)-boxsize/2.0d0
+      ctmp(3) = censrc(3)-boxsize/2.0d0
 
       sepdist=1.51d0*boxsize
 
-      if(censrc(3)-centrg(3).ge.sepdist) then
+      if(ctmp(3)-centrg(3).ge.sepdist) then
         dir=1
-      else if(censrc(3)-centrg(3).le.-sepdist) then
+      else if(ctmp(3)-centrg(3).le.-sepdist) then
         dir=2
-      else if(censrc(2)-centrg(2).ge.sepdist) then
+      else if(ctmp(2)-centrg(2).ge.sepdist) then
         dir=3
-      else if(censrc(2)-centrg(2).le.-sepdist) then
+      else if(ctmp(2)-centrg(2).le.-sepdist) then
         dir=4
-      else if(censrc(1)-centrg(1).ge.sepdist) then
+      else if(ctmp(1)-centrg(1).ge.sepdist) then
         dir=5
-      else if(censrc(1)-centrg(1).le.-sepdist) then
+      else if(ctmp(1)-centrg(1).le.-sepdist) then
         dir=6
       else
         dir=0
+        print *,"dir:",dir
+      end if
+      dir=0
+
+      return
+      end
+      
+      subroutine getlist4pwdirtest(dir,censrc,centrg,boxsize)
+c-------------------------------------------------------------------
+      implicit none
+ccc   input/output variables
+      integer dir
+      double precision censrc(3)
+      double precision centrg(3)
+      double precision boxsize
+ccc   scopded function variables
+      double precision sepdist
+      double precision ctmp(3)
+      ctmp(1) = censrc(1)-boxsize/2.0d0
+      ctmp(2) = censrc(2)-boxsize/2.0d0
+      ctmp(3) = censrc(3)-boxsize/2.0d0
+
+      sepdist=1.51d0*boxsize
+
+      if(ctmp(3)-centrg(3).ge.sepdist) then
+        dir=1
+      else if(ctmp(3)-centrg(3).le.-sepdist) then
+        dir=2
+      else if(ctmp(2)-centrg(2).ge.sepdist) then
+        dir=3
+      else if(ctmp(2)-centrg(2).le.-sepdist) then
+        dir=4
+      else if(ctmp(1)-centrg(1).ge.sepdist) then
+        dir=5
+      else if(ctmp(1)-centrg(1).le.-sepdist) then
+        dir=6
+      else
+        dir=0
+        print *,"dir:",dir
       end if
 
       return

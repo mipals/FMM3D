@@ -667,7 +667,8 @@ c--------------------------------------------------------------------
      2           nphysical,nthmax,nexptot,nexptotp,mexp,nuall,uall,
      3           nu1234,u1234,ndall,dall,nd5678,d5678,mexpup,mexpdown,
      4           mexpupphys,mexpdownphys,mexpuall,mexpu5678,mexpdall,
-     5           mexpd1234,xs,ys,zs,fexpback,rlsc,rscpow)
+     5           mexpd1234,xs,ys,zs,fexpback,rlsc,rscpow,
+     6           pgboxwexp,cntlist4,list4,nlist4s,ilist4,mnlist4)
 c--------------------------------------------------------------------
 c      process up down expansions for box ibox
 c-------------------------------------------------------------------
@@ -693,9 +694,12 @@ c-------------------------------------------------------------------
       double precision zs(5,nexptotp)
       double precision rlsc(0:nterms,0:nterms,nlams),rscpow(0:nterms)
       double complex fexpback(*)
+      integer cntlist4,list4(*),nlist4s(*),ilist4(*),mnlist4
+      integer nlist4
+      double complex pgboxwexp(nd,nexptotp,cntlist4,6)
 
 c      temp variables
-      integer jbox,ctr,ii,jj,i,ix,iy,iz,j
+      integer jbox,ctr,ii,jj,i,ix,iy,iz,j,kbox
       double precision rtmp,rtmp2
       double complex ztmp,zmul,ztmp2
      
@@ -796,11 +800,19 @@ c      add contributions due to child 1
             mexpdownphys(idim,i) = mexpdall(idim,i) + mexpd1234(idim,i)
           enddo
         enddo
+        
+        nlist4=nlist4s(jbox)
+        do i=1,nlist4
+          kbox=ilist4((jbox-1)*mnlist4+i)
+          call l3dlist4shift(nd,mexpupphys,mexpdownphys,pgboxwexp,
+     1         list4(kbox),nexptotp,xs,ys,zs,
+     2         centers(1,kbox),centers(1,jbox),bs,1)
+        enddo
 
-       call phystof(nd,mexpup,nlams,nfourier,nphysical,
+        call phystof(nd,mexpup,nlams,nfourier,nphysical,
      1               mexpupphys,fexpback)
  
-       call phystof(nd,mexpdown,nlams,nfourier,nphysical,
+        call phystof(nd,mexpdown,nlams,nfourier,nphysical,
      1              mexpdownphys,fexpback)
 
         call exptolocal(nd,tloc,nterms,rlams,whts,
@@ -823,6 +835,14 @@ c      add contributions due to child 2
           enddo
         enddo
  
+        nlist4=nlist4s(jbox)
+        do i=1,nlist4
+          kbox=ilist4((jbox-1)*mnlist4+i)
+          call l3dlist4shift(nd,mexpupphys,mexpdownphys,pgboxwexp,
+     1         list4(kbox),nexptotp,xs,ys,zs,
+     2         centers(1,kbox),centers(1,jbox),bs,1)
+        enddo
+
         call phystof(nd,mexpup,nlams,nfourier,nphysical,
      1               mexpupphys,fexpback)
  
@@ -849,6 +869,14 @@ c      add contributions due to child 3
             mexpdownphys(idim,i) = (mexpdall(idim,i) + 
      1          mexpd1234(idim,i))*ys(-1,i)
           enddo
+        enddo
+
+        nlist4=nlist4s(jbox)
+        do i=1,nlist4
+          kbox=ilist4((jbox-1)*mnlist4+i)
+          call l3dlist4shift(nd,mexpupphys,mexpdownphys,pgboxwexp,
+     1         list4(kbox),nexptotp,xs,ys,zs,
+     2         centers(1,kbox),centers(1,jbox),bs,1)
         enddo
 
         call phystof(nd,mexpup,nlams,nfourier,nphysical,
@@ -881,6 +909,14 @@ c      add contributions due to child 4
           enddo
         enddo
 
+        nlist4=nlist4s(jbox)
+        do i=1,nlist4
+          kbox=ilist4((jbox-1)*mnlist4+i)
+          call l3dlist4shift(nd,mexpupphys,mexpdownphys,pgboxwexp,
+     1         list4(kbox),nexptotp,xs,ys,zs,
+     2         centers(1,kbox),centers(1,jbox),bs,1)
+        enddo
+
         call phystof(nd,mexpup,nlams,nfourier,nphysical,
      1               mexpupphys,fexpback)
  
@@ -908,6 +944,14 @@ c      add contributions due to child 5
      1           mexpu5678(idim,i))*zs(1,i)
             mexpdownphys(idim,i) = mexpdall(idim,i)*rtmp
           enddo
+        enddo
+
+        nlist4=nlist4s(jbox)
+        do i=1,nlist4
+          kbox=ilist4((jbox-1)*mnlist4+i)
+          call l3dlist4shift(nd,mexpupphys,mexpdownphys,pgboxwexp,
+     1         list4(kbox),nexptotp,xs,ys,zs,
+     2         centers(1,kbox),centers(1,jbox),bs,1)
         enddo
 
         call phystof(nd,mexpup,nlams,nfourier,nphysical,
@@ -941,6 +985,14 @@ c      add contributions due to child 6
           enddo
         enddo
 
+        nlist4=nlist4s(jbox)
+        do i=1,nlist4
+          kbox=ilist4((jbox-1)*mnlist4+i)
+          call l3dlist4shift(nd,mexpupphys,mexpdownphys,pgboxwexp,
+     1         list4(kbox),nexptotp,xs,ys,zs,
+     2         centers(1,kbox),centers(1,jbox),bs,1)
+        enddo
+
         call phystof(nd,mexpup,nlams,nfourier,nphysical,
      1               mexpupphys,fexpback)
  
@@ -972,6 +1024,14 @@ c      add contributions due to child 7
           enddo
         enddo
 
+        nlist4=nlist4s(jbox)
+        do i=1,nlist4
+          kbox=ilist4((jbox-1)*mnlist4+i)
+          call l3dlist4shift(nd,mexpupphys,mexpdownphys,pgboxwexp,
+     1         list4(kbox),nexptotp,xs,ys,zs,
+     2         centers(1,kbox),centers(1,jbox),bs,1)
+        enddo
+
         call phystof(nd,mexpup,nlams,nfourier,nphysical,
      1               mexpupphys,fexpback)
  
@@ -999,6 +1059,14 @@ c      add contributions due to child 8
      1         mexpu5678(idim,i))*ztmp
             mexpdownphys(idim,i) = mexpdall(idim,i)*ztmp2
           enddo
+        enddo
+
+        nlist4=nlist4s(jbox)
+        do i=1,nlist4
+          kbox=ilist4((jbox-1)*mnlist4+i)
+          call l3dlist4shift(nd,mexpupphys,mexpdownphys,pgboxwexp,
+     1         list4(kbox),nexptotp,xs,ys,zs,
+     2         centers(1,kbox),centers(1,jbox),bs,1)
         enddo
 
         call phystof(nd,mexpup,nlams,nfourier,nphysical,
@@ -1030,7 +1098,8 @@ c--------------------------------------------------------------------
      5           mexpdown,mexpupphys,mexpdownphys,
      6           mexpnall,mexpn3478,mexpn34,mexpn78,mexpsall,
      7           mexps1256,mexps12,mexps56,rdplus,
-     8           xs,ys,zs,fexpback,rlsc,rscpow)
+     8           xs,ys,zs,fexpback,rlsc,rscpow,
+     9           pgboxwexp,cntlist4,list4,nlist4s,ilist4,mnlist4)
 c--------------------------------------------------------------------
 c      create up down expansions for box ibox
 c-------------------------------------------------------------------
@@ -1062,9 +1131,12 @@ c-------------------------------------------------------------------
       double precision zs(5,nexptotp)
       double precision rlsc(0:nterms,0:nterms,nlams),rscpow(0:nterms)
       double complex fexpback(*)
+      integer cntlist4,list4(*),nlist4s(*),ilist4(*),mnlist4
+      integer nlist4
+      double complex pgboxwexp(nd,nexptotp,cntlist4,6)
 
 c      temp variables
-      integer jbox,ctr,ii,jj,i,ix,iy,iz,j,idim
+      integer jbox,ctr,ii,jj,i,ix,iy,iz,j,idim,kbox
       double complex ztmp,zmul,ztmp2
       double precision rtmp,rtmp2
     
@@ -1230,6 +1302,14 @@ c      add contributions due to child 1
           enddo
         enddo
 
+        nlist4=nlist4s(jbox)
+        do i=1,nlist4
+          kbox=ilist4((jbox-1)*mnlist4+i)
+          call l3dlist4shift(nd,mexpupphys,mexpdownphys,pgboxwexp,
+     1         list4(kbox),nexptotp,xs,ys,zs,
+     2         centers(1,kbox),centers(1,jbox),bs,2)
+        enddo
+
         call phystof(nd,mexpup,nlams,nfourier,nphysical,
      1               mexpupphys,fexpback)
  
@@ -1257,6 +1337,14 @@ c      add contributions due to child 2
             mexpdownphys(idim,i) = (mexpsall(idim,i) + 
      1         mexps1256(idim,i) + mexps12(idim,i))*ys(-1,i)      
           enddo
+        enddo
+
+        nlist4=nlist4s(jbox)
+        do i=1,nlist4
+          kbox=ilist4((jbox-1)*mnlist4+i)
+          call l3dlist4shift(nd,mexpupphys,mexpdownphys,pgboxwexp,
+     1         list4(kbox),nexptotp,xs,ys,zs,
+     2         centers(1,kbox),centers(1,jbox),bs,2)
         enddo
 
         call phystof(nd,mexpup,nlams,nfourier,nphysical,
@@ -1291,6 +1379,14 @@ c      add contributions due to child 3
           enddo
         enddo
 
+        nlist4=nlist4s(jbox)
+        do i=1,nlist4
+          kbox=ilist4((jbox-1)*mnlist4+i)
+          call l3dlist4shift(nd,mexpupphys,mexpdownphys,pgboxwexp,
+     1         list4(kbox),nexptotp,xs,ys,zs,
+     2         centers(1,kbox),centers(1,jbox),bs,2)
+        enddo
+
         call phystof(nd,mexpup,nlams,nfourier,nphysical,
      1               mexpupphys,fexpback)
  
@@ -1322,6 +1418,14 @@ c      add contributions due to child 4
           enddo
         enddo
 
+        nlist4=nlist4s(jbox)
+        do i=1,nlist4
+          kbox=ilist4((jbox-1)*mnlist4+i)
+          call l3dlist4shift(nd,mexpupphys,mexpdownphys,pgboxwexp,
+     1         list4(kbox),nexptotp,xs,ys,zs,
+     2         centers(1,kbox),centers(1,jbox),bs,2)
+        enddo
+
         call phystof(nd,mexpup,nlams,nfourier,nphysical,
      1               mexpupphys,fexpback)
  
@@ -1349,6 +1453,14 @@ c      add contributions due to child 5
             mexpdownphys(idim,i) = (mexpsall(idim,i) + 
      1          mexps1256(idim,i) + mexps56(idim,i))*xs(-1,i)      
           enddo
+        enddo
+
+        nlist4=nlist4s(jbox)
+        do i=1,nlist4
+          kbox=ilist4((jbox-1)*mnlist4+i)
+          call l3dlist4shift(nd,mexpupphys,mexpdownphys,pgboxwexp,
+     1         list4(kbox),nexptotp,xs,ys,zs,
+     2         centers(1,kbox),centers(1,jbox),bs,2)
         enddo
 
         call phystof(nd,mexpup,nlams,nfourier,nphysical,
@@ -1382,6 +1494,14 @@ c      add contributions due to child 6
           enddo
         enddo
 
+        nlist4=nlist4s(jbox)
+        do i=1,nlist4
+          kbox=ilist4((jbox-1)*mnlist4+i)
+          call l3dlist4shift(nd,mexpupphys,mexpdownphys,pgboxwexp,
+     1         list4(kbox),nexptotp,xs,ys,zs,
+     2         centers(1,kbox),centers(1,jbox),bs,2)
+        enddo
+
         call phystof(nd,mexpup,nlams,nfourier,nphysical,
      1               mexpupphys,fexpback)
  
@@ -1413,6 +1533,14 @@ c      add contributions due to child 7
           enddo
         enddo
 
+        nlist4=nlist4s(jbox)
+        do i=1,nlist4
+          kbox=ilist4((jbox-1)*mnlist4+i)
+          call l3dlist4shift(nd,mexpupphys,mexpdownphys,pgboxwexp,
+     1         list4(kbox),nexptotp,xs,ys,zs,
+     2         centers(1,kbox),centers(1,jbox),bs,2)
+        enddo
+
         call phystof(nd,mexpup,nlams,nfourier,nphysical,
      1               mexpupphys,fexpback)
  
@@ -1441,6 +1569,14 @@ c      add contributions due to child 8
      1         mexpn3478(idim,i))*ztmp
             mexpdownphys(idim,i) = mexpsall(idim,i)*ztmp2      
           enddo
+        enddo
+
+        nlist4=nlist4s(jbox)
+        do i=1,nlist4
+          kbox=ilist4((jbox-1)*mnlist4+i)
+          call l3dlist4shift(nd,mexpupphys,mexpdownphys,pgboxwexp,
+     1         list4(kbox),nexptotp,xs,ys,zs,
+     2         centers(1,kbox),centers(1,jbox),bs,2)
         enddo
 
         call phystof(nd,mexpup,nlams,nfourier,nphysical,
@@ -1475,7 +1611,8 @@ c--------------------------------------------------------------------
      7           mexpeall,mexpe2468,mexpe24,mexpe68,mexpe2,mexpe4,
      8           mexpe6,mexpe8,mexpwall,mexpw1357,mexpw13,mexpw57,
      9           mexpw1,mexpw3,mexpw5,mexpw7,rdminus,
-     9           xs,ys,zs,fexpback,rlsc,rscpow)
+     9           xs,ys,zs,fexpback,rlsc,rscpow,
+     6           pgboxwexp,cntlist4,list4,nlist4s,ilist4,mnlist4)
 c--------------------------------------------------------------------
 c      create up down expansions for box ibox
 c-------------------------------------------------------------------
@@ -1512,9 +1649,12 @@ c-------------------------------------------------------------------
       double precision zs(5,nexptotp)
       double precision rlsc(0:nterms,0:nterms,nlams),rscpow(0:nterms)
       double complex fexpback(*)
+      integer cntlist4,list4(*),nlist4s(*),ilist4(*),mnlist4
+      integer nlist4
+      double complex pgboxwexp(nd,nexptotp,cntlist4,6)
 
 c      temp variables
-      integer jbox,ctr,ii,jj,i,ix,iy,iz,j,l,idim
+      integer jbox,ctr,ii,jj,i,ix,iy,iz,j,l,idim,kbox
       double complex ztmp,zmul,ztmp2
       double precision rtmp,rtmp2
      
@@ -1803,6 +1943,14 @@ c      add contributions due to child 1
           enddo
         enddo
 
+        nlist4=nlist4s(jbox)
+        do i=1,nlist4
+          kbox=ilist4((jbox-1)*mnlist4+i)
+          call l3dlist4shift(nd,mexpupphys,mexpdownphys,pgboxwexp,
+     1         list4(kbox),nexptotp,xs,ys,zs,
+     2         centers(1,kbox),centers(1,jbox),bs,3)
+        enddo
+
         call phystof(nd,mexpup,nlams,nfourier,nphysical,
      1               mexpupphys,fexpback)
  
@@ -1833,6 +1981,14 @@ c      add contributions due to child 2
      1         mexpe24(idim,i)+mexpe2(idim,i))*zs(1,i)      
             mexpdownphys(idim,i) = mexpwall(idim,i)*rtmp
           enddo
+        enddo
+
+        nlist4=nlist4s(jbox)
+        do i=1,nlist4
+          kbox=ilist4((jbox-1)*mnlist4+i)
+          call l3dlist4shift(nd,mexpupphys,mexpdownphys,pgboxwexp,
+     1         list4(kbox),nexptotp,xs,ys,zs,
+     2         centers(1,kbox),centers(1,jbox),bs,3)
         enddo
 
         call phystof(nd,mexpup,nlams,nfourier,nphysical,
@@ -1866,6 +2022,14 @@ c      add contributions due to child 3
           enddo
         enddo
 
+        nlist4=nlist4s(jbox)
+        do i=1,nlist4
+          kbox=ilist4((jbox-1)*mnlist4+i)
+          call l3dlist4shift(nd,mexpupphys,mexpdownphys,pgboxwexp,
+     1         list4(kbox),nexptotp,xs,ys,zs,
+     2         centers(1,kbox),centers(1,jbox),bs,3)
+        enddo
+
         call phystof(nd,mexpup,nlams,nfourier,nphysical,
      1               mexpupphys,fexpback)
  
@@ -1897,6 +2061,14 @@ c      add contributions due to child 4
           enddo
         enddo
 
+        nlist4=nlist4s(jbox)
+        do i=1,nlist4
+          kbox=ilist4((jbox-1)*mnlist4+i)
+          call l3dlist4shift(nd,mexpupphys,mexpdownphys,pgboxwexp,
+     1         list4(kbox),nexptotp,xs,ys,zs,
+     2         centers(1,kbox),centers(1,jbox),bs,3)
+        enddo
+
         call phystof(nd,mexpup,nlams,nfourier,nphysical,
      1               mexpupphys,fexpback)
  
@@ -1924,6 +2096,14 @@ c      add contributions due to child 5
             mexpdownphys(idim,i) = (mexpwall(idim,i)+mexpw1357(idim,i)+
      1             mexpw57(idim,i)+mexpw5(idim,i))*xs(1,i)
           enddo
+        enddo
+
+        nlist4=nlist4s(jbox)
+        do i=1,nlist4
+          kbox=ilist4((jbox-1)*mnlist4+i)
+          call l3dlist4shift(nd,mexpupphys,mexpdownphys,pgboxwexp,
+     1         list4(kbox),nexptotp,xs,ys,zs,
+     2         centers(1,kbox),centers(1,jbox),bs,3)
         enddo
 
         call phystof(nd,mexpup,nlams,nfourier,nphysical,
@@ -1954,6 +2134,14 @@ c      add contributions due to child 6
      1           mexpe68(idim,i)+mexpe6(idim,i))*ztmp      
             mexpdownphys(idim,i) = mexpwall(idim,i)*ztmp2
           enddo
+        enddo
+
+        nlist4=nlist4s(jbox)
+        do i=1,nlist4
+          kbox=ilist4((jbox-1)*mnlist4+i)
+          call l3dlist4shift(nd,mexpupphys,mexpdownphys,pgboxwexp,
+     1         list4(kbox),nexptotp,xs,ys,zs,
+     2         centers(1,kbox),centers(1,jbox),bs,3)
         enddo
 
         call phystof(nd,mexpup,nlams,nfourier,nphysical,
@@ -1987,6 +2175,14 @@ c      add contributions due to child 7
           enddo
         enddo
 
+        nlist4=nlist4s(jbox)
+        do i=1,nlist4
+          kbox=ilist4((jbox-1)*mnlist4+i)
+          call l3dlist4shift(nd,mexpupphys,mexpdownphys,pgboxwexp,
+     1         list4(kbox),nexptotp,xs,ys,zs,
+     2         centers(1,kbox),centers(1,jbox),bs,3)
+        enddo
+
         call phystof(nd,mexpup,nlams,nfourier,nphysical,
      1               mexpupphys,fexpback)
  
@@ -2016,6 +2212,14 @@ c      add contributions due to child 8
      1         mexpe68(idim,i)+mexpe8(idim,i))*ztmp      
             mexpdownphys(idim,i) = mexpwall(idim,i)*ztmp2
           enddo
+        enddo
+
+        nlist4=nlist4s(jbox)
+        do i=1,nlist4
+          kbox=ilist4((jbox-1)*mnlist4+i)
+          call l3dlist4shift(nd,mexpupphys,mexpdownphys,pgboxwexp,
+     1         list4(kbox),nexptotp,xs,ys,zs,
+     2         centers(1,kbox),centers(1,jbox),bs,3)
         enddo
 
         call phystof(nd,mexpup,nlams,nfourier,nphysical,
@@ -2741,7 +2945,7 @@ cc       move all ghost box contributions to the child 1
 c
 
 c      add contributions due to child 1
-      if(jbox.gt.1) then
+      if(jbox.eq.1) then
         do i=1,nexptotp
           do idim=1,nd
             mexpuall(idim,i) = mexpuall(idim,i) + mexpugbox(idim,i)
@@ -2751,7 +2955,7 @@ c      add contributions due to child 1
       endif
       
 c      add contributions due to child 2
-      if(jbox.gt.2) then
+      if(jbox.eq.2) then
         do i=1,nexptotp
           do idim=1,nd
             mexpuall(idim,i) = mexpuall(idim,i) + 
@@ -2763,7 +2967,7 @@ c      add contributions due to child 2
       endif
   
 c      add contributions due to child 3
-      if(jbox.gt.3) then
+      if(jbox.eq.3) then
         do i=1,nexptotp
           do idim=1,nd
             mexpuall(idim,i) = mexpuall(idim,i) +
@@ -2775,7 +2979,7 @@ c      add contributions due to child 3
       endif
 
 c      add contributions due to child 4
-      if(jbox.gt.4) then
+      if(jbox.eq.4) then
         do i=1,nexptotp
           ztmp = ys(1,i)*xs(1,i)
           ztmp2 = ys(-1,i)*xs(-1,i)
@@ -2789,7 +2993,7 @@ c      add contributions due to child 4
       endif
 
 c      add contributions due to child 5
-      if(jbox.gt.5) then
+      if(jbox.eq.5) then
         do i=1,nexptotp
           rtmp = 1.0d0/zs(1,i)
           do idim=1,nd
@@ -2802,7 +3006,7 @@ c      add contributions due to child 5
       endif
 
 c      add contributions due to child 6
-      if(jbox.gt.6) then
+      if(jbox.eq.6) then
         do i=1,nexptotp
           ztmp = xs(1,i)*zs(1,i)
           ztmp2 = xs(-1,i)/zs(1,i)
@@ -2816,7 +3020,7 @@ c      add contributions due to child 6
       endif
 
 c      add contributions due to child 7
-      if(jbox.gt.7) then
+      if(jbox.eq.7) then
         do i=1,nexptotp
           ztmp = zs(1,i)*ys(1,i)
           ztmp2 = ys(-1,i)/zs(1,i)
@@ -2830,7 +3034,7 @@ c      add contributions due to child 7
       endif
 
 c      add contributions due to child 8
-      if(jbox.gt.8) then
+      if(jbox.eq.8) then
         do i=1,nexptotp
           ztmp = zs(1,i)*ys(1,i)*xs(1,i)
           ztmp2 = xs(-1,i)*ys(-1,i)/zs(1,i)
@@ -2873,7 +3077,7 @@ cc       move all ghost box contributions to the child 1
 c
 
 c      add contributions due to child 1
-      if(jbox.gt.1) then
+      if(jbox.eq.1) then
         do i=1,nexptotp
           do idim=1,nd
             mexpnall(idim,i) = mexpnall(idim,i) + mexpngbox(idim,i)
@@ -2883,7 +3087,7 @@ c      add contributions due to child 1
       endif
       
 c      add contributions due to child 2
-      if(jbox.gt.2) then
+      if(jbox.eq.2) then
         do i=1,nexptotp
           do idim=1,nd
             mexpnall(idim,i) = mexpnall(idim,i) + 
@@ -2895,7 +3099,7 @@ c      add contributions due to child 2
       endif
   
 c      add contributions due to child 3
-      if(jbox.gt.3) then
+      if(jbox.eq.3) then
         do i=1,nexptotp
           rtmp = 1/zs(1,i)
           do idim=1,nd
@@ -2908,7 +3112,7 @@ c      add contributions due to child 3
       endif
 
 c      add contributions due to child 4
-      if(jbox.gt.4) then
+      if(jbox.eq.4) then
         do i=1,nexptotp
           ztmp = ys(1,i)*zs(1,i)
           ztmp2 = ys(-1,i)/zs(1,i)
@@ -2922,7 +3126,7 @@ c      add contributions due to child 4
       endif
 
 c      add contributions due to child 5
-      if(jbox.gt.5) then
+      if(jbox.eq.5) then
         do i=1,nexptotp
           do idim=1,nd
             mexpnall(idim,i) = mexpnall(idim,i) + 
@@ -2934,7 +3138,7 @@ c      add contributions due to child 5
       endif
 
 c      add contributions due to child 6
-      if(jbox.gt.6) then
+      if(jbox.eq.6) then
         do i=1,nexptotp
           ztmp = ys(1,i)*xs(1,i)
           ztmp2 = ys(-1,i)*xs(-1,i)
@@ -2948,7 +3152,7 @@ c      add contributions due to child 6
       endif
 
 c      add contributions due to child 7
-      if(jbox.gt.7) then
+      if(jbox.eq.7) then
         do i=1,nexptotp
           ztmp = xs(1,i)*zs(1,i)
           ztmp2 = xs(-1,i)/zs(1,i)
@@ -2962,7 +3166,7 @@ c      add contributions due to child 7
       endif
 
 c      add contributions due to child 8
-      if(jbox.gt.8) then
+      if(jbox.eq.8) then
         do i=1,nexptotp
           ztmp = ys(1,i)*zs(1,i)*xs(1,i)
           ztmp2 = ys(-1,i)*xs(-1,i)/zs(1,i)
@@ -3005,7 +3209,7 @@ cc       move all ghost box contributions to the child 1
 c
 
 c      add contributions due to child 1
-      if(jbox.gt.1) then
+      if(jbox.eq.1) then
         do i=1,nexptotp
           do idim=1,nd
             mexpeall(idim,i) = mexpeall(idim,i) + mexpegbox(idim,i)
@@ -3015,7 +3219,7 @@ c      add contributions due to child 1
       endif
       
 c      add contributions due to child 2
-      if(jbox.gt.2) then
+      if(jbox.eq.2) then
         do i=1,nexptotp
           rtmp = 1/zs(1,i)
           do idim=1,nd
@@ -3028,7 +3232,7 @@ c      add contributions due to child 2
       endif
   
 c      add contributions due to child 3
-      if(jbox.gt.3) then
+      if(jbox.eq.3) then
         do i=1,nexptotp
           do idim=1,nd
             mexpeall(idim,i) = mexpeall(idim,i) +
@@ -3040,7 +3244,7 @@ c      add contributions due to child 3
       endif
 
 c      add contributions due to child 4
-      if(jbox.gt.4) then
+      if(jbox.eq.4) then
         do i=1,nexptotp
           ztmp = zs(1,i)*ys(1,i)
           ztmp2 = ys(-1,i)/zs(1,i)
@@ -3054,7 +3258,7 @@ c      add contributions due to child 4
       endif
 
 c      add contributions due to child 5
-      if(jbox.gt.5) then
+      if(jbox.eq.5) then
         do i=1,nexptotp
           do idim=1,nd
             mexpeall(idim,i) = mexpeall(idim,i) + 
@@ -3066,7 +3270,7 @@ c      add contributions due to child 5
       endif
 
 c      add contributions due to child 6
-      if(jbox.gt.6) then
+      if(jbox.eq.6) then
         do i=1,nexptotp
           ztmp = xs(-1,i)*zs(1,i)
           ztmp2 = xs(1,i)/zs(1,i)
@@ -3080,7 +3284,7 @@ c      add contributions due to child 6
       endif
 
 c      add contributions due to child 7
-      if(jbox.gt.7) then
+      if(jbox.eq.7) then
         do i=1,nexptotp
           ztmp = xs(-1,i)*ys(1,i)
           ztmp2 = xs(1,i)*ys(-1,i)
@@ -3094,7 +3298,7 @@ c      add contributions due to child 7
       endif
 
 c      add contributions due to child 8
-      if(jbox.gt.8) then
+      if(jbox.eq.8) then
         do i=1,nexptotp
           ztmp = xs(-1,i)*ys(1,i)*zs(1,i)
           ztmp2 = xs(1,i)*ys(-1,i)/zs(1,i)
@@ -3181,6 +3385,7 @@ C$OMP$PRIVATE(ibox,istart,iend,jstart,jend,npts,npts0)
 C$OMP$PRIVATE(gboxind,gboxsort,gboxcgsort,gboxdpsort)
 C$OMP$PRIVATE(gboxmexp)
 C      print *,"good here0"
+      pgboxwexp=0
       do ibox=laddr(1,ilev),laddr(2,ilev)
 C        print *,"good here1"
         if(list4(ibox).gt.0) then
@@ -3213,6 +3418,7 @@ C            print *,"good here5"
 C            print *,"good here6"
 cccccccccccccc  bad code, note gboxmexp is an array not scalar
             gboxmexp=0
+            gboxwexp=0
             do i=1,8
               if(gboxfl(1,i).gt.0) then
                 jstart=gboxfl(1,i)
@@ -3303,7 +3509,7 @@ cc                process east-west for current box
                   call ftophys(nd,mexpf2,nlams,rlams,nfourier,nphysical,
      1                 nthmax,gboxwexp(1,1,i,6),fexpe,fexpo)
                 
-                  call processgboxnsexp(nd,gboxwexp(1,1,i,5),
+                  call processgboxewexp(nd,gboxwexp(1,1,i,5),
      1                 gboxwexp(1,1,i,6),i,nexptotp,
      2                 pgboxwexp(1,1,jbox,5),
      3                 pgboxwexp(1,1,jbox,6),
@@ -3329,63 +3535,113 @@ c--------------------------------------------------------------------
 c--------------------------------------------------------------------   c
 c
 c--------------------------------------------------------------------
-      subroutine l3dlist4shift(ilev,nd,nexptotp,nexptot,nterms,nmax,
-     1           nlams,nlege,nthmax,nlevels,
-     1           ifcharge,ifdipole,list4,itree,laddr,ipointer,
-     1           nfourier,nphysical,
-     2           rscales,boxsize,zshift,sourcesort,chargesort,
-     3           dipvecsort,centers,xshift,yshift,fexpe,fexpo,
-     4           mexpf1,mexpf2,tmp,mptemp,wlege,rlams,rscpow,
-     5           pgboxwexp)
+      subroutine l3dlist4shift(nd,mexpupphys,mexpdownphys,pgboxwexp,
+     1           jbox,nexptotp,xs,ys,zs,
+     2           censrc,centrg,boxsize,dirtype)
 c--------------------------------------------------------------------
 c-------------------------------------------------------------------
       implicit none
 ccc   input/output variables
-      integer ilev
       integer nd
-      integer nexptotp,nexptot
-      integer nterms,nmax,nlams,nlege,nthmax
-      integer nlevels
-      integer ifcharge,ifdipole
-      integer list4(*),itree(*),laddr(2,0:nlevels)
-      integer *8 ipointer(32)
-      integer nfourier(*)
-      integer nphysical(*)
-      double precision rscales
+      integer nexptotp
+      integer jbox
+      integer dirtype
+      double complex mexpupphys(nd,nexptotp),mexpdownphys(nd,nexptotp)
+      double complex pgboxwexp(nd,nexptotp,jbox,6)
+      double complex xs(-5:5,nexptotp),ys(-5:5,nexptotp)
+      double precision zs(5,nexptotp)
       double precision boxsize
-      double precision zshift(5,nexptotp)
-      double precision mptemp(*)
-      double precision wlege(*)
-      double precision rlams(*)
-      double precision rscpow(*)
-      double precision sourcesort(3,*)
-      double precision chargesort(nd,*)
-      double precision dipvecsort(nd,3,*)
-      double precision centers(3,*)
-      double precision rdminus(0:nmax,0:nmax,-nmax:nmax)
-      double precision rdplus(0:nmax,0:nmax,-nmax:nmax)
-      double precision rlsc(0:nmax,0:nmax,nlams)
-      double complex xshift(-5:5,nexptotp),yshift(-5:5,nexptotp)
-      double complex fexpe(*),fexpo(*)
-      double complex mexpf1(nd,nexptot),mexpf2(nd,nexptot)
-      double complex tmp(nd,0:nmax,-nmax:nmax)
-      double complex, allocatable :: pgboxwexp(:,:,:,:)
+      double precision censrc(3),centrg(3)
 ccc   scoped function variables
-      integer ibox,jbox,i,idim,cntlist4,nlist3
-      integer istart,iend,npts
-      integer jstart,jend,npts0
-      integer gboxfl(2,8)
-      integer, allocatable :: gboxind(:)
-      double precision time1,time2,omp_get_wtime
-      double precision gboxsubcenters(3,8)
-      double precision, allocatable ::  gboxsort(:,:)
-      double precision, allocatable ::  gboxcgsort(:,:)
-      double precision, allocatable ::  gboxdpsort(:,:,:)
-      double complex, allocatable :: gboxmexp(:,:)
-      double complex, allocatable :: gboxwexp(:,:,:,:)
+      integer dir
+      integer i,ix,iy,iz,idim
+      double complex zmul
+      double precision rtmp
+      double precision ctmp(3)
 
 
+      call getlist4pwdir(dir,censrc,centrg,boxsize)
 
+      ctmp(1) = censrc(1) - boxsize/2.0d0
+      ctmp(2) = censrc(2) - boxsize/2.0d0
+      ctmp(3) = censrc(3) - boxsize/2.0d0
+
+      if(dir.eq.1.and.dirtype.eq.1) then
+C        print *,"dir:",dir,"dirtype:",dirtype
+        ix = 1.05d0*(ctmp(1)-centrg(1))/boxsize
+        iy = 1.05d0*(ctmp(2)-centrg(2))/boxsize
+        iz = 1.05d0*(ctmp(3)-centrg(3))/boxsize
+        do i=1,nexptotp
+          zmul = zs(iz,i)*xs(ix,i)*ys(iy,i)
+          do idim=1,nd
+            mexpdownphys(idim,i) = mexpdownphys(idim,i) + 
+     1          pgboxwexp(idim,i,jbox,2)*zmul
+          enddo
+        enddo
+      else if(dir.eq.2.and.dirtype.eq.1) then
+C        print *,"dir:",dir,"dirtype:",dirtype
+        ix = 1.05d0*(ctmp(1)-centrg(1))/boxsize
+        iy = 1.05d0*(ctmp(2)-centrg(2))/boxsize
+        iz = 1.05d0*(ctmp(3)-centrg(3))/boxsize
+        do i=1,nexptotp
+          zmul = zs(-iz,i)*xs(-ix,i)*ys(-iy,i)
+          do idim=1,nd
+            mexpupphys(idim,i) = mexpupphys(idim,i) + 
+     1          pgboxwexp(idim,i,jbox,1)*zmul
+          enddo
+        enddo
+      else if(dir.eq.3.and.dirtype.eq.2) then
+C        print *,"dir:",dir,"dirtype:",dirtype
+        ix = 1.05d0*(ctmp(1)-centrg(1))/boxsize
+        iy = 1.05d0*(ctmp(2)-centrg(2))/boxsize
+        iz = 1.05d0*(ctmp(3)-centrg(3))/boxsize
+        do i=1,nexptotp
+          zmul = zs(iy,i)*xs(iz,i)*ys(ix,i)
+          do idim=1,nd
+            mexpdownphys(idim,i) = mexpdownphys(idim,i) + 
+     1          pgboxwexp(idim,i,jbox,4)*zmul
+          enddo
+        enddo
+      else if(dir.eq.4.and.dirtype.eq.2) then
+C        print *,"dir:",dir,"dirtype:",dirtype
+        ix = 1.05d0*(ctmp(1)-centrg(1))/boxsize
+        iy = 1.05d0*(ctmp(2)-centrg(2))/boxsize
+        iz = 1.05d0*(ctmp(3)-centrg(3))/boxsize
+        do i=1,nexptotp
+          zmul = zs(-iy,i)*xs(-iz,i)*ys(-ix,i)
+          do idim=1,nd
+            mexpupphys(idim,i) = mexpupphys(idim,i) + 
+     1          pgboxwexp(idim,i,jbox,3)*zmul
+          enddo
+        enddo
+      else if(dir.eq.5.and.dirtype.eq.3) then
+C        print *,"dir:",dir,"dirtype:",dirtype
+        ix = 1.05d0*(ctmp(1)-centrg(1))/boxsize
+        iy = 1.05d0*(ctmp(2)-centrg(2))/boxsize
+        iz = 1.05d0*(ctmp(3)-centrg(3))/boxsize
+        do i=1,nexptotp
+          zmul = zs(ix,i)*xs(-iz,i)*ys(iy,i)
+          do idim=1,nd
+            mexpdownphys(idim,i) = mexpdownphys(idim,i) + 
+     1          pgboxwexp(idim,i,jbox,6)*zmul
+          enddo
+        enddo
+      else if(dir.eq.6.and.dirtype.eq.3) then
+C        print *,"dir:",dir,"dirtype:",dirtype
+        ix = 1.05d0*(ctmp(1)-centrg(1))/boxsize
+        iy = 1.05d0*(ctmp(2)-centrg(2))/boxsize
+        iz = 1.05d0*(ctmp(3)-centrg(3))/boxsize
+        do i=1,nexptotp
+          zmul = zs(-ix,i)*xs(iz,i)*ys(-iy,i)
+          do idim=1,nd
+            mexpupphys(idim,i) = mexpupphys(idim,i) + 
+     1          pgboxwexp(idim,i,jbox,5)*zmul
+          enddo
+        enddo
+      else
+C        print *,"dir:",dir
+      endif
+       
       return
       end
 c--------------------------------------------------------------------      
