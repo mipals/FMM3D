@@ -5179,6 +5179,7 @@ ccc   scopded function variables
         dir=0
         print *,"dir:",dir
       end if
+C      dir=0
 
       return
       end

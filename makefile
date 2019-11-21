@@ -237,10 +237,10 @@ test_hfmm3d_mps: $(STATICLIB) $(TOBJS)
 examples: cxxkernel $(STATICLIB) $(TOBJS) examples/ex1_helm examples/ex2_helm examples/ex3_helm \
 	examples/ex1_lap examples/ex2_lap examples/ex3_lap
 	#./examples/lfmm3d_example
-	#./examples/lfmm3d_vec_example
+	./examples/lfmm3d_vec_example
 	#./examples/lfmm3d_legacy_example
 	#./examples/hfmm3d_example
-	./examples/hfmm3d_vec_example
+	#./examples/hfmm3d_vec_example
 	#./examples/hfmm3d_legacy_example
 
 examples/ex1_lap:

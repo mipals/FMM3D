@@ -25,12 +25,12 @@ c
       write(*,*)
       write(*,*)
 
-      ns = 23
-      nt = 27
+      ns = 20000
+      nt = 20000
 
-      ntest = 10
+      ntest = 20000
       
-      nd = 3
+      nd = 1
 
       allocate(source(3,ns))
       allocate(targ(3,nt))
@@ -69,9 +69,9 @@ cc      generate sources uniformly in the unit cube
 c
 c
       do i=1,ns
-        source(1,i) = hkrand(0)**2
-        source(2,i) = hkrand(0)**2
-        source(3,i) = hkrand(0)**2
+        source(1,i) = hkrand(0)**3
+        source(2,i) = hkrand(0)**3
+        source(3,i) = hkrand(0)**3
 
         do idim=1,nd
           charge(idim,i) = hkrand(0) 
@@ -83,9 +83,9 @@ c
       enddo
 
       do i=1,nt
-        targ(1,i) = hkrand(0)**2
-        targ(2,i) = hkrand(0)**2
-        targ(3,i) = hkrand(0)**2
+        targ(1,i) = hkrand(0)**3
+        targ(2,i) = hkrand(0)**3
+        targ(3,i) = hkrand(0)**3
 
         do idim=1,nd
           pottarg(idim,i) = 0
@@ -122,8 +122,8 @@ c
        call l3ddirectcdg(nd,source,charge,
      1      dipvec,ns,targ,ntest,pottargex,gradtargex,thresh)
 
-       call prin2("potential at sources=*",pot,6)
-       call prin2("potential at sources=*",potex,6)
+       call prin2_long("potential at sources=*",pot,6)
+       call prin2_long("potential at sources=*",potex,6)
 
 
        erra = 0

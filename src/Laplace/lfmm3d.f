@@ -1432,6 +1432,15 @@ C$OMP END PARALLEL DO
               nlist4 = itree(ipointer(26)+ibox-1)
               do i=1,nlist4
                 jbox = itree(ipointer(27)+(ibox-1)*mnlist4+i-1)
+                jstart = itree(ipointer(10)+jbox-1)
+                jend = itree(ipointer(11)+jbox-1)
+                npts0 = jend-jstart+1
+
+C                call l3ddirectcdg(nd,sourcesort(1,jstart),
+C     1          chargesort(1,jstart),dipvecsort(1,1,jstart),
+C     2          npts0,sourcesort(1,istart),npts,
+C     3          pot(1,istart),grad(1,1,istart),thresh)
+
                 kbox = list4test(jbox)
                 ctmp(1) = centers(1,jbox)-boxsize(ilev)/2.0d0
                 ctmp(2) = centers(2,jbox)-boxsize(ilev)/2.0d0
@@ -1477,7 +1486,7 @@ C$OMP END PARALLEL DO
      4               pot(1,istart),grad(1,1,istart))
                   else
                   endif
-                 endif
+                endif
               enddo
             endif
          enddo
