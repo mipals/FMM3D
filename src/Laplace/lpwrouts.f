@@ -3323,7 +3323,7 @@ c--------------------------------------------------------------------
      2           rscales,boxsize,zshift,sourcesort,chargesort,
      3           dipvecsort,centers,xshift,yshift,fexpe,fexpo,
      4           mexpf1,mexpf2,tmp,mptemp,wlege,rlams,rscpow,
-     5           pgboxwexp,cntlist4)
+     5           pgboxwexp,cntlist4,pgboxmexp)
 c--------------------------------------------------------------------
 c-------------------------------------------------------------------
       implicit none
@@ -3357,8 +3357,9 @@ ccc   input/output variables
       double complex mexpf1(nd,nexptot),mexpf2(nd,nexptot)
       double complex tmp(nd,0:nmax,-nmax:nmax)
       double complex pgboxwexp(nd,nexptotp,cntlist4,6)
+      double complex pgboxmexp(nd*(nterms+1)*(2*nterms+1),8,cntlist4)
 ccc   scoped function variables
-      integer ibox,jbox,i,idim,nlist3
+      integer ibox,jbox,i,idim,nlist3,j
       integer istart,iend,npts
       integer jstart,jend,npts0
       integer gboxfl(2,8)
@@ -3448,6 +3449,9 @@ cccccccccccccc  bad code, note gboxmexp is an array not scalar
      4                   npts0,gboxsubcenters(1,i),nterms,
      5                   gboxmexp(1,i),wlege,nlege)          
                   endif
+                  do j=1,nd*(nterms+1)*(2*nterms+1)
+                    pgboxmexp(j,i,jbox)=gboxmexp(j,i)
+                  enddo
 C                  print *,gboxmexp
 
 C                  print *,"good here7"
