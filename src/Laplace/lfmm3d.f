@@ -664,7 +664,8 @@ c     list 4 variables
       double precision, allocatable :: gboxcgsort(:,:)
       double precision, allocatable :: gboxdpsort(:,:,:)
       integer jboxtest
-      double complex errtest
+      double complex errmexp
+      double complex errwexp
 c     end of list 4 variables
 
       integer *8 bigint
@@ -1326,6 +1327,7 @@ ccc   generate ilev+1 list4 type box plane wave expansion
             endif
          enddo
 C         print *,"cntlist4:",cntlist4
+         print *,"nboxes:",nboxes,"cntlist4:",cntlist4,"ilev",ilev-1
          allocate(pgboxwexptest(nd,nexptotp,cntlist4,6))
          allocate(pgboxmexptest(nd*(nterms(ilev)+1)*(2*nterms(ilev)+1),
      1                         8,cntlist4))
@@ -1340,35 +1342,44 @@ C         print *,"cntlist4:",cntlist4
      6        fexpo,mexpf1,mexpf2,tmp,mptemp,wlege,rlams,rscpow,
      7        pgboxwexptest,cntlist4,pgboxmexptest)
 
-         errtest=0
+         errwexp=0
          do ibox=laddr(1,ilev-1),laddr(2,ilev-1)
             jbox=list4(ibox)
             jboxtest=list4test(ibox)
             if(jbox.gt.0) then
 C            print *,"jboxs:",jbox,jboxtest
-            do i=1,nexptotp
-              do idim=1,nd
-c                print *,pgboxwexp(idim,i,jbox,1)-
-c     1           pgboxwexptest(idim,i,jboxtest,1)
-C                print *,pgboxwexp(idim,i,jbox,1),
-C     1           pgboxwexptest(idim,i,jboxtest,1)
-                errtest=errtest+pgboxwexp(idim,i,jbox,1)-
-     1           pgboxwexptest(idim,i,jboxtest,1)
-                errtest=errtest+pgboxwexp(idim,i,jbox,2)-
-     1           pgboxwexptest(idim,i,jboxtest,2)
-                errtest=errtest+pgboxwexp(idim,i,jbox,3)-
-     1           pgboxwexptest(idim,i,jboxtest,3)
-                errtest=errtest+pgboxwexp(idim,i,jbox,4)-
-     1           pgboxwexptest(idim,i,jboxtest,4)
-                errtest=errtest+pgboxwexp(idim,i,jbox,5)-
-     1           pgboxwexptest(idim,i,jboxtest,5)
-                errtest=errtest+pgboxwexp(idim,i,jbox,6)-
-     1           pgboxwexptest(idim,i,jboxtest,6)
+              do i=1,nexptotp
+                do idim=1,nd
+c                  print *,pgboxwexp(idim,i,jbox,1)-
+c       1             pgboxwexptest(idim,i,jboxtest,1)
+C                  print *,pgboxwexp(idim,i,jbox,1),
+C       1             pgboxwexptest(idim,i,jboxtest,1)
+                  errwexp=errwexp+pgboxwexp(idim,i,jbox,1)-
+     1                    pgboxwexptest(idim,i,jboxtest,1)
+                  errwexp=errwexp+pgboxwexp(idim,i,jbox,2)-
+     1                    pgboxwexptest(idim,i,jboxtest,2)
+                  errwexp=errwexp+pgboxwexp(idim,i,jbox,3)-
+     1                    pgboxwexptest(idim,i,jboxtest,3)
+                  errwexp=errwexp+pgboxwexp(idim,i,jbox,4)-
+     1                    pgboxwexptest(idim,i,jboxtest,4)
+                  errwexp=errwexp+pgboxwexp(idim,i,jbox,5)-
+     1                    pgboxwexptest(idim,i,jboxtest,5)
+                  errwexp=errwexp+pgboxwexp(idim,i,jbox,6)-
+     1                    pgboxwexptest(idim,i,jboxtest,6)
+                enddo
               enddo
-            enddo
+              do igbox=1,8
+                do i=1,nd*(nterms(ilev)+1)*(2*nterms(ilev)+1)
+                  errmexp=errmexp+pgboxmexptest(i,igbox,jboxtest)-
+     1                    gboxmexp(i,igbox,jbox)
+C                  print *,pgboxmexptest(i,igbox,jboxtest),
+C     1                    gboxmexp(i,igbox,jbox)
+                enddo
+              enddo
             endif
          enddo
-         print *,"err",errtest
+         print *,"errwexp",errwexp
+         print *,"errmexp",errmexp
 ccc   end of generate ilev+1 list4
 
 C$OMP PARALLEL DO DEFAULT (SHARED)
@@ -1450,19 +1461,25 @@ C     3          pot(1,istart),grad(1,1,istart),thresh)
                 kbox = list4(jbox)
 
                 do igbox=1,8
-                   if(igbox.eq.1.or.igbox.eq.2.or.
-     1                igbox.eq.5.or.igbox.eq.6) ii = 1
-                   if(igbox.lt.5) jj = 1
-                ctmp(1)=centers(1,jbox)+(-1)**igbox*boxsize(ilev)/2.0d0
-                ctmp(2)=centers(2,jbox)+(-1)**ii*boxsize(ilev)/2.0d0
-                ctmp(3)=centers(3,jbox)+(-1)**jj*boxsize(ilev)/2.0d0
+                  ii=2
+                  jj=2
+                  if(igbox.eq.1.or.igbox.eq.2.or.
+     1               igbox.eq.5.or.igbox.eq.6) ii = 1
+                  if(igbox.lt.5) jj = 1
+                  
+                  ctmp(1)=centers(1,jbox)+
+     1                    (-1)**igbox*boxsize(ilev)/2.0d0
+                  ctmp(2)=centers(2,jbox)+
+     1                    (-1)**ii*boxsize(ilev)/2.0d0
+                  ctmp(3)=centers(3,jbox)+
+     1                    (-1)**jj*boxsize(ilev)/2.0d0
 
-C                if(npts0.gt.0) print *,"npts0:",npts0
+c                  if(npts0.gt.0) print *,"npts0:",npts0
 
                   call l3dmpevalg(nd,rscales(ilev),ctmp,
-     1             gboxmexp(1,igbox,kbox),nterms(ilev),
-     2             sourcesort(1,istart),npts,pot(1,istart),
-     3             grad(1,1,istart),wlege,nlege,1e-32)
+     1            gboxmexp(1,igbox,kbox),nterms(ilev),
+     2            sourcesort(1,istart),npts,pot(1,istart),
+     3            grad(1,1,istart),wlege,nlege,1e-32)
                 enddo
 
                 ctmp(1) = centers(1,jbox)-boxsize(ilev)/2.0d0
