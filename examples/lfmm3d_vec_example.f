@@ -25,10 +25,10 @@ c
       write(*,*)
       write(*,*)
 
-      ns = 20000
-      nt = 20000
+      ns = 50
+      nt = 0
 
-      ntest = 20000
+      ntest = ns
       
       nd = 1
 
@@ -68,10 +68,11 @@ c
 cc      generate sources uniformly in the unit cube 
 c
 c
+
       do i=1,ns
-        source(1,i) = hkrand(0)**3
-        source(2,i) = hkrand(0)**3
-        source(3,i) = hkrand(0)**3
+        source(1,i) = hkrand(0)**2
+        source(2,i) = hkrand(0)**2
+        source(3,i) = hkrand(0)**2
 
         do idim=1,nd
           charge(idim,i) = hkrand(0) 
@@ -79,8 +80,81 @@ c
           dipvec(idim,2,i) = hkrand(0) 
           dipvec(idim,3,i) = hkrand(0) 
           pot(idim,i) = 0
+          grad(idim,1,i) = 0
+          grad(idim,2,i) = 0
+          grad(idim,3,i) = 0
         enddo
       enddo
+
+      if(.false.) then
+         source(1,1) = 0.00d0
+         source(2,1) = 0.00d0
+         source(3,1) = 0.00d0
+
+         source(1,2) = 1.00d0
+         source(2,2) = 0.00d0
+         source(3,2) = 0.00d0
+
+         source(1,3) = 0.00d0
+         source(2,3) = 1.00d0
+         source(3,3) = 0.00d0
+
+         source(1,4) = 1.00d0
+         source(2,4) = 1.00d0
+         source(3,4) = 0.00d0
+
+         source(1,5) = 0.00d0
+         source(2,5) = 0.00d0
+         source(3,5) = 1.00d0
+
+         source(1,6) = 1.00d0
+         source(2,6) = 0.00d0
+         source(3,6) = 1.00d0
+
+         source(1,7) = 0.00d0
+         source(2,7) = 1.00d0
+         source(3,7) = 1.00d0
+
+         source(1,8) = 1.00d0
+         source(2,8) = 1.00d0
+         source(3,8) = 1.00d0
+
+cccccccccccccccccccccc
+         source(1,9) = 0.51d0
+         source(2,9) = 0.01d0
+         source(3,9) = 0.01d0
+
+         source(1,10) = 0.51d0
+         source(2,10) = 0.49d0
+         source(3,10) = 0.01d0
+
+         source(1,11) = 0.99d0
+         source(2,11) = 0.49d0
+         source(3,11) = 0.01d0
+
+         source(1,12) = 0.51d0
+         source(2,12) = 0.01d0
+         source(3,12) = 0.49d0
+
+         source(1,13) = 0.99d0
+         source(2,13) = 0.01d0
+         source(3,13) = 0.49d0
+
+         source(1,14) = 0.51d0
+         source(2,14) = 0.49d0
+         source(3,14) = 0.49d0
+
+         source(1,15) = 0.99d0
+         source(2,15) = 0.49d0
+         source(3,15) = 0.49d0
+
+C         source(1,16) = 0.74d0
+C         source(2,16) = 0.01d0
+C         source(3,16) = 0.25d0
+      endif
+
+
+
 
       do i=1,nt
         targ(1,i) = hkrand(0)**3

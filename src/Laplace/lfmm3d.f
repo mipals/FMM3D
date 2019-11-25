@@ -186,6 +186,7 @@ c
        else
          ndiv = nsource+ntarg
        endif
+       ndiv=1
 
 
 c
@@ -657,6 +658,7 @@ c     list 4 variables
       double complex, allocatable :: gboxwexp(:,:,:,:)
       double complex, allocatable :: pgboxwexp(:,:,:,:)
       double complex, allocatable :: pgboxwexptest(:,:,:,:)
+      double complex, allocatable :: pgboxwexpchild(:,:,:,:,:)
       double precision  gboxsubcenters(3,8)
       double precision, allocatable :: gboxsort(:,:)
       integer, allocatable :: gboxind(:)
@@ -1329,10 +1331,12 @@ ccc   generate ilev+1 list4 type box plane wave expansion
 C         print *,"cntlist4:",cntlist4
          print *,"nboxes:",nboxes,"cntlist4:",cntlist4,"ilev",ilev-1
          allocate(pgboxwexptest(nd,nexptotp,cntlist4,6))
+         allocate(pgboxwexpchild(nd,nexptotp,cntlist4,6,8))
          allocate(pgboxmexptest(nd*(nterms(ilev)+1)*(2*nterms(ilev)+1),
      1                         8,cntlist4))
-         pgboxmexptest=0
-         pgboxwexptest=0
+         pgboxmexptest=0.0d0
+         pgboxwexptest=0.0d0
+         pgboxwexpchild=0.0d0
          call l3dlist4pw(ilev-1,nd,nexptotp,nexptot,nterms(ilev),
      1        nmax,nlams,nlege,nthmax,nlevels,ifcharge,ifdipole,
      2        list4test,itree,laddr,ipointer,nfourier,nphysical,
@@ -1340,7 +1344,7 @@ C         print *,"cntlist4:",cntlist4
      4        rscales(ilev),boxsize(ilev),zshift,sourcesort,
      5        chargesort,dipvecsort,centers,xshift,yshift,fexpe,
      6        fexpo,mexpf1,mexpf2,tmp,mptemp,wlege,rlams,rscpow,
-     7        pgboxwexptest,cntlist4,pgboxmexptest)
+     7        pgboxwexptest,cntlist4,pgboxmexptest,pgboxwexpchild)
 
          errwexp=0
          do ibox=laddr(1,ilev-1),laddr(2,ilev-1)
@@ -1440,7 +1444,8 @@ cc                process east-west for current box
 
          enddo
 C$OMP END PARALLEL DO         
-C         pgboxwexp=0
+         pgboxwexp=0
+C         pgboxwexpchild=0
          do ibox=laddr(1,ilev),laddr(2,ilev)
             istart = itree(ipointer(10)+ibox-1)
             iend = itree(ipointer(11)+ibox-1)
@@ -1458,7 +1463,7 @@ C     1          chargesort(1,jstart),dipvecsort(1,1,jstart),
 C     2          npts0,sourcesort(1,istart),npts,
 C     3          pot(1,istart),grad(1,1,istart),thresh)
 
-                kbox = list4(jbox)
+                kbox = list4test(jbox)
 
                 do igbox=1,8
                   ii=2
@@ -1476,18 +1481,63 @@ C     3          pot(1,istart),grad(1,1,istart),thresh)
 
 c                  if(npts0.gt.0) print *,"npts0:",npts0
 
+                  if(npts0.gt.100000) then
                   call l3dmpevalg(nd,rscales(ilev),ctmp,
-     1            gboxmexp(1,igbox,kbox),nterms(ilev),
+     1            pgboxmexptest(1,igbox,kbox),nterms(ilev),
      2            sourcesort(1,istart),npts,pot(1,istart),
      3            grad(1,1,istart),wlege,nlege,1e-32)
+                  endif
+
+                  call getlist4pwdirtest(dir,centers(1,jbox),
+     1                 centers(1,ibox),boxsize(ilev))
+                  if(npts0.gt.0) then
+                  print *,"dir:",dir,"ibox:",ibox,"jbox:",jbox,
+     1                  "igbox:",igbox
+                  if(dir.eq.1) then
+                    call lpw_ud_eval_g(nd,ctmp,boxsize(ilev),npts,
+     1               sourcesort(1,istart),nlams,rlams,whts,nphysical,
+     2               nexptotp,nphmax,pgboxwexp(1,1,1,1),
+     3               pgboxwexpchild(1,1,kbox,2,igbox),
+     4               pot(1,istart),grad(1,1,istart))
+                  else if(dir.eq.2) then
+                    call lpw_ud_eval_g(nd,ctmp,boxsize(ilev),npts,
+     1               sourcesort(1,istart),nlams,rlams,whts,nphysical,
+     2               nexptotp,nphmax,pgboxwexpchild(1,1,kbox,1,igbox),
+     3               pgboxwexp(1,1,1,2),
+     4               pot(1,istart),grad(1,1,istart))
+                  else if(dir.eq.3) then
+                    call lpw_ns_eval_g(nd,ctmp,boxsize(ilev),npts,
+     1               sourcesort(1,istart),nlams,rlams,whts,nphysical,
+     2               nexptotp,nphmax,pgboxwexp(1,1,1,3),
+     3               pgboxwexpchild(1,1,kbox,4,igbox),
+     4               pot(1,istart),grad(1,1,istart))
+                  else if(dir.eq.4) then
+                    call lpw_ns_eval_g(nd,ctmp,boxsize(ilev),npts,
+     1               sourcesort(1,istart),nlams,rlams,whts,nphysical,
+     2               nexptotp,nphmax,pgboxwexpchild(1,1,kbox,3,igbox),
+     3               pgboxwexp(1,1,1,4),
+     4               pot(1,istart),grad(1,1,istart))
+                  else if(dir.eq.5) then
+                    call lpw_ew_eval_g(nd,ctmp,boxsize(ilev),npts,
+     1               sourcesort(1,istart),nlams,rlams,whts,nphysical,
+     2               nexptotp,nphmax,pgboxwexp(1,1,1,5),
+     3               pgboxwexpchild(1,1,kbox,6,igbox),
+     4               pot(1,istart),grad(1,1,istart))
+                  else if(dir.eq.6) then
+                    call lpw_ew_eval_g(nd,ctmp,boxsize(ilev),npts,
+     1               sourcesort(1,istart),nlams,rlams,whts,nphysical,
+     2               nexptotp,nphmax,pgboxwexpchild(1,1,kbox,5,igbox),
+     3               pgboxwexp(1,1,1,6),
+     4               pot(1,istart),grad(1,1,istart))
+                  else
+                  endif
+                  endif
                 enddo
 
                 ctmp(1) = centers(1,jbox)-boxsize(ilev)/2.0d0
                 ctmp(2) = centers(2,jbox)-boxsize(ilev)/2.0d0
                 ctmp(3) = centers(3,jbox)-boxsize(ilev)/2.0d0
-                call getlist4pwdirtest(dir,centers(1,jbox),
-     1               centers(1,ibox),boxsize(ilev))
-                if(ifpgh.eq.2.and.npts0.gt.100000) then
+                if(ifpgh.eq.2.and.npts0.gt.1000000) then
                   if(dir.eq.1) then
                     print *,"dir:",dir
                     call lpw_ud_eval_g(nd,ctmp,boxsize(ilev),npts,
@@ -1768,6 +1818,7 @@ C$OMP$PRIVATE(npts0,nlist3,ctmp)
          enddo
 C$OMP END PARALLEL DO         
          deallocate(pgboxwexptest)
+         deallocate(pgboxwexpchild)
          deallocate(pgboxmexptest)
       enddo
       call cpu_time(time2)

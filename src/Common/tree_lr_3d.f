@@ -5163,17 +5163,17 @@ ccc   scopded function variables
 
       sepdist=1.51d0*boxsize
 
-      if(ctmp(3)-centrg(3).ge.sepdist) then
+      if((ctmp(3)-centrg(3)).ge.sepdist) then
         dir=1
-      else if(ctmp(3)-centrg(3).le.-sepdist) then
+      else if((ctmp(3)-centrg(3)).le.-sepdist) then
         dir=2
-      else if(ctmp(2)-centrg(2).ge.sepdist) then
+      else if((ctmp(2)-centrg(2)).ge.sepdist) then
         dir=3
-      else if(ctmp(2)-centrg(2).le.-sepdist) then
+      else if((ctmp(2)-centrg(2)).le.-sepdist) then
         dir=4
-      else if(ctmp(1)-centrg(1).ge.sepdist) then
+      else if((ctmp(1)-centrg(1)).ge.sepdist) then
         dir=5
-      else if(ctmp(1)-centrg(1).le.-sepdist) then
+      else if((ctmp(1)-centrg(1)).le.-sepdist) then
         dir=6
       else
         dir=0
