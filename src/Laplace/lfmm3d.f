@@ -1329,7 +1329,7 @@ ccc   generate ilev+1 list4 type box plane wave expansion
             endif
          enddo
 C         print *,"cntlist4:",cntlist4
-         print *,"nboxes:",nboxes,"cntlist4:",cntlist4,"ilev",ilev-1
+         print *,"nboxes:",nboxes,"cntlist4:",cntlist4,"ilev",ilev
          allocate(pgboxwexptest(nd,nexptotp,cntlist4,6))
          allocate(pgboxwexpchild(nd,nexptotp,cntlist4,6,8))
          allocate(pgboxmexptest(nd*(nterms(ilev)+1)*(2*nterms(ilev)+1),
@@ -1489,7 +1489,7 @@ c                  if(npts0.gt.0) print *,"npts0:",npts0
      3            grad(1,1,istart),wlege,nlege,thresh)
                   endif
 
-                  call getlist4pwdirtest(dir,centers(1,jbox),
+                  call getlist4pwdirtest(dir,ctmp,
      1                 centers(1,ibox),boxsize(ilev))
                   if(npts0.gt.0) then
 C                  print *,"dir:",dir,"ibox:",ibox,"jbox:",jbox,

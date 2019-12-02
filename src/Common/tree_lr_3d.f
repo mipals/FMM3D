@@ -5157,9 +5157,9 @@ ccc   input/output variables
 ccc   scopded function variables
       double precision sepdist
       double precision ctmp(3)
-      ctmp(1) = censrc(1)-boxsize/2.0d0
-      ctmp(2) = censrc(2)-boxsize/2.0d0
-      ctmp(3) = censrc(3)-boxsize/2.0d0
+      ctmp(1) = censrc(1)-0*boxsize/2.0d0
+      ctmp(2) = censrc(2)-0*boxsize/2.0d0
+      ctmp(3) = censrc(3)-0*boxsize/2.0d0
 
       sepdist=1.51d0*boxsize
 
