@@ -1347,6 +1347,7 @@ C         print *,"cntlist4:",cntlist4
      7        pgboxwexptest,cntlist4,pgboxmexptest,pgboxwexpchild)
 
          errwexp=0
+         errmexp=0
          do ibox=laddr(1,ilev-1),laddr(2,ilev-1)
             jbox=list4(ibox)
             jboxtest=list4test(ibox)
@@ -1444,7 +1445,7 @@ cc                process east-west for current box
 
          enddo
 C$OMP END PARALLEL DO         
-         pgboxwexp=0
+         pgboxwexp=0d0
 C         pgboxwexpchild=0
          do ibox=laddr(1,ilev),laddr(2,ilev)
             istart = itree(ipointer(10)+ibox-1)
@@ -1485,14 +1486,14 @@ c                  if(npts0.gt.0) print *,"npts0:",npts0
                   call l3dmpevalg(nd,rscales(ilev),ctmp,
      1            pgboxmexptest(1,igbox,kbox),nterms(ilev),
      2            sourcesort(1,istart),npts,pot(1,istart),
-     3            grad(1,1,istart),wlege,nlege,1e-32)
+     3            grad(1,1,istart),wlege,nlege,thresh)
                   endif
 
                   call getlist4pwdirtest(dir,centers(1,jbox),
      1                 centers(1,ibox),boxsize(ilev))
                   if(npts0.gt.0) then
-                  print *,"dir:",dir,"ibox:",ibox,"jbox:",jbox,
-     1                  "igbox:",igbox
+C                  print *,"dir:",dir,"ibox:",ibox,"jbox:",jbox,
+C     1                  "igbox:",igbox
                   if(dir.eq.1) then
                     call lpw_ud_eval_g(nd,ctmp,boxsize(ilev),npts,
      1               sourcesort(1,istart),nlams,rlams,whts,nphysical,

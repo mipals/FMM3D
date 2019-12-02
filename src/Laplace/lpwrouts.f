@@ -3387,8 +3387,8 @@ C$OMP$PRIVATE(ibox,istart,iend,jstart,jend,npts,npts0)
 C$OMP$PRIVATE(gboxind,gboxsort,gboxcgsort,gboxdpsort)
 C$OMP$PRIVATE(gboxmexp)
 C      print *,"good here0"
-      pgboxwexp=0
-      pgboxwexpchild=0
+      pgboxwexp=0d0
+      pgboxwexpchild=0d0
       do ibox=laddr(1,ilev),laddr(2,ilev)
 C        print *,"good here1"
         if(list4(ibox).gt.0) then
@@ -3400,6 +3400,8 @@ C          print *,"good here2"
             allocate(gboxind(npts))
             allocate(gboxsort(3,npts))
             allocate(gboxmexp(nd*(nterms+1)*(2*nterms+1),8))
+            gboxind=0
+            gboxfl=0
 C            print *,"good here3"
             call subdividebox(sourcesort(1,istart),npts,
      1           centers(1,ibox),boxsize,

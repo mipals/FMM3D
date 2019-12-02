@@ -25,7 +25,7 @@ c
       write(*,*)
       write(*,*)
 
-      ns = 50
+      ns = 18
       nt = 0
 
       ntest = ns
