@@ -1491,7 +1491,7 @@ c                  if(npts0.gt.0) print *,"npts0:",npts0
 
                   call getlist4pwdirtest(dir,ctmp,
      1                 centers(1,ibox),boxsize(ilev))
-                  if(npts0.gt.0) then
+                  if(npts0.gt.100000) then
 C                  print *,"dir:",dir,"ibox:",ibox,"jbox:",jbox,
 C     1                  "igbox:",igbox
                   if(dir.eq.1) then
@@ -1535,10 +1535,13 @@ C     1                  "igbox:",igbox
                   endif
                 enddo
 
+                call getlist4pwdirtest(dir,centers(1,jbox),
+     1               centers(1,ibox),boxsize(ilev))
+
                 ctmp(1) = centers(1,jbox)-boxsize(ilev)/2.0d0
                 ctmp(2) = centers(2,jbox)-boxsize(ilev)/2.0d0
                 ctmp(3) = centers(3,jbox)-boxsize(ilev)/2.0d0
-                if(ifpgh.eq.2.and.npts0.gt.1000000) then
+                if(ifpgh.eq.2.and.npts0.gt.0) then
                   if(dir.eq.1) then
                     print *,"dir:",dir
                     call lpw_ud_eval_g(nd,ctmp,boxsize(ilev),npts,
