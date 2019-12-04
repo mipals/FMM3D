@@ -1541,7 +1541,7 @@ C     1                  "igbox:",igbox
                 ctmp(1) = centers(1,jbox)-boxsize(ilev)/2.0d0
                 ctmp(2) = centers(2,jbox)-boxsize(ilev)/2.0d0
                 ctmp(3) = centers(3,jbox)-boxsize(ilev)/2.0d0
-                if(ifpgh.eq.2.and.npts0.gt.0) then
+                if(ifpgh.eq.2.and.npts0.gt.100000) then
                   if(dir.eq.1) then
                     print *,"dir:",dir
                     call lpw_ud_eval_g(nd,ctmp,boxsize(ilev),npts,

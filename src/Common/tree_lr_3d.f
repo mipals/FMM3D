@@ -5119,9 +5119,9 @@ ccc   input/output variables
 ccc   scopded function variables
       double precision sepdist
       double precision ctmp(3)
-      ctmp(1) = censrc(1)-boxsize/2.0d0
-      ctmp(2) = censrc(2)-boxsize/2.0d0
-      ctmp(3) = censrc(3)-boxsize/2.0d0
+      ctmp(1) = censrc(1)-0*boxsize/2.0d0
+      ctmp(2) = censrc(2)-0*boxsize/2.0d0
+      ctmp(3) = censrc(3)-0*boxsize/2.0d0
 
       sepdist=1.51d0*boxsize
 
@@ -5141,7 +5141,7 @@ ccc   scopded function variables
         dir=0
         print *,"dir:",dir
       end if
-      dir=0
+C      dir=0
 
       return
       end
