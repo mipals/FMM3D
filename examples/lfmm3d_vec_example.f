@@ -25,7 +25,7 @@ c
       write(*,*)
       write(*,*)
 
-      ns = 1741
+      ns = 1000000
       nt = 0
 
       ntest = ns
@@ -171,8 +171,8 @@ C         source(3,16) = 0.25d0
 
 
 
-       call lfmm3d_st_cd_g_vec(nd,eps,ns,source,charge,
-     1      dipvec,pot,grad,nt,targ,pottarg,gradtarg)
+       call lfmm3d_s_c_p_vec(nd,eps,ns,source,charge,
+     1      pot,nt)
 
        do i=1,ntest
          do idim=1,nd
@@ -189,15 +189,15 @@ C         source(3,16) = 0.25d0
 
        enddo
 
-       call l3ddirectcdg(nd,source,charge,
-     1      dipvec,ns,source,ntest,potex,gradex,thresh)
+       call l3ddirectcp(nd,source,charge,
+     1      ns,source,ntest,potex,thresh)
 
 
-       call l3ddirectcdg(nd,source,charge,
-     1      dipvec,ns,targ,ntest,pottargex,gradtargex,thresh)
+C       call l3ddirectcdg(nd,source,charge,
+C     1      dipvec,ns,targ,ntest,pottargex,gradtargex,thresh)
 
-       call prin2_long("potential at sources=*",pot,6)
-       call prin2_long("potential at sources=*",potex,6)
+       call prin2("potential at sources=*",pot,6)
+       call prin2("potential at sources=*",potex,6)
 
 
        erra = 0

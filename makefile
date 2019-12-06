@@ -52,7 +52,7 @@ endif
 
 
 # For your OS, override the above by placing make variables in make.inc
--include make.inc
+-include make.inc.icc
 
 # multi-threaded libs & flags needed
 ifeq ($(OMP),ON)

@@ -186,7 +186,10 @@ c
        else
          ndiv = nsource+ntarg
        endif
-       ndiv=1
+
+cccccc testing ndiv for different error tol
+cccccc 0.5d-9
+       ndiv=2500
 
 
 c
@@ -290,8 +293,8 @@ c
       allocate(scales(0:nlevels),nterms(0:nlevels))
       do ilev = 0,nlevels
 C        scales(ilev) = boxsize(ilev)
-        scales(ilev) = 1.0d0
-C        scales(ilev) = 1.1d0
+C        scales(ilev) = 1.0d0
+        scales(ilev) = 1.1d0
       enddo
 c
 cc      initialize potential and gradient at source
@@ -622,6 +625,14 @@ c     PW variables
       double complex, allocatable ::
      1       mexpp1(:,:),mexpp2(:,:),mexppall(:,:,:)
 
+      double complex, allocatable :: iboxlexp(:,:)
+      double precision iboxsubcenters(3,8)
+      double precision, allocatable :: iboxpot(:,:)
+      double precision, allocatable :: iboxgrad(:,:,:)
+      double precision, allocatable :: iboxsrc(:,:)
+      integer, allocatable :: isrcbox(:)
+      integer iboxfl(2,8)
+
       double complex, allocatable :: tmp(:,:,:)
 
       double precision sourcetmp(3)
@@ -648,7 +659,7 @@ c     PW variables
 c     list 3 variables
 c     end of list 3 variables
 c     list 4 variables
-      integer cntlist4
+      integer cntlist4,cntlist4all
       integer, allocatable :: list4(:),ilist4(:),list4test(:)
       double complex, allocatable :: mexplist4(:,:,:,:)
       double precision, allocatable :: cenlist4(:,:)
@@ -770,6 +781,11 @@ c     Compute total number of plane waves
      1   mexpp1(nd,nexptotp))
       allocate(mexpp2(nd,nexptotp),mexppall(nd,nexptotp,16))
 
+      allocate(isrcbox(ndiv))
+      allocate(iboxlexp(nd*(nmax+1)*(2*nmax+1),8))
+      allocate(iboxpot(nd,ndiv))
+      allocate(iboxgrad(nd,3,ndiv))
+      allocate(iboxsrc(3,ndiv))
 c
 cc      NOTE: there can be some memory savings here
 c
@@ -923,8 +939,8 @@ c     form mexp for all list4 type box at first ghost box center
             rscpow(i) = rscpow(i-1)*rtmp
          enddo
 
-C$OMP PARALLEL DO DEFAULT(SHARED)
-C$OMP$PRIVATE(ibox,istart,iend,jstart,jend,npts,npts0)
+cccccccccccccC$OMP PARALLEL DO DEFAULT(SHARED)
+cccccccccccccC$OMP$PRIVATE(ibox,istart,iend,jstart,jend,npts,npts0)
          do ibox=laddr(1,ilev),laddr(2,ilev)
             if(list4(ibox).gt.0) then
               istart=itree(ipointer(10)+ibox-1)
@@ -1049,18 +1065,18 @@ ccccccccccccccccccccccccccccccc
                     endif
                   endif
                 enddo
-                deallocate(gboxind,gboxsort,gboxcgsort,gboxdpsort)
+                deallocate(gboxind,gboxsort,gboxcgsort)
 C                deallocate(gboxmexp)
               endif
             endif
          enddo
-C$OMP END PARALLEL DO
+ccccccccccccC$OMP END PARALLEL DO
       enddo
 C      deallocate(pgboxwexp)
       call cpu_time(time2)
 C$    time2=omp_get_wtime()
       print *,"mexp list4 time:",time2-time1
-      cntlist4=0
+      timeinfo(2)=time2-time1
 c     end of count number of boxes are in list4
 c
 
@@ -1131,7 +1147,6 @@ C$OMP$PRIVATE(ibox,npts,istart,iend,nchild)
                nchild = itree(ipointer(3)+ibox-1)
 
                if(npts.gt.0.and.nchild.eq.0.and.list4(ibox).eq.0) then
-                  cntlist4=cntlist4+1
                   call l3dformmpcd(nd,rscales(ilev),
      1            sourcesort(1,istart),chargesort(1,istart),
      2            dipvecsort(1,1,istart),npts,
@@ -1157,7 +1172,7 @@ C$    time2=omp_get_wtime()
 C$    time1=omp_get_wtime()
 
 
-      if(ifcharge.eq.1.and.ifdipole.eq.0) then
+      if(ifcharge.eq.3.and.ifdipole.eq.0) then
       do ilev=2,nlevels
 C$OMP PARALLEL DO DEFAULT(SHARED)
 C$OMP$PRIVATE(ibox,jbox,nlist4,istart,iend,npts,i)
@@ -1187,7 +1202,7 @@ C$OMP END PARALLEL DO
       endif
 
 
-      if(ifcharge.eq.0.and.ifdipole.eq.1) then
+      if(ifcharge.eq.0.and.ifdipole.eq.3) then
       do ilev=2,nlevels
 C$OMP PARALLEL DO DEFAULT(SHARED)
 C$OMP$PRIVATE(ibox,jbox,nlist4,istart,iend,npts,i)
@@ -1247,7 +1262,7 @@ C$OMP END PARALLEL DO
 
       call cpu_time(time2)
 C$    time2=omp_get_wtime()
-      timeinfo(2)=time2-time1
+c      timeinfo(2)=time2-time1
 
 
       lca = 4*nmax
@@ -1319,74 +1334,6 @@ C$OMP END PARALLEL DO
             rscpow(i) = rscpow(i-1)*rtmp
          enddo
 
-ccc   generate ilev+1 list4 type box plane wave expansion
-         cntlist4=0
-         do ibox=laddr(1,ilev-1),laddr(2,ilev-1)
-            nlist3=itree(ipointer(24)+ibox-1)
-            if(nlist3.gt.0) then
-              cntlist4=cntlist4+1
-              list4test(ibox)=cntlist4
-            endif
-         enddo
-C         print *,"cntlist4:",cntlist4
-         print *,"nboxes:",nboxes,"cntlist4:",cntlist4,"ilev",ilev
-         allocate(pgboxwexptest(nd,nexptotp,cntlist4,6))
-         allocate(pgboxwexpchild(nd,nexptotp,cntlist4,6,8))
-         allocate(pgboxmexptest(nd*(nterms(ilev)+1)*(2*nterms(ilev)+1),
-     1                         8,cntlist4))
-         pgboxmexptest=0.0d0
-         pgboxwexptest=0.0d0
-         pgboxwexpchild=0.0d0
-         call l3dlist4pw(ilev-1,nd,nexptotp,nexptot,nterms(ilev),
-     1        nmax,nlams,nlege,nthmax,nlevels,ifcharge,ifdipole,
-     2        list4test,itree,laddr,ipointer,nfourier,nphysical,
-     3        rdminus,rdplus,rlsc,
-     4        rscales(ilev),boxsize(ilev),zshift,sourcesort,
-     5        chargesort,dipvecsort,centers,xshift,yshift,fexpe,
-     6        fexpo,mexpf1,mexpf2,tmp,mptemp,wlege,rlams,rscpow,
-     7        pgboxwexptest,cntlist4,pgboxmexptest,pgboxwexpchild)
-
-         errwexp=0
-         errmexp=0
-         do ibox=laddr(1,ilev-1),laddr(2,ilev-1)
-            jbox=list4(ibox)
-            jboxtest=list4test(ibox)
-            if(jbox.gt.0) then
-C            print *,"jboxs:",jbox,jboxtest
-              do i=1,nexptotp
-                do idim=1,nd
-c                  print *,pgboxwexp(idim,i,jbox,1)-
-c       1             pgboxwexptest(idim,i,jboxtest,1)
-C                  print *,pgboxwexp(idim,i,jbox,1),
-C       1             pgboxwexptest(idim,i,jboxtest,1)
-                  errwexp=errwexp+pgboxwexp(idim,i,jbox,1)-
-     1                    pgboxwexptest(idim,i,jboxtest,1)
-                  errwexp=errwexp+pgboxwexp(idim,i,jbox,2)-
-     1                    pgboxwexptest(idim,i,jboxtest,2)
-                  errwexp=errwexp+pgboxwexp(idim,i,jbox,3)-
-     1                    pgboxwexptest(idim,i,jboxtest,3)
-                  errwexp=errwexp+pgboxwexp(idim,i,jbox,4)-
-     1                    pgboxwexptest(idim,i,jboxtest,4)
-                  errwexp=errwexp+pgboxwexp(idim,i,jbox,5)-
-     1                    pgboxwexptest(idim,i,jboxtest,5)
-                  errwexp=errwexp+pgboxwexp(idim,i,jbox,6)-
-     1                    pgboxwexptest(idim,i,jboxtest,6)
-                enddo
-              enddo
-              do igbox=1,8
-                do i=1,nd*(nterms(ilev)+1)*(2*nterms(ilev)+1)
-                  errmexp=errmexp+pgboxmexptest(i,igbox,jboxtest)-
-     1                    gboxmexp(i,igbox,jbox)
-C                  print *,pgboxmexptest(i,igbox,jboxtest),
-C     1                    gboxmexp(i,igbox,jbox)
-                enddo
-              enddo
-            endif
-         enddo
-         print *,"errwexp",errwexp
-         print *,"errmexp",errmexp
-ccc   end of generate ilev+1 list4
-
 C$OMP PARALLEL DO DEFAULT (SHARED)
 C$OMP$PRIVATE(ibox,istart,iend,npts,tmp,mexpf1,mexpf2,mptemp)
          do ibox=laddr(1,ilev),laddr(2,ilev)
@@ -1445,151 +1392,6 @@ cc                process east-west for current box
 
          enddo
 C$OMP END PARALLEL DO         
-         pgboxwexp=0d0
-C         pgboxwexpchild=0
-         do ibox=laddr(1,ilev),laddr(2,ilev)
-            istart = itree(ipointer(10)+ibox-1)
-            iend = itree(ipointer(11)+ibox-1)
-            npts = iend-istart+1
-            if(npts.gt.0) then
-              nlist4 = itree(ipointer(26)+ibox-1)
-              do i=1,nlist4
-                jbox = itree(ipointer(27)+(ibox-1)*mnlist4+i-1)
-                jstart = itree(ipointer(10)+jbox-1)
-                jend = itree(ipointer(11)+jbox-1)
-                npts0 = jend-jstart+1
-
-C                call l3ddirectcdg(nd,sourcesort(1,jstart),
-C     1          chargesort(1,jstart),dipvecsort(1,1,jstart),
-C     2          npts0,sourcesort(1,istart),npts,
-C     3          pot(1,istart),grad(1,1,istart),thresh)
-
-                kbox = list4test(jbox)
-
-                do igbox=1,8
-                  ii=2
-                  jj=2
-                  if(igbox.eq.1.or.igbox.eq.2.or.
-     1               igbox.eq.5.or.igbox.eq.6) ii = 1
-                  if(igbox.lt.5) jj = 1
-                  
-                  ctmp(1)=centers(1,jbox)+
-     1                    (-1)**igbox*boxsize(ilev)/2.0d0
-                  ctmp(2)=centers(2,jbox)+
-     1                    (-1)**ii*boxsize(ilev)/2.0d0
-                  ctmp(3)=centers(3,jbox)+
-     1                    (-1)**jj*boxsize(ilev)/2.0d0
-
-c                  if(npts0.gt.0) print *,"npts0:",npts0
-
-                  if(npts0.gt.100000) then
-                  call l3dmpevalg(nd,rscales(ilev),ctmp,
-     1            pgboxmexptest(1,igbox,kbox),nterms(ilev),
-     2            sourcesort(1,istart),npts,pot(1,istart),
-     3            grad(1,1,istart),wlege,nlege,thresh)
-                  endif
-
-                  call getlist4pwdirtest(dir,ctmp,
-     1                 centers(1,ibox),boxsize(ilev))
-                  if(npts0.gt.100000) then
-C                  print *,"dir:",dir,"ibox:",ibox,"jbox:",jbox,
-C     1                  "igbox:",igbox
-                  if(dir.eq.1) then
-                    call lpw_ud_eval_g(nd,ctmp,boxsize(ilev),npts,
-     1               sourcesort(1,istart),nlams,rlams,whts,nphysical,
-     2               nexptotp,nphmax,pgboxwexp(1,1,1,1),
-     3               pgboxwexpchild(1,1,kbox,2,igbox),
-     4               pot(1,istart),grad(1,1,istart))
-                  else if(dir.eq.2) then
-                    call lpw_ud_eval_g(nd,ctmp,boxsize(ilev),npts,
-     1               sourcesort(1,istart),nlams,rlams,whts,nphysical,
-     2               nexptotp,nphmax,pgboxwexpchild(1,1,kbox,1,igbox),
-     3               pgboxwexp(1,1,1,2),
-     4               pot(1,istart),grad(1,1,istart))
-                  else if(dir.eq.3) then
-                    call lpw_ns_eval_g(nd,ctmp,boxsize(ilev),npts,
-     1               sourcesort(1,istart),nlams,rlams,whts,nphysical,
-     2               nexptotp,nphmax,pgboxwexp(1,1,1,3),
-     3               pgboxwexpchild(1,1,kbox,4,igbox),
-     4               pot(1,istart),grad(1,1,istart))
-                  else if(dir.eq.4) then
-                    call lpw_ns_eval_g(nd,ctmp,boxsize(ilev),npts,
-     1               sourcesort(1,istart),nlams,rlams,whts,nphysical,
-     2               nexptotp,nphmax,pgboxwexpchild(1,1,kbox,3,igbox),
-     3               pgboxwexp(1,1,1,4),
-     4               pot(1,istart),grad(1,1,istart))
-                  else if(dir.eq.5) then
-                    call lpw_ew_eval_g(nd,ctmp,boxsize(ilev),npts,
-     1               sourcesort(1,istart),nlams,rlams,whts,nphysical,
-     2               nexptotp,nphmax,pgboxwexp(1,1,1,5),
-     3               pgboxwexpchild(1,1,kbox,6,igbox),
-     4               pot(1,istart),grad(1,1,istart))
-                  else if(dir.eq.6) then
-                    call lpw_ew_eval_g(nd,ctmp,boxsize(ilev),npts,
-     1               sourcesort(1,istart),nlams,rlams,whts,nphysical,
-     2               nexptotp,nphmax,pgboxwexpchild(1,1,kbox,5,igbox),
-     3               pgboxwexp(1,1,1,6),
-     4               pot(1,istart),grad(1,1,istart))
-                  else
-                  endif
-                  endif
-                enddo
-
-                call getlist4pwdirtest(dir,centers(1,jbox),
-     1               centers(1,ibox),boxsize(ilev))
-
-                ctmp(1) = centers(1,jbox)-boxsize(ilev)/2.0d0
-                ctmp(2) = centers(2,jbox)-boxsize(ilev)/2.0d0
-                ctmp(3) = centers(3,jbox)-boxsize(ilev)/2.0d0
-                if(ifpgh.eq.2.and.npts0.gt.100000) then
-                  if(dir.eq.1) then
-                    print *,"dir:",dir
-                    call lpw_ud_eval_g(nd,ctmp,boxsize(ilev),npts,
-     1               sourcesort(1,istart),nlams,rlams,whts,nphysical,
-     2               nexptotp,nphmax,pgboxwexp(1,1,1,1),
-     3               pgboxwexptest(1,1,kbox,2),
-     4               pot(1,istart),grad(1,1,istart))
-                  else if(dir.eq.2) then
-                    print *,"dir:",dir
-                    call lpw_ud_eval_g(nd,ctmp,boxsize(ilev),npts,
-     1               sourcesort(1,istart),nlams,rlams,whts,nphysical,
-     2               nexptotp,nphmax,pgboxwexptest(1,1,kbox,1),
-     3               pgboxwexp(1,1,1,2),
-     4               pot(1,istart),grad(1,1,istart))
-                  else if(dir.eq.3) then
-                    print *,"dir:",dir
-                    call lpw_ns_eval_g(nd,ctmp,boxsize(ilev),npts,
-     1               sourcesort(1,istart),nlams,rlams,whts,nphysical,
-     2               nexptotp,nphmax,pgboxwexp(1,1,1,3),
-     3               pgboxwexptest(1,1,kbox,4),
-     4               pot(1,istart),grad(1,1,istart))
-                  else if(dir.eq.4) then
-                    print *,"dir:",dir
-                    call lpw_ns_eval_g(nd,ctmp,boxsize(ilev),npts,
-     1               sourcesort(1,istart),nlams,rlams,whts,nphysical,
-     2               nexptotp,nphmax,pgboxwexptest(1,1,kbox,3),
-     3               pgboxwexp(1,1,1,4),
-     4               pot(1,istart),grad(1,1,istart))
-                  else if(dir.eq.5) then
-                    print *,"dir:",dir
-                    call lpw_ew_eval_g(nd,ctmp,boxsize(ilev),npts,
-     1               sourcesort(1,istart),nlams,rlams,whts,nphysical,
-     2               nexptotp,nphmax,pgboxwexp(1,1,1,5),
-     3               pgboxwexptest(1,1,kbox,6),
-     4               pot(1,istart),grad(1,1,istart))
-                  else if(dir.eq.6) then
-                    print *,"dir:",dir
-                    call lpw_ew_eval_g(nd,ctmp,boxsize(ilev),npts,
-     1               sourcesort(1,istart),nlams,rlams,whts,nphysical,
-     2               nexptotp,nphmax,pgboxwexptest(1,1,kbox,5),
-     3               pgboxwexp(1,1,1,6),
-     4               pot(1,istart),grad(1,1,istart))
-                  else
-                  endif
-                endif
-              enddo
-            endif
-         enddo
 c
 c
 cc         loop over parent boxes and ship plane wave
@@ -1608,16 +1410,16 @@ c
          do i=1,nterms(ilev)
             rscpow(i) = rscpow(i-1)*rtmp
          enddo
-C$OMP PARALLEL DO DEFAULT (SHARED)
-C$OMP$PRIVATE(ibox,istart,iend,npts,nchild)
-C$OMP$PRIVATE(mexpf1,mexpf2,mexpp1,mexpp2,mexppall)
-C$OMP$PRIVATE(nuall,uall,ndall,dall,nnall,nall,nsall,sall)
-C$OMP$PRIVATE(neall,eall,nwall,wall,nu1234,u1234,nd5678,d5678)
-C$OMP$PRIVATE(nn1256,n1256,ns3478,s3478,ne1357,e1357,nw2468,w2468)
-C$OMP$PRIVATE(nn12,n12,nn56,n56,ns34,s34,ns78,s78,ne13,e13,ne57,e57)
-C$OMP$PRIVATE(nw24,w24,nw68,w68,ne1,e1,ne3,e3,ne5,e5,ne7,e7)
-C$OMP$PRIVATE(nw2,w2,nw4,w4,nw6,w6,nw8,w8)
-C$OMP$PRIVATE(npts0,nlist3,ctmp)
+cccccccC$OMP PARALLEL DO DEFAULT (SHARED)
+cccccccC$OMP$PRIVATE(ibox,istart,iend,npts,nchild)
+cccccccC$OMP$PRIVATE(mexpf1,mexpf2,mexpp1,mexpp2,mexppall)
+cccccccC$OMP$PRIVATE(nuall,uall,ndall,dall,nnall,nall,nsall,sall)
+cccccccC$OMP$PRIVATE(neall,eall,nwall,wall,nu1234,u1234,nd5678,d5678)
+cccccccC$OMP$PRIVATE(nn1256,n1256,ns3478,s3478,ne1357,e1357,nw2468,w2468)
+cccccccC$OMP$PRIVATE(nn12,n12,nn56,n56,ns34,s34,ns78,s78,ne13,e13,ne57,e57)
+cccccccC$OMP$PRIVATE(nw24,w24,nw68,w68,ne1,e1,ne3,e3,ne5,e5,ne7,e7)
+cccccccC$OMP$PRIVATE(nw2,w2,nw4,w4,nw6,w6,nw8,w8)
+cccccccC$OMP$PRIVATE(npts0,nlist3,ctmp,iboxpot)
          do ibox = laddr(1,ilev-1),laddr(2,ilev-1)
            npts = 0
            if(ifpghtarg.gt.0) then
@@ -1659,7 +1461,7 @@ C$OMP$PRIVATE(npts0,nlist3,ctmp)
      5         mexpf1,mexpf2,mexpp1,mexpp2,mexppall(1,1,1),
      6         mexppall(1,1,2),mexppall(1,1,3),mexppall(1,1,4),xshift,
      7         yshift,zshift,fexpback,rlsc,rscpow,
-     8         pgboxwexptest,cntlist4,list4test,
+     8         pgboxwexp,cntlist4,list4,
      9         itree(ipointer(26)),itree(ipointer(27)),mnlist4)
                
                call processnsexp(nd,ibox,ilev,nboxes,centers,
@@ -1674,7 +1476,7 @@ C$OMP$PRIVATE(npts0,nlist3,ctmp)
      8         mexppall(1,1,5),mexppall(1,1,6),mexppall(1,1,7),
      9         mexppall(1,1,8),rdplus,xshift,yshift,zshift,
      9         fexpback,rlsc,rscpow,
-     9         pgboxwexptest,cntlist4,list4test,
+     9         pgboxwexp,cntlist4,list4,
      9         itree(ipointer(26)),itree(ipointer(27)),mnlist4)
 
                
@@ -1695,135 +1497,79 @@ C$OMP$PRIVATE(npts0,nlist3,ctmp)
      9         mexppall(1,1,13),mexppall(1,1,14),mexppall(1,1,15),
      9         mexppall(1,1,16),rdminus,xshift,yshift,zshift,
      9         fexpback,rlsc,rscpow,
-     9         pgboxwexptest,cntlist4,list4test,
+     9         pgboxwexp,cntlist4,list4,
      9         itree(ipointer(26)),itree(ipointer(27)),mnlist4)
 
 
             endif
 
             nlist3 = itree(ipointer(24)+ibox-1)
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
             if(nlist3.gt.0.and.npts.gt.0) then
               call getlist3pwlistall(ibox,boxsize(ilev),nboxes,
      1             nlist3,itree(ipointer(25)+(ibox-1)*mnlist3),isep,
      2             centers,nuall,uall,ndall,dall,nnall,nall,
      3                     nsall,sall,neall,eall,nwall,wall)
-             
-              ctmp(1) = centers(1,ibox) - boxsize(ilev)/2
-              ctmp(2) = centers(2,ibox) - boxsize(ilev)/2
-              ctmp(3) = centers(3,ibox) - boxsize(ilev)/2
+              iboxlexp=0
+              call processlist3udexplong(nd,ibox,nboxes,centers,
+     1             boxsize(ilev),nterms(ilev),iboxlexp,rlams,whts,
+     2             nlams,nfourier,nphysical,nthmax,nexptot,
+     3             nexptotp,mexp,nuall,uall,ndall,dall,
+     4             mexpf1,mexpf2,mexpp1,mexpp2,
+     5             mexppall(1,1,1),mexppall(1,1,2),
+     6             xshift,yshift,zshift,fexpback,rlsc,rscpow)
 
-              call processlist3udexp(nd,ibox,nboxes,centers,
-     1             boxsize(ilev),nterms(ilev),
-     2             nexptotp,mexp,nuall,uall,ndall,dall,
-     3             mexppall(1,1,1),mexppall(1,1,2),
-     4             xshift,yshift,zshift)
+              call processlist3nsexplong(nd,ibox,nboxes,centers,
+     1             boxsize(ilev),nterms(ilev),iboxlexp,rlams,whts,
+     2             nlams,nfourier,nphysical,nthmax,nexptot,
+     3             nexptotp,mexp,nnall,nall,nsall,sall,
+     4             mexpf1,mexpf2,mexpp1,mexpp2,
+     5             mexppall(1,1,1),mexppall(1,1,2),rdplus,
+     6             xshift,yshift,zshift,fexpback,rlsc,rscpow)
 
-              call processlist3nsexp(nd,ibox,nboxes,centers,
-     1             boxsize(ilev),nterms(ilev),
-     2             nexptotp,mexp,nnall,nall,nsall,sall,
-     3             mexppall(1,1,3),mexppall(1,1,4),
-     4             xshift,yshift,zshift)
+              call processlist3ewexplong(nd,ibox,nboxes,centers,
+     1             boxsize(ilev),nterms(ilev),iboxlexp,rlams,whts,
+     2             nlams,nfourier,nphysical,nthmax,nexptot,
+     3             nexptotp,mexp,neall,eall,nwall,wall,
+     4             mexpf1,mexpf2,mexpp1,mexpp2,
+     5             mexppall(1,1,1),mexppall(1,1,2),rdminus,
+     6             xshift,yshift,zshift,fexpback,rlsc,rscpow)
 
-              call processlist3ewexp(nd,ibox,nboxes,centers,
-     1             boxsize(ilev),nterms(ilev),
-     2             nexptotp,mexp,neall,eall,nwall,wall,
-     3             mexppall(1,1,5),mexppall(1,1,6),
-     4             xshift,yshift,zshift)
-
-               if(ifpgh.eq.1) then
-                 istart = itree(ipointer(10)+ibox-1)
-                 iend = itree(ipointer(11)+ibox-1)
-                 npts0 = iend-istart+1
-                 if(npts0.gt.0) then
-                   call lpw_ud_eval_p(nd,ctmp,boxsize(ilev),npts0,
-     1               sourcesort(1,istart),nlams,rlams,whts,nphysical,
-     2               nexptotp,nphmax,mexppall(1,1,1),mexppall(1,1,2),
-     3               pot(1,istart))
-
-                   call lpw_ns_eval_p(nd,ctmp,boxsize(ilev),npts0,
-     1               sourcesort(1,istart),nlams,rlams,whts,nphysical,
-     2               nexptotp,nphmax,mexppall(1,1,3),mexppall(1,1,4),
-     3               pot(1,istart))
-
-                   call lpw_ew_eval_p(nd,ctmp,boxsize(ilev),npts0,
-     1               sourcesort(1,istart),nlams,rlams,whts,nphysical,
-     2               nexptotp,nphmax,mexppall(1,1,5),mexppall(1,1,6),
-     3               pot(1,istart))
-                 endif
-               endif
-
-               if(ifpgh.eq.2) then
-                 istart = itree(ipointer(10)+ibox-1)
-                 iend = itree(ipointer(11)+ibox-1)
-                 npts0 = iend-istart+1
-                 if(npts0.gt.0) then
-                   call lpw_ud_eval_g(nd,ctmp,boxsize(ilev),npts0,
-     1               sourcesort(1,istart),nlams,rlams,whts,nphysical,
-     2               nexptotp,nphmax,mexppall(1,1,1),mexppall(1,1,2),
-     3               pot(1,istart),grad(1,1,istart))
-
-                   call lpw_ns_eval_g(nd,ctmp,boxsize(ilev),npts0,
-     1               sourcesort(1,istart),nlams,rlams,whts,nphysical,
-     2               nexptotp,nphmax,mexppall(1,1,3),mexppall(1,1,4),
-     3               pot(1,istart),grad(1,1,istart))
-
-                   call lpw_ew_eval_g(nd,ctmp,boxsize(ilev),npts0,
-     1               sourcesort(1,istart),nlams,rlams,whts,nphysical,
-     2               nexptotp,nphmax,mexppall(1,1,5),mexppall(1,1,6),
-     3               pot(1,istart),grad(1,1,istart))
-                 endif
-               endif
-
-
-               if(ifpghtarg.eq.1) then
-                 istart = itree(ipointer(12)+ibox-1)
-                 iend = itree(ipointer(13)+ibox-1)
-                 npts0 = iend-istart+1
-                 if(npts0.gt.0) then
-                   call lpw_ud_eval_p(nd,ctmp,boxsize(ilev),npts0,
-     1               targsort(1,istart),nlams,rlams,whts,nphysical,
-     2               nexptotp,nphmax,mexppall(1,1,1),mexppall(1,1,2),
-     3               pottarg(1,istart))
-
-                   call lpw_ns_eval_p(nd,ctmp,boxsize(ilev),npts0,
-     1               targsort(1,istart),nlams,rlams,whts,nphysical,
-     2               nexptotp,nphmax,mexppall(1,1,3),mexppall(1,1,4),
-     3               pottarg(1,istart))
-
-                   call lpw_ew_eval_p(nd,ctmp,boxsize(ilev),npts0,
-     1               targsort(1,istart),nlams,rlams,whts,nphysical,
-     2               nexptotp,nphmax,mexppall(1,1,5),mexppall(1,1,6),
-     3               pottarg(1,istart))
-                 endif
-               endif
-
-               if(ifpghtarg.eq.2) then
-                 istart = itree(ipointer(12)+ibox-1)
-                 iend = itree(ipointer(13)+ibox-1)
-                 npts0 = iend-istart+1
-                 if(npts0.gt.0) then
-                   call lpw_ud_eval_g(nd,ctmp,boxsize(ilev),npts0,
-     1               targsort(1,istart),nlams,rlams,whts,nphysical,
-     2               nexptotp,nphmax,mexppall(1,1,1),mexppall(1,1,2),
-     3               pottarg(1,istart),gradtarg(1,1,istart))
-
-                   call lpw_ns_eval_g(nd,ctmp,boxsize(ilev),npts0,
-     1               targsort(1,istart),nlams,rlams,whts,nphysical,
-     2               nexptotp,nphmax,mexppall(1,1,3),mexppall(1,1,4),
-     3               pottarg(1,istart),gradtarg(1,1,istart))
-
-                   call lpw_ew_eval_g(nd,ctmp,boxsize(ilev),npts0,
-     1               targsort(1,istart),nlams,rlams,whts,nphysical,
-     2               nexptotp,nphmax,mexppall(1,1,5),mexppall(1,1,6),
-     3               pottarg(1,istart),gradtarg(1,1,istart))
-                 endif
-               endif
+              if(ifpgh.eq.1) then
+                iboxpot=0
+                istart = itree(ipointer(10)+ibox-1)
+                iend = itree(ipointer(11)+ibox-1)
+                npts = iend-istart+1
+                if(npts.gt.0) then
+                isrcbox = 0
+                call subdividebox(sourcesort(1,istart),npts,
+     1               centers(1,ibox),boxsize(ilev),
+     2               isrcbox,iboxfl,iboxsubcenters)
+                call dreorderf(3,npts,sourcesort(1,istart),
+     1               iboxsrc,isrcbox)
+                call dreorderf(nd,npts,pot(1,istart),
+     1               iboxpot,isrcbox)
+                do i=1,8
+                  if(iboxfl(1,i).gt.0) then
+                    jstart=iboxfl(1,i)
+                    jend=iboxfl(2,i)
+                    npts0=jend-jstart+1
+                    if(npts0.gt.0) then
+                      call l3dtaevalp(nd,rscales(ilev),
+     1                     iboxsubcenters(1,i),iboxlexp(1,i),
+     2                     nterms(ilev),iboxsrc(1,jstart),npts0,
+     3                     iboxpot(1,jstart),wlege,nlege)
+                    endif
+                  endif
+                enddo
+                call dreorderi(nd,npts,iboxpot,pot(1,istart),
+     1               isrcbox)
+                endif
+              endif
             endif
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
          enddo
-C$OMP END PARALLEL DO         
-         deallocate(pgboxwexptest)
-         deallocate(pgboxwexpchild)
-         deallocate(pgboxmexptest)
+ccccccccccccccC$OMP END PARALLEL DO         
       enddo
       call cpu_time(time2)
 C$        time2=omp_get_wtime()
