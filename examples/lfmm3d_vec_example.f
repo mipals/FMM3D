@@ -25,7 +25,7 @@ c
       write(*,*)
       write(*,*)
 
-      ns = 1000000
+      ns = 200000
       nt = 0
 
       ntest = ns
@@ -229,32 +229,32 @@ C     1      dipvec,ns,targ,ntest,pottargex,gradtargex,thresh)
 
 
 
-       erra = 0
-       ra = 0
-       do i=1,ntest
-         do idim=1,nd
-           ra = ra + pottargex(idim,i)**2
-           erra = erra + (pottargex(idim,i)-pottarg(idim,i))**2
-         enddo
-       enddo
-
-       erra = sqrt(erra/ra)
-       call prin2("error pot targ=*",erra,1)
-
-      erra = 0
-      ra = 0
-      do i=1,ntest
-        do j=1,3
-          do idim=1,nd
-            erra = erra + (gradtargex(idim,j,i)-gradtarg(idim,j,i))**2
-            ra = ra + (gradtargex(idim,j,i))**2
-          enddo
-        enddo
-      enddo
-
-      erra = sqrt(erra/ra)
-
-      call prin2('error grad targ=*',erra,1)
+c       erra = 0
+c       ra = 0
+c       do i=1,ntest
+c         do idim=1,nd
+c           ra = ra + pottargex(idim,i)**2
+c           erra = erra + (pottargex(idim,i)-pottarg(idim,i))**2
+c         enddo
+c       enddo
+c
+c       erra = sqrt(erra/ra)
+c       call prin2("error pot targ=*",erra,1)
+c
+c      erra = 0
+c      ra = 0
+c      do i=1,ntest
+c        do j=1,3
+c          do idim=1,nd
+c            erra = erra + (gradtargex(idim,j,i)-gradtarg(idim,j,i))**2
+c            ra = ra + (gradtargex(idim,j,i))**2
+c          enddo
+c        enddo
+c      enddo
+c
+c      erra = sqrt(erra/ra)
+c
+c      call prin2('error grad targ=*',erra,1)
 
 
 
