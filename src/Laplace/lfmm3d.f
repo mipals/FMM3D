@@ -940,8 +940,11 @@ c     form mexp for all list4 type box at first ghost box center
             rscpow(i) = rscpow(i-1)*rtmp
          enddo
 
-cccccccccccccC$OMP PARALLEL DO DEFAULT(SHARED)
-cccccccccccccC$OMP$PRIVATE(ibox,istart,iend,jstart,jend,npts,npts0)
+C$OMP PARALLEL DO DEFAULT(SHARED)
+C$OMP$PRIVATE(ibox,istart,iend,jbox,jstart,jend,npts,npts0,i)
+C$OMP$PRIVATE(gboxind,gboxsort,gboxfl,gboxsubcenters)
+C$OMP$PRIVATE(gboxcgsort,gboxdpsort,gboxwexp)
+C$OMP$PRIVATE(mexpf1,mexpf2,tmp,mptemp)
          do ibox=laddr(1,ilev),laddr(2,ilev)
             if(list4(ibox).gt.0) then
               istart=itree(ipointer(10)+ibox-1)
@@ -1056,9 +1059,8 @@ c
               endif
             endif
          enddo
-ccccccccccccC$OMP END PARALLEL DO
+C$OMP END PARALLEL DO
       enddo
-C      deallocate(pgboxwexp)
       call cpu_time(time2)
 C$    time2=omp_get_wtime()
       print *,"mexp list4 time:",time2-time1
