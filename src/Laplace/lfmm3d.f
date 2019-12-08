@@ -811,7 +811,7 @@ c
         list4test(i)=0
         ilist4(i)=0
       enddo
-      allocate(gboxwexp(nd,nexptotp,8,6))
+c      allocate(gboxwexp(nd,nexptotp,8,6))
       cntlist4=0
 
 c     Precompute table for shifting exponential coefficients in 
@@ -940,11 +940,11 @@ c     form mexp for all list4 type box at first ghost box center
             rscpow(i) = rscpow(i-1)*rtmp
          enddo
 
-C$OMP PARALLEL DO DEFAULT(SHARED)
-C$OMP$PRIVATE(ibox,istart,iend,jbox,jstart,jend,npts,npts0,i)
-C$OMP$PRIVATE(gboxind,gboxsort,gboxfl,gboxsubcenters)
-C$OMP$PRIVATE(gboxcgsort,gboxdpsort,gboxwexp)
-C$OMP$PRIVATE(mexpf1,mexpf2,tmp,mptemp)
+cccC$OMP PARALLEL DO DEFAULT(SHARED)
+cccC$OMP$PRIVATE(ibox,istart,iend,jbox,jstart,jend,npts,npts0,i)
+cccC$OMP$PRIVATE(gboxind,gboxsort,gboxfl,gboxsubcenters)
+cccC$OMP$PRIVATE(gboxcgsort,gboxdpsort,gboxwexp)
+cccC$OMP$PRIVATE(mexpf1,mexpf2,tmp,mptemp)
          do ibox=laddr(1,ilev),laddr(2,ilev)
             if(list4(ibox).gt.0) then
               istart=itree(ipointer(10)+ibox-1)
@@ -953,6 +953,7 @@ C$OMP$PRIVATE(mexpf1,mexpf2,tmp,mptemp)
               if(npts.gt.0) then
                 allocate(gboxind(npts))
                 allocate(gboxsort(3,npts))
+                allocate(gboxwexp(nd,nexptotp,8,6))
                 call subdividebox(sourcesort(1,istart),npts,
      1               centers(1,ibox),boxsize(ilev+1),
      2               gboxind,gboxfl,gboxsubcenters)
@@ -1055,11 +1056,11 @@ c
      3                   xshift,yshift,zshift)
                   endif
                 enddo
-                deallocate(gboxind,gboxsort,gboxcgsort)
+                deallocate(gboxind,gboxsort,gboxcgsort,gboxwexp)
               endif
             endif
          enddo
-C$OMP END PARALLEL DO
+cccC$OMP END PARALLEL DO
       enddo
       call cpu_time(time2)
 C$    time2=omp_get_wtime()

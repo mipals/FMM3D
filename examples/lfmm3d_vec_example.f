@@ -25,12 +25,12 @@ c
       write(*,*)
       write(*,*)
 
-      ns = 200000
+      ns = 10000
       nt = 0
 
       ntest = ns
       
-      nd = 1
+      nd = 100
 
       allocate(source(3,ns))
       allocate(targ(3,nt))
