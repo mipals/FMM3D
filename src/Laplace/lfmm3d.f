@@ -811,7 +811,7 @@ c
         list4test(i)=0
         ilist4(i)=0
       enddo
-c      allocate(gboxwexp(nd,nexptotp,8,6))
+cccccc      allocate(gboxwexp(nd,nexptotp,8,6))
       cntlist4=0
 
 c     Precompute table for shifting exponential coefficients in 
@@ -940,11 +940,11 @@ c     form mexp for all list4 type box at first ghost box center
             rscpow(i) = rscpow(i-1)*rtmp
          enddo
 
-cccC$OMP PARALLEL DO DEFAULT(SHARED)
-cccC$OMP$PRIVATE(ibox,istart,iend,jbox,jstart,jend,npts,npts0,i)
-cccC$OMP$PRIVATE(gboxind,gboxsort,gboxfl,gboxsubcenters)
-cccC$OMP$PRIVATE(gboxcgsort,gboxdpsort,gboxwexp)
-cccC$OMP$PRIVATE(mexpf1,mexpf2,tmp,mptemp)
+C$OMP PARALLEL DO DEFAULT(SHARED)
+C$OMP$PRIVATE(ibox,istart,iend,jbox,jstart,jend,npts,npts0,i)
+C$OMP$PRIVATE(gboxind,gboxsort,gboxfl,gboxsubcenters)
+C$OMP$PRIVATE(gboxcgsort,gboxdpsort,gboxwexp)
+C$OMP$PRIVATE(mexpf1,mexpf2,tmp,mptemp)
          do ibox=laddr(1,ilev),laddr(2,ilev)
             if(list4(ibox).gt.0) then
               istart=itree(ipointer(10)+ibox-1)
@@ -1060,7 +1060,7 @@ c
               endif
             endif
          enddo
-cccC$OMP END PARALLEL DO
+C$OMP END PARALLEL DO
       enddo
       call cpu_time(time2)
 C$    time2=omp_get_wtime()
@@ -1408,7 +1408,8 @@ cccccccC$OMP$PRIVATE(nn1256,n1256,ns3478,s3478,ne1357,e1357,nw2468,w2468)
 cccccccC$OMP$PRIVATE(nn12,n12,nn56,n56,ns34,s34,ns78,s78,ne13,e13,ne57,e57)
 cccccccC$OMP$PRIVATE(nw24,w24,nw68,w68,ne1,e1,ne3,e3,ne5,e5,ne7,e7)
 cccccccC$OMP$PRIVATE(nw2,w2,nw4,w4,nw6,w6,nw8,w8)
-cccccccC$OMP$PRIVATE(npts0,nlist3,ctmp,iboxpot)
+cccccccC$OMP$PRIVATE(npts0,nlist3,ctmp)
+cccccccC$OMP$PRIVATE(iboxpot,iboxgrad,iboxlexp,isrcbox,iboxsrc)
          do ibox = laddr(1,ilev-1),laddr(2,ilev-1)
            npts = 0
            if(ifpghtarg.gt.0) then
