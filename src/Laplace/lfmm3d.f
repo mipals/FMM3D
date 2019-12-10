@@ -630,7 +630,7 @@ c     PW variables
       double precision, allocatable :: iboxpot(:,:)
       double precision, allocatable :: iboxgrad(:,:,:)
       double precision, allocatable :: iboxsrc(:,:)
-      integer, allocatable :: isrcbox(:)
+      integer, allocatable :: iboxsrcind(:)
       integer iboxfl(2,8)
 
       double complex, allocatable :: tmp(:,:,:)
@@ -781,11 +781,11 @@ c     Compute total number of plane waves
      1   mexpp1(nd,nexptotp))
       allocate(mexpp2(nd,nexptotp),mexppall(nd,nexptotp,16))
 
-      allocate(isrcbox(ndiv))
-      allocate(iboxlexp(nd*(nmax+1)*(2*nmax+1),8))
-      allocate(iboxpot(nd,ndiv))
-      allocate(iboxgrad(nd,3,ndiv))
-      allocate(iboxsrc(3,ndiv))
+c      allocate(iboxsrcind(ndiv))
+c      allocate(iboxlexp(nd*(nmax+1)*(2*nmax+1),8))
+c      allocate(iboxpot(nd,ndiv))
+c      allocate(iboxgrad(nd,3,ndiv))
+c      allocate(iboxsrc(3,ndiv))
 c
 cc      NOTE: there can be some memory savings here
 c
@@ -1399,17 +1399,17 @@ c
          do i=1,nterms(ilev)
             rscpow(i) = rscpow(i-1)*rtmp
          enddo
-cccccccC$OMP PARALLEL DO DEFAULT (SHARED)
-cccccccC$OMP$PRIVATE(ibox,istart,iend,npts,nchild)
-cccccccC$OMP$PRIVATE(mexpf1,mexpf2,mexpp1,mexpp2,mexppall)
-cccccccC$OMP$PRIVATE(nuall,uall,ndall,dall,nnall,nall,nsall,sall)
-cccccccC$OMP$PRIVATE(neall,eall,nwall,wall,nu1234,u1234,nd5678,d5678)
-cccccccC$OMP$PRIVATE(nn1256,n1256,ns3478,s3478,ne1357,e1357,nw2468,w2468)
-cccccccC$OMP$PRIVATE(nn12,n12,nn56,n56,ns34,s34,ns78,s78,ne13,e13,ne57,e57)
-cccccccC$OMP$PRIVATE(nw24,w24,nw68,w68,ne1,e1,ne3,e3,ne5,e5,ne7,e7)
-cccccccC$OMP$PRIVATE(nw2,w2,nw4,w4,nw6,w6,nw8,w8)
-cccccccC$OMP$PRIVATE(npts0,nlist3,ctmp)
-cccccccC$OMP$PRIVATE(iboxpot,iboxgrad,iboxlexp,isrcbox,iboxsrc)
+C$OMP PARALLEL DO DEFAULT (SHARED)
+C$OMP$PRIVATE(ibox,istart,iend,npts,nchild)
+C$OMP$PRIVATE(mexpf1,mexpf2,mexpp1,mexpp2,mexppall)
+C$OMP$PRIVATE(nuall,uall,ndall,dall,nnall,nall,nsall,sall)
+C$OMP$PRIVATE(neall,eall,nwall,wall,nu1234,u1234,nd5678,d5678)
+C$OMP$PRIVATE(nn1256,n1256,ns3478,s3478,ne1357,e1357,nw2468,w2468)
+C$OMP$PRIVATE(nn12,n12,nn56,n56,ns34,s34,ns78,s78,ne13,e13,ne57,e57)
+C$OMP$PRIVATE(nw24,w24,nw68,w68,ne1,e1,ne3,e3,ne5,e5,ne7,e7)
+C$OMP$PRIVATE(nw2,w2,nw4,w4,nw6,w6,nw8,w8)
+C$OMP$PRIVATE(npts0,nlist3,ctmp,jstart,jend,i,iboxfl,iboxsubcenters)
+C$OMP$PRIVATE(iboxpot,iboxgrad,iboxlexp,iboxsrc,iboxsrcind)
          do ibox = laddr(1,ilev-1),laddr(2,ilev-1)
            npts = 0
            if(ifpghtarg.gt.0) then
@@ -1499,6 +1499,8 @@ cccccccC$OMP$PRIVATE(iboxpot,iboxgrad,iboxlexp,isrcbox,iboxsrc)
      1             nlist3,itree(ipointer(25)+(ibox-1)*mnlist3),isep,
      2             centers,nuall,uall,ndall,dall,nnall,nall,
      3                     nsall,sall,neall,eall,nwall,wall)
+              allocate(iboxlexp(nd*(nterms(ilev)+1)*
+     1                 (2*nterms(ilev)+1),8))
               iboxlexp=0
               call processlist3udexplong(nd,ibox,nboxes,centers,
      1             boxsize(ilev),nterms(ilev),iboxlexp,rlams,whts,
@@ -1529,14 +1531,17 @@ cccccccC$OMP$PRIVATE(iboxpot,iboxgrad,iboxlexp,isrcbox,iboxsrc)
                 iend = itree(ipointer(11)+ibox-1)
                 npts = iend-istart+1
                 if(npts.gt.0) then
-                  isrcbox = 0
+                  allocate(iboxsrcind(npts))
+                  allocate(iboxsrc(3,npts))
+                  allocate(iboxpot(nd,npts))
+                  iboxsrcind = 0
                   call subdividebox(sourcesort(1,istart),npts,
      1                 centers(1,ibox),boxsize(ilev),
-     2                 isrcbox,iboxfl,iboxsubcenters)
+     2                 iboxsrcind,iboxfl,iboxsubcenters)
                   call dreorderf(3,npts,sourcesort(1,istart),
-     1                 iboxsrc,isrcbox)
+     1                 iboxsrc,iboxsrcind)
                   call dreorderf(nd,npts,pot(1,istart),
-     1                 iboxpot,isrcbox)
+     1                 iboxpot,iboxsrcind)
                   do i=1,8
                     if(iboxfl(1,i).gt.0) then
                       jstart=iboxfl(1,i)
@@ -1551,7 +1556,9 @@ cccccccC$OMP$PRIVATE(iboxpot,iboxgrad,iboxlexp,isrcbox,iboxsrc)
                     endif
                   enddo
                   call dreorderi(nd,npts,iboxpot,pot(1,istart),
-     1                 isrcbox)
+     1                 iboxsrcind)
+                  deallocate(iboxsrcind,iboxsrc)
+                  deallocate(iboxpot)
                 endif
               endif
 
@@ -1561,16 +1568,20 @@ cccccc        todo
                 iend = itree(ipointer(11)+ibox-1)
                 npts = iend-istart+1
                 if(npts.gt.0) then
-                  isrcbox = 0
+                  allocate(iboxsrcind(npts))
+                  allocate(iboxsrc(3,npts))
+                  allocate(iboxpot(nd,npts))
+                  allocate(iboxgrad(nd,3,npts))
+                  iboxsrcind = 0
                   call subdividebox(sourcesort(1,istart),npts,
      1                 centers(1,ibox),boxsize(ilev),
-     2                 isrcbox,iboxfl,iboxsubcenters)
+     2                 iboxsrcind,iboxfl,iboxsubcenters)
                   call dreorderf(3,npts,sourcesort(1,istart),
-     1                 iboxsrc,isrcbox)
+     1                 iboxsrc,iboxsrcind)
                   call dreorderf(nd,npts,pot(1,istart),
-     1                 iboxpot,isrcbox)
+     1                 iboxpot,iboxsrcind)
                   call dreorderf(3*nd,npts,grad(1,1,istart),
-     1                 iboxgrad,isrcbox)
+     1                 iboxgrad,iboxsrcind)
                   do i=1,8
                     if(iboxfl(1,i).gt.0) then
                       jstart=iboxfl(1,i)
@@ -1586,25 +1597,30 @@ cccccc        todo
                     endif
                   enddo
                   call dreorderi(nd,npts,iboxpot,pot(1,istart),
-     1                 isrcbox)
+     1                 iboxsrcind)
                   call dreorderi(3*nd,npts,iboxgrad,grad(1,1,istart),
-     1                 isrcbox)
+     1                 iboxsrcind)
+                  deallocate(iboxsrcind,iboxsrc)
+                  deallocate(iboxpot,iboxgrad)
                 endif
               endif
 
               if(ifpghtarg.eq.1) then
-                istart = itree(ipointer(10)+ibox-1)
-                iend = itree(ipointer(11)+ibox-1)
+                istart = itree(ipointer(12)+ibox-1)
+                iend = itree(ipointer(13)+ibox-1)
                 npts = iend-istart+1
                 if(npts.gt.0) then
-                  isrcbox = 0
-                  call subdividebox(sourcesort(1,istart),npts,
+                  allocate(iboxsrcind(npts))
+                  allocate(iboxsrc(3,npts))
+                  allocate(iboxpot(nd,npts))
+                  iboxsrcind = 0
+                  call subdividebox(targsort(1,istart),npts,
      1                 centers(1,ibox),boxsize(ilev),
-     2                 isrcbox,iboxfl,iboxsubcenters)
-                  call dreorderf(3,npts,sourcesort(1,istart),
-     1                 iboxsrc,isrcbox)
-                  call dreorderf(nd,npts,pot(1,istart),
-     1                 iboxpot,isrcbox)
+     2                 iboxsrcind,iboxfl,iboxsubcenters)
+                  call dreorderf(3,npts,targsort(1,istart),
+     1                 iboxsrc,iboxsrcind)
+                  call dreorderf(nd,npts,pottarg(1,istart),
+     1                 iboxpot,iboxsrcind)
                   do i=1,8
                     if(iboxfl(1,i).gt.0) then
                       jstart=iboxfl(1,i)
@@ -1618,24 +1634,32 @@ cccccc        todo
                       endif
                     endif
                   enddo
-                  call dreorderi(nd,npts,iboxpot,pot(1,istart),
-     1                 isrcbox)
+                  call dreorderi(nd,npts,iboxpot,pottarg(1,istart),
+     1                 iboxsrcind)
+                  deallocate(iboxsrcind,iboxsrc)
+                  deallocate(iboxpot)
                 endif
               endif
 
               if(ifpghtarg.eq.2) then
-                istart = itree(ipointer(10)+ibox-1)
-                iend = itree(ipointer(11)+ibox-1)
+                istart = itree(ipointer(12)+ibox-1)
+                iend = itree(ipointer(13)+ibox-1)
                 npts = iend-istart+1
                 if(npts.gt.0) then
-                  isrcbox = 0
-                  call subdividebox(sourcesort(1,istart),npts,
+                  allocate(iboxsrcind(npts))
+                  allocate(iboxsrc(3,npts))
+                  allocate(iboxpot(nd,npts))
+                  allocate(iboxgrad(nd,3,npts))
+                  iboxsrcind = 0
+                  call subdividebox(targsort(1,istart),npts,
      1                 centers(1,ibox),boxsize(ilev),
-     2                 isrcbox,iboxfl,iboxsubcenters)
-                  call dreorderf(3,npts,sourcesort(1,istart),
-     1                 iboxsrc,isrcbox)
-                  call dreorderf(nd,npts,pot(1,istart),
-     1                 iboxpot,isrcbox)
+     2                 iboxsrcind,iboxfl,iboxsubcenters)
+                  call dreorderf(3,npts,targsort(1,istart),
+     1                 iboxsrc,iboxsrcind)
+                  call dreorderf(nd,npts,pottarg(1,istart),
+     1                 iboxpot,iboxsrcind)
+                  call dreorderf(3*nd,npts,gradtarg(1,1,istart),
+     1                 iboxgrad,iboxsrcind)
                   do i=1,8
                     if(iboxfl(1,i).gt.0) then
                       jstart=iboxfl(1,i)
@@ -1649,14 +1673,19 @@ cccccc        todo
                       endif
                     endif
                   enddo
-                  call dreorderi(nd,npts,iboxpot,pot(1,istart),
-     1                 isrcbox)
+                  call dreorderi(nd,npts,iboxpot,pottarg(1,istart),
+     1                 iboxsrcind)
+                  call dreorderi(3*nd,npts,iboxgrad,
+     1                 gradtarg(1,1,istart),iboxsrcind)
+                  deallocate(iboxsrcind,iboxsrc)
+                  deallocate(iboxpot,iboxgrad)
                 endif
               endif
 ccccccc       end of todo
+              deallocate(iboxlexp)
             endif
          enddo
-ccccccccccccccC$OMP END PARALLEL DO         
+C$OMP END PARALLEL DO         
       enddo
       call cpu_time(time2)
 C$        time2=omp_get_wtime()
