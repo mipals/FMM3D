@@ -3318,12 +3318,12 @@ c
 c--------------------------------------------------------------------
       subroutine l3dlist4pw(ilev,nd,nexptotp,nexptot,nterms,nmax,
      1           nlams,nlege,nthmax,nlevels,
-     1           ifcharge,ifdipole,list4,itree,laddr,ipointer,
-     1           nfourier,nphysical,rdminus,rdplus,rlsc,
-     2           rscales,boxsize,zshift,sourcesort,chargesort,
-     3           dipvecsort,centers,xshift,yshift,fexpe,fexpo,
-     4           mexpf1,mexpf2,tmp,mptemp,wlege,rlams,rscpow,
-     5           pgboxwexp,cntlist4,pgboxmexp,pgboxwexpchild)
+     2           ifcharge,ifdipole,list4,itree,laddr,ipointer,
+     3           nfourier,nphysical,rdminus,rdplus,rlsc,
+     4           rscales,boxsize,zshift,sourcesort,chargesort,
+     5           dipvecsort,centers,xshift,yshift,fexpe,fexpo,
+     6           mexpf1,mexpf2,tmp,mptemp,wlege,rlams,rscpow,
+     7           pgboxwexp,cntlist4,pgboxmexp,pgboxwexpchild)
 c--------------------------------------------------------------------
 c-------------------------------------------------------------------
       implicit none

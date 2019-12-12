@@ -240,7 +240,7 @@ examples: cxxkernel $(STATICLIB) $(TOBJS) examples/ex1_helm examples/ex2_helm ex
 	./examples/lfmm3d_vec_example
 	#./examples/lfmm3d_legacy_example
 	#./examples/hfmm3d_example
-	#./examples/hfmm3d_vec_example
+	./examples/hfmm3d_vec_example
 	#./examples/hfmm3d_legacy_example
 
 examples/ex1_lap:

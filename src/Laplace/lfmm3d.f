@@ -625,14 +625,6 @@ c     PW variables
       double complex, allocatable ::
      1       mexpp1(:,:),mexpp2(:,:),mexppall(:,:,:)
 
-      double complex, allocatable :: iboxlexp(:,:)
-      double precision iboxsubcenters(3,8)
-      double precision, allocatable :: iboxpot(:,:)
-      double precision, allocatable :: iboxgrad(:,:,:)
-      double precision, allocatable :: iboxsrc(:,:)
-      integer, allocatable :: iboxsrcind(:)
-      integer iboxfl(2,8)
-
       double complex, allocatable :: tmp(:,:,:)
 
       double precision sourcetmp(3)
@@ -657,6 +649,13 @@ c     PW variables
       double precision ctmp(3)
 
 c     list 3 variables
+      double complex, allocatable :: iboxlexp(:,:)
+      double precision iboxsubcenters(3,8)
+      double precision, allocatable :: iboxpot(:,:)
+      double precision, allocatable :: iboxgrad(:,:,:)
+      double precision, allocatable :: iboxsrc(:,:)
+      integer, allocatable :: iboxsrcind(:)
+      integer iboxfl(2,8)
 c     end of list 3 variables
 c     list 4 variables
       integer cntlist4,cntlist4all
@@ -1220,7 +1219,7 @@ C$OMP END PARALLEL DO
       enddo
       endif
 
-      if(ifcharge.eq.3.and.ifdipole.eq.1) then
+      if(ifcharge.eq.3.and.ifdipole.eq.3) then
       do ilev=2,nlevels
 C$OMP PARALLEL DO DEFAULT(SHARED)
 C$OMP$PRIVATE(ibox,jbox,nlist4,istart,iend,npts,i)
@@ -1666,10 +1665,11 @@ cccccc        todo
                       jend=iboxfl(2,i)
                       npts0=jend-jstart+1
                       if(npts0.gt.0) then
-                        call l3dtaevalp(nd,rscales(ilev),
+                        call l3dtaevalg(nd,rscales(ilev),
      1                       iboxsubcenters(1,i),iboxlexp(1,i),
      2                       nterms(ilev),iboxsrc(1,jstart),npts0,
-     3                       iboxpot(1,jstart),wlege,nlege)
+     3                       iboxpot(1,jstart),iboxgrad(1,1,jstart),
+     4                       wlege,nlege)
                       endif
                     endif
                   enddo
