@@ -1036,7 +1036,14 @@ c
      3                   xshift,yshift,zshift)
                   endif
                 enddo
-                deallocate(gboxind,gboxsort,gboxcgsort,gboxwexp)
+                deallocate(gboxind,gboxsort)
+                if(ifcharge.eq.1) then
+                  deallocate(gboxcgsort)
+                endif
+                if(ifdipole.eq.1) then
+                  deallocate(gboxdpsort)
+                endif
+                deallocate(gboxwexp)
               endif
             endif
          enddo

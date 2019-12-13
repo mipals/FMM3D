@@ -3231,7 +3231,13 @@ cc                process east-west for current box
                 endif
               endif
             enddo
-            deallocate(gboxind,gboxsort,gboxcgsort,gboxdpsort)
+            deallocate(gboxind,gboxsort)
+            if(ifcharge.eq.1) then
+              deallocate(gboxcgsort)
+            endif
+            if(ifdipole.eq.1) then
+              deallocate(gboxdpsort)
+            endif
             deallocate(gboxmexp)
             deallocate(gboxwexp)
           endif
