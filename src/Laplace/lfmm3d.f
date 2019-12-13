@@ -187,10 +187,6 @@ c
          ndiv = nsource+ntarg
        endif
 
-cccccc testing ndiv for different error tol
-cccccc 0.5d-9
-       ndiv=2500
-
 
 c
 cc      set tree flags
@@ -771,11 +767,6 @@ c     Compute total number of plane waves
      1   mexpp1(nd,nexptotp))
       allocate(mexpp2(nd,nexptotp),mexppall(nd,nexptotp,16))
 
-c      allocate(iboxsrcind(ndiv))
-c      allocate(iboxlexp(nd*(nmax+1)*(2*nmax+1),8))
-c      allocate(iboxpot(nd,ndiv))
-c      allocate(iboxgrad(nd,3,ndiv))
-c      allocate(iboxsrc(3,ndiv))
 c
 cc      NOTE: there can be some memory savings here
 c
