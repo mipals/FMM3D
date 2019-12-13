@@ -3110,11 +3110,11 @@ cccccc scoped function variables
       call cpu_time(time1)
 C$    time1=omp_get_wtime()
       pgboxwexp=0d0
-ccccccC$OMP PARALLEL DO DEFAULT(SHARED)
-ccccccC$OMP$PRIVATE(ibox,istart,iend,jbox,jstart,jend,npts,npts0,i)
-ccccccC$OMP$PRIVATE(gboxind,gboxsort,gboxfl,gboxsubcenters)
-ccccccC$OMP$PRIVATE(gboxcgsort,gboxdpsort,gboxwexp,gboxmexp)
-ccccccC$OMP$PRIVATE(mexpf1,mexpf2,tmp,tmp2)
+C$OMP PARALLEL DO DEFAULT(SHARED)
+C$OMP$PRIVATE(ibox,istart,iend,jbox,jstart,jend,npts,npts0,i)
+C$OMP$PRIVATE(gboxind,gboxsort,gboxfl,gboxsubcenters)
+C$OMP$PRIVATE(gboxcgsort,gboxdpsort,gboxwexp,gboxmexp)
+C$OMP$PRIVATE(mexpf1,mexpf2,tmp,tmp2)
       do ibox=laddr(1,ilev),laddr(2,ilev)
         if(list4(ibox).gt.0) then
           istart=itree(ipointer(10)+ibox-1)
@@ -3240,7 +3240,7 @@ cc                process east-west for current box
           endif
         endif
       enddo
-ccccccC$OMP END PARALLEL DO
+C$OMP END PARALLEL DO
       call cpu_time(time2)
 C$    time2=omp_get_wtime()
       return

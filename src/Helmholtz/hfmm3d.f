@@ -1287,9 +1287,8 @@ C$OMP$PRIVATE(nn1256,n1256,ns3478,s3478,ne1357,e1357,nw2468,w2468)
 C$OMP$PRIVATE(nn12,n12,nn56,n56,ns34,s34,ns78,s78,ne13,e13,ne57,e57)
 C$OMP$PRIVATE(nw24,w24,nw68,w68,ne1,e1,ne3,e3,ne5,e5,ne7,e7)
 C$OMP$PRIVATE(nw2,w2,nw4,w4,nw6,w6,nw8,w8)
-C$OMP$PRIVATE(npts0,nlist3,ctmp)
-ccccccC$OMP$PRIVATE(npts0,nlist3,ctmp,jstart,jend,i,iboxfl,iboxsubcenters)
-ccccccC$OMP$PRIVATE(iboxpot,iboxgrad,iboxlexp,iboxsrc,iboxsrcind)
+C$OMP$PRIVATE(npts0,nlist3,ctmp,jstart,jend,i,iboxfl,iboxsubcenters)
+C$OMP$PRIVATE(iboxpot,iboxgrad,iboxlexp,iboxsrc,iboxsrcind)
             do ibox = laddr(1,ilev-1),laddr(2,ilev-1)
            
                npts = 0
