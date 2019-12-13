@@ -196,7 +196,6 @@ c
        else
          ndiv = nsource+ntarg
        endif
-       ndiv=3
 
 
 
@@ -465,7 +464,7 @@ c     Memory allocation is complete.
 c     Call main fmm routine
 c
       call cpu_time(time1)
-C$      time1=omp_get_wtime()
+C$    time1=omp_get_wtime()
       call hfmm3dmain(nd,eps,zk,
      $   nsource,sourcesort,
      $   ifcharge,chargesort,
@@ -479,7 +478,7 @@ C$      time1=omp_get_wtime()
      $   gradtargsort,hesstargsort,ntj,texpssort,scjsort)
 
       call cpu_time(time2)
-C$        time2=omp_get_wtime()
+C$    time2=omp_get_wtime()
       if( ifprint .eq. 1 ) call prin2('time in fmm main=*',
      1   time2-time1,1)
 
@@ -1065,7 +1064,7 @@ c      ... step 3, convert multipole expansions into local
 c       expansions
 
       call cpu_time(time1)
-C$        time1=omp_get_wtime()
+C$    time1=omp_get_wtime()
       do ilev = 2,nlevels
 
 c
@@ -1734,7 +1733,7 @@ C$OMP END PARALLEL DO
          endif
       enddo
       call cpu_time(time2)
-C$        time2=omp_get_wtime()
+C$    time2=omp_get_wtime()
       timeinfo(4) = time2-time1
 
 

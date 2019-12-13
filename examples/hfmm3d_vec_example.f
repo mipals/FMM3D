@@ -27,12 +27,12 @@ c
       write(*,*)
       write(*,*)
 
-      ns = 100
-      nt = 100
+      ns = 200000
+      nt = 200000
 
-      ntest = 10
+      ntest = 500
 
-      zk = 1.1d0 + ima*0.01d0
+      zk = 100.1d0 + 20*ima*0.01d0
       
       nd = 1
 
