@@ -3111,6 +3111,10 @@ cccccc scoped function variables
 C$    time1=omp_get_wtime()
       pgboxwexp=0d0
 ccccccC$OMP PARALLEL DO DEFAULT(SHARED)
+ccccccC$OMP$PRIVATE(ibox,istart,iend,jbox,jstart,jend,npts,npts0,i)
+ccccccC$OMP$PRIVATE(gboxind,gboxsort,gboxfl,gboxsubcenters)
+ccccccC$OMP$PRIVATE(gboxcgsort,gboxdpsort,gboxwexp,gboxmexp)
+ccccccC$OMP$PRIVATE(mexpf1,mexpf2,tmp,tmp2)
       do ibox=laddr(1,ilev),laddr(2,ilev)
         if(list4(ibox).gt.0) then
           istart=itree(ipointer(10)+ibox-1)
