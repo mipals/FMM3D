@@ -3125,8 +3125,6 @@ C$OMP$PRIVATE(mexpf1,mexpf2,tmp,tmp2)
             allocate(gboxsort(3,npts))
             allocate(gboxmexp(nd*(nterms+1)*(2*nterms+1),8))
             allocate(gboxwexp(nd,nexptotp,6,8))
-            gboxind=0
-            gboxfl=0
             call subdividebox(sourcesort(1,istart),npts,
      1           centers(1,ibox),boxsize,
      2           gboxind,gboxfl,gboxsubcenters)
@@ -3144,7 +3142,6 @@ C$OMP$PRIVATE(mexpf1,mexpf2,tmp,tmp2)
             endif
 cccccc bad code, note gboxmexp is an array not scalar
             gboxmexp=0
-            gboxwexp=0
             do i=1,8
               if(gboxfl(1,i).gt.0) then
                 jstart=gboxfl(1,i)

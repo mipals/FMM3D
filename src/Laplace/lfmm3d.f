@@ -658,26 +658,17 @@ c     list 3 variables
       integer iboxfl(2,8)
 c     end of list 3 variables
 c     list 4 variables
-      integer cntlist4,cntlist4all
-      integer, allocatable :: list4(:),ilist4(:),list4test(:)
-      double complex, allocatable :: mexplist4(:,:,:,:)
-      double precision, allocatable :: cenlist4(:,:)
-      double complex, allocatable :: gboxlexp(:,:)
+      integer cntlist4
+      integer, allocatable :: list4(:),ilist4(:)
       double complex, allocatable :: gboxmexp(:,:,:)
-      double complex, allocatable :: pgboxmexptest(:,:,:)
       double complex, allocatable :: gboxwexp(:,:,:,:)
       double complex, allocatable :: pgboxwexp(:,:,:,:)
-      double complex, allocatable :: pgboxwexptest(:,:,:,:)
-      double complex, allocatable :: pgboxwexpchild(:,:,:,:,:)
       double precision  gboxsubcenters(3,8)
       double precision, allocatable :: gboxsort(:,:)
       integer, allocatable :: gboxind(:)
       integer gboxfl(2,8)
       double precision, allocatable :: gboxcgsort(:,:)
       double precision, allocatable :: gboxdpsort(:,:,:)
-      integer jboxtest
-      double complex errmexp
-      double complex errwexp
 c     end of list 4 variables
 
       integer *8 bigint
@@ -803,11 +794,9 @@ c
       endif
 
       allocate(list4(nboxes))
-      allocate(list4test(nboxes))
       allocate(ilist4(nboxes))
       do i=1,nboxes
         list4(i)=0
-        list4test(i)=0
         ilist4(i)=0
       enddo
 cccccc      allocate(gboxwexp(nd,nexptotp,8,6))
@@ -929,6 +918,7 @@ C$    time1=omp_get_wtime()
       allocate(gboxmexp(nd*(nterms(ilev)+1)*
      1                   (2*nterms(ilev)+1),8,cntlist4))
 cccccc  bad code, note gboxmexp is an array not scalar
+      pgboxwexp=0d0
       gboxmexp=0d0
 c     form mexp for all list4 type box at first ghost box center
       do ilev=1,nlevels-1
@@ -952,7 +942,7 @@ C$OMP$PRIVATE(mexpf1,mexpf2,tmp,mptemp)
               if(npts.gt.0) then
                 allocate(gboxind(npts))
                 allocate(gboxsort(3,npts))
-                allocate(gboxwexp(nd,nexptotp,8,6))
+                allocate(gboxwexp(nd,nexptotp,6,8))
                 call subdividebox(sourcesort(1,istart),npts,
      1               centers(1,ibox),boxsize(ilev+1),
      2               gboxind,gboxfl,gboxsubcenters)
@@ -1010,13 +1000,13 @@ c
      1                   nfourier,nexptot,mexpf1,mexpf2,rlsc)
 
                     call ftophys(nd,mexpf1,nlams,rlams,nfourier,
-     1                   nphysical,nthmax,gboxwexp(1,1,i,1),fexpe,fexpo)
+     1                   nphysical,nthmax,gboxwexp(1,1,1,i),fexpe,fexpo)
 
                     call ftophys(nd,mexpf2,nlams,rlams,nfourier,
-     1                   nphysical,nthmax,gboxwexp(1,1,i,2),fexpe,fexpo)
+     1                   nphysical,nthmax,gboxwexp(1,1,2,i),fexpe,fexpo)
 
-                    call processgboxudexp(nd,gboxwexp(1,1,i,1),
-     1                   gboxwexp(1,1,i,2),i,nexptotp,
+                    call processgboxudexp(nd,gboxwexp(1,1,1,i),
+     1                   gboxwexp(1,1,2,i),i,nexptotp,
      2                   pgboxwexp(1,1,jbox,1),pgboxwexp(1,1,jbox,2),
      3                   xshift,yshift,zshift)
 c
@@ -1027,13 +1017,13 @@ c
      1                   nfourier,nexptot,mexpf1,mexpf2,rlsc)
 
                     call ftophys(nd,mexpf1,nlams,rlams,nfourier,
-     1                   nphysical,nthmax,gboxwexp(1,1,i,3),fexpe,fexpo)
+     1                   nphysical,nthmax,gboxwexp(1,1,3,i),fexpe,fexpo)
 
                     call ftophys(nd,mexpf2,nlams,rlams,nfourier,
-     1                   nphysical,nthmax,gboxwexp(1,1,i,4),fexpe,fexpo)
+     1                   nphysical,nthmax,gboxwexp(1,1,4,i),fexpe,fexpo)
 
-                    call processgboxnsexp(nd,gboxwexp(1,1,i,3),
-     1                   gboxwexp(1,1,i,4),i,nexptotp,
+                    call processgboxnsexp(nd,gboxwexp(1,1,3,i),
+     1                   gboxwexp(1,1,4,i),i,nexptotp,
      2                   pgboxwexp(1,1,jbox,3),pgboxwexp(1,1,jbox,4),
      3                   xshift,yshift,zshift)
 c
@@ -1044,13 +1034,13 @@ c
      1                   nfourier,nexptot,mexpf1,mexpf2,rlsc)
 
                     call ftophys(nd,mexpf1,nlams,rlams,nfourier,
-     1                   nphysical,nthmax,gboxwexp(1,1,i,5),fexpe,fexpo)
+     1                   nphysical,nthmax,gboxwexp(1,1,5,i),fexpe,fexpo)
 
                     call ftophys(nd,mexpf2,nlams,rlams,nfourier,
-     1                   nphysical,nthmax,gboxwexp(1,1,i,6),fexpe,fexpo)
+     1                   nphysical,nthmax,gboxwexp(1,1,6,i),fexpe,fexpo)
                 
-                    call processgboxewexp(nd,gboxwexp(1,1,i,5),
-     1                   gboxwexp(1,1,i,6),i,nexptotp,
+                    call processgboxewexp(nd,gboxwexp(1,1,5,i),
+     1                   gboxwexp(1,1,6,i),i,nexptotp,
      2                   pgboxwexp(1,1,jbox,5),pgboxwexp(1,1,jbox,6),
      3                   xshift,yshift,zshift)
                   endif
@@ -1533,7 +1523,6 @@ C$OMP$PRIVATE(iboxpot,iboxgrad,iboxlexp,iboxsrc,iboxsrcind)
                   allocate(iboxsrcind(npts))
                   allocate(iboxsrc(3,npts))
                   allocate(iboxpot(nd,npts))
-                  iboxsrcind = 0
                   call subdividebox(sourcesort(1,istart),npts,
      1                 centers(1,ibox),boxsize(ilev),
      2                 iboxsrcind,iboxfl,iboxsubcenters)
@@ -1571,7 +1560,6 @@ cccccc        todo
                   allocate(iboxsrc(3,npts))
                   allocate(iboxpot(nd,npts))
                   allocate(iboxgrad(nd,3,npts))
-                  iboxsrcind = 0
                   call subdividebox(sourcesort(1,istart),npts,
      1                 centers(1,ibox),boxsize(ilev),
      2                 iboxsrcind,iboxfl,iboxsubcenters)
@@ -1612,7 +1600,6 @@ cccccc        todo
                   allocate(iboxsrcind(npts))
                   allocate(iboxsrc(3,npts))
                   allocate(iboxpot(nd,npts))
-                  iboxsrcind = 0
                   call subdividebox(targsort(1,istart),npts,
      1                 centers(1,ibox),boxsize(ilev),
      2                 iboxsrcind,iboxfl,iboxsubcenters)
@@ -1649,7 +1636,6 @@ cccccc        todo
                   allocate(iboxsrc(3,npts))
                   allocate(iboxpot(nd,npts))
                   allocate(iboxgrad(nd,3,npts))
-                  iboxsrcind = 0
                   call subdividebox(targsort(1,istart),npts,
      1                 centers(1,ibox),boxsize(ilev),
      2                 iboxsrcind,iboxfl,iboxsubcenters)

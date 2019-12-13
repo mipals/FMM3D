@@ -3323,7 +3323,7 @@ c--------------------------------------------------------------------
      4           rscales,boxsize,zshift,sourcesort,chargesort,
      5           dipvecsort,centers,xshift,yshift,fexpe,fexpo,
      6           mexpf1,mexpf2,tmp,mptemp,wlege,rlams,rscpow,
-     7           pgboxwexp,cntlist4,pgboxmexp,pgboxwexpchild)
+     7           pgboxwexp,cntlist4)
 c--------------------------------------------------------------------
 c-------------------------------------------------------------------
       implicit none
@@ -3341,7 +3341,7 @@ ccc   input/output variables
       double precision rscales
       double precision boxsize
       double precision zshift(5,nexptotp)
-      double precision mptemp(*)
+      double precision mptemp((nmax+1)*(2*nmax+1)*2*nd)
       double precision wlege(*)
       double precision rlams(*)
       double precision rscpow(*)
@@ -3357,8 +3357,6 @@ ccc   input/output variables
       double complex mexpf1(nd,nexptot),mexpf2(nd,nexptot)
       double complex tmp(nd,0:nmax,-nmax:nmax)
       double complex pgboxwexp(nd,nexptotp,cntlist4,6)
-      double complex pgboxwexpchild(nd,nexptotp,cntlist4,6,8)
-      double complex pgboxmexp(nd*(nterms+1)*(2*nterms+1),8,cntlist4)
 ccc   scoped function variables
       integer ibox,jbox,i,idim,nlist3,j
       integer istart,iend,npts
@@ -3378,38 +3376,28 @@ c
 c     count number of boxes are in list4 of this level
       call cpu_time(time1)
 C$    time1=omp_get_wtime()
-      print *,"=== l3dlist4pw ==="
-      allocate(gboxwexp(nd,nexptotp,8,6))
       pgboxwexp=0d0
-      pgboxwexpchild=0d0
-C      print *,"good here"
 c     form mexp for all list4 type box at first ghost box center
 C$OMP PARALLEL DO DEFAULT(SHARED)
-C$OMP$PRIVATE(ibox,istart,iend,jstart,jend,npts,npts0)
-C$OMP$PRIVATE(gboxind,gboxsort,gboxcgsort,gboxdpsort)
-C$OMP$PRIVATE(gboxmexp)
-C      print *,"good here0"
+C$OMP$PRIVATE(ibox,istart,iend,jbox,jstart,jend,npts,npts0,i)
+C$OMP$PRIVATE(gboxind,gboxsort,gboxfl,gboxsubcenters)
+C$OMP$PRIVATE(gboxwexp,gboxmexp,gboxcgsort,gboxdpsort)
+C$OMP$PRIVATE(mexpf1,mexpf2,tmp,mptemp)
       do ibox=laddr(1,ilev),laddr(2,ilev)
-C        print *,"good here1"
         if(list4(ibox).gt.0) then
           istart=itree(ipointer(10)+ibox-1)
           iend=itree(ipointer(11)+ibox-1)
           npts = iend-istart+1
-C          print *,"good here2"
           if(npts.gt.0) then
             allocate(gboxind(npts))
             allocate(gboxsort(3,npts))
             allocate(gboxmexp(nd*(nterms+1)*(2*nterms+1),8))
-            gboxind=0
-            gboxfl=0
-C            print *,"good here3"
+            allocate(gboxwexp(nd,nexptotp,6,8))
             call subdividebox(sourcesort(1,istart),npts,
      1           centers(1,ibox),boxsize,
      2           gboxind,gboxfl,gboxsubcenters)
-C            print *,"good here4"
             call dreorderf(3,npts,sourcesort(1,istart),
      1           gboxsort,gboxind)
-C            print *,"good here5"
             if(ifcharge.eq.1) then
               allocate(gboxcgsort(nd,npts))
               call dreorderf(nd,npts,chargesort(1,istart),
@@ -3420,7 +3408,6 @@ C            print *,"good here5"
               call dreorderf(3*nd,npts,dipvecsort(1,1,istart),
      1             gboxdpsort,gboxind)
             endif
-C            print *,"good here6"
 cccccccccccccc  bad code, note gboxmexp is an array not scalar
             gboxmexp=0
             gboxwexp=0
@@ -3453,37 +3440,26 @@ cccccccccccccc  bad code, note gboxmexp is an array not scalar
      4                   npts0,gboxsubcenters(1,i),nterms,
      5                   gboxmexp(1,i),wlege,nlege)          
                   endif
-                  do j=1,nd*(nterms+1)*(2*nterms+1)
-                    pgboxmexp(j,i,jbox)=gboxmexp(j,i)
-                  enddo
-C                  print *,gboxmexp
-
-C                  print *,"good here7"
 ccc    convert to plane wave
                   call mpscale(nd,nterms,gboxmexp(1,i),
      1                 rscpow,tmp)
-C                  print *,"good here8"
 c
 cc                process up down for current box
 c
                   call mpoletoexp(nd,tmp,nterms,nlams,nfourier,
      1                 nexptot,mexpf1,mexpf2,rlsc)
-C                  print *,"good here9"
 
                   call ftophys(nd,mexpf1,nlams,rlams,nfourier,nphysical,
-     1                 nthmax,pgboxwexpchild(1,1,jbox,1,i),fexpe,fexpo)
-C                  print *,"good here10"
+     1                 nthmax,gboxwexp(1,1,1,i),fexpe,fexpo)
 
                   call ftophys(nd,mexpf2,nlams,rlams,nfourier,nphysical,
-     1                 nthmax,pgboxwexpchild(1,1,jbox,2,i),fexpe,fexpo)
-C                  print *,"good here11"
+     1                 nthmax,gboxwexp(1,1,2,i),fexpe,fexpo)
 
-                  call processgboxudexp(nd,pgboxwexpchild(1,1,jbox,1,i),
-     1                 pgboxwexpchild(1,1,jbox,2,i),i,nexptotp,
+                  call processgboxudexp(nd,gboxwexp(1,1,1,i),
+     1                 gboxwexp(1,1,2,i),i,nexptotp,
      2                 pgboxwexp(1,1,jbox,1),
      3                 pgboxwexp(1,1,jbox,2),
      4                 xshift,yshift,zshift)
-C                  print *,"good here12"
 c
 cc                process north-south for current box
 c
@@ -3492,13 +3468,13 @@ c
      1                 nexptot,mexpf1,mexpf2,rlsc)
 
                   call ftophys(nd,mexpf1,nlams,rlams,nfourier,nphysical,
-     1                 nthmax,pgboxwexpchild(1,1,jbox,3,i),fexpe,fexpo)
+     1                 nthmax,gboxwexp(1,1,3,i),fexpe,fexpo)
 
                   call ftophys(nd,mexpf2,nlams,rlams,nfourier,nphysical,
-     1                 nthmax,pgboxwexpchild(1,1,jbox,4,i),fexpe,fexpo)
+     1                 nthmax,gboxwexp(1,1,4,i),fexpe,fexpo)
 
-                  call processgboxnsexp(nd,pgboxwexpchild(1,1,jbox,3,i),
-     1                 pgboxwexpchild(1,1,jbox,4,i),i,nexptotp,
+                  call processgboxnsexp(nd,gboxwexp(1,1,3,i),
+     1                 gboxwexp(1,1,4,i),i,nexptotp,
      2                 pgboxwexp(1,1,jbox,3),
      3                 pgboxwexp(1,1,jbox,4),
      4                 xshift,yshift,zshift)
@@ -3511,21 +3487,19 @@ cc                process east-west for current box
      1                 nexptot,mexpf1,mexpf2,rlsc)
 
                   call ftophys(nd,mexpf1,nlams,rlams,nfourier,nphysical,
-     1                 nthmax,pgboxwexpchild(1,1,jbox,5,i),fexpe,fexpo)
-
+     1                 nthmax,gboxwexp(1,1,5,i),fexpe,fexpo)
 
                   call ftophys(nd,mexpf2,nlams,rlams,nfourier,nphysical,
-     1                 nthmax,pgboxwexpchild(1,1,jbox,6,i),fexpe,fexpo)
+     1                 nthmax,gboxwexp(1,1,6,i),fexpe,fexpo)
                 
-                  call processgboxewexp(nd,pgboxwexpchild(1,1,jbox,5,i),
-     1                 pgboxwexpchild(1,1,jbox,6,i),i,nexptotp,
+                  call processgboxewexp(nd,gboxwexp(1,1,5,i),
+     1                 gboxwexp(1,1,6,i),i,nexptotp,
      2                 pgboxwexp(1,1,jbox,5),
      3                 pgboxwexp(1,1,jbox,6),
      4                 xshift,yshift,zshift)
                 endif
               endif
             enddo
-C            print *,gboxwexp
             deallocate(gboxind,gboxsort,gboxcgsort,gboxdpsort)
             deallocate(gboxmexp)
           endif
@@ -3534,8 +3508,6 @@ C            print *,gboxwexp
 C$OMP END PARALLEL DO
       call cpu_time(time2)
 C$    time2=omp_get_wtime()
-C      print *,pgboxwexp
-      print *,"mexp list4 time:",time2-time1
 
       return
       end

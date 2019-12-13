@@ -28,7 +28,7 @@ c
       ns = 200000
       nt = 0
 
-      ntest = ns
+      ntest = 1000
       
       nd = 8
 

@@ -683,26 +683,9 @@ c     list 3 variables
       integer iboxfl(2,8)
 c     end of list 3 variables
 c     list 4 variables
-      integer cntlist4,cntlist4all
-      integer, allocatable :: list4(:),ilist4(:),list4test(:)
-      double complex, allocatable :: mexplist4(:,:,:,:)
-      double precision, allocatable :: cenlist4(:,:)
-      double complex, allocatable :: gboxlexp(:,:)
-      double complex, allocatable :: gboxmexp(:,:,:)
-      double complex, allocatable :: pgboxmexptest(:,:,:)
-      double complex, allocatable :: gboxwexp(:,:,:,:)
+      integer cntlist4
+      integer, allocatable :: list4(:),ilist4(:)
       double complex, allocatable :: pgboxwexp(:,:,:,:)
-      double complex, allocatable :: pgboxwexptest(:,:,:,:)
-      double complex, allocatable :: pgboxwexpchild(:,:,:,:,:)
-      double precision  gboxsubcenters(3,8)
-      double precision, allocatable :: gboxsort(:,:)
-      integer, allocatable :: gboxind(:)
-      integer gboxfl(2,8)
-      double precision, allocatable :: gboxcgsort(:,:)
-      double precision, allocatable :: gboxdpsort(:,:,:)
-      integer jboxtest
-      double complex errmexp
-      double complex errwexp
 c     end of list 4 variables
 
       integer *8 bigint
@@ -1192,7 +1175,6 @@ cccccc      generae ilev+1 list4 type box plane wave expansion
               endif
             enddo
             allocate(pgboxwexp(nd,nexptotp,cntlist4,6))
-            pgboxwexp=0.0d0
             print *,"cntlist4:",cntlist4,"ilev:",ilev
             call h3dlist4pw(ilev-1,zk,nd,nexptotp,nexptot,nterms(ilev),
      1           nn,nlams,nlege,nlevels,ifcharge,ifdipole,list4,itree,
@@ -1423,7 +1405,6 @@ c
                      allocate(iboxsrcind(npts))
                      allocate(iboxsrc(3,npts))
                      allocate(iboxpot(nd,npts))
-                     iboxsrcind = 0
                      call subdividebox(sourcesort(1,istart),npts,
      1                    centers(1,ibox),boxsize(ilev),
      2                    iboxsrcind,iboxfl,iboxsubcenters)
@@ -1461,7 +1442,6 @@ cccccc        todo
                      allocate(iboxsrc(3,npts))
                      allocate(iboxpot(nd,npts))
                      allocate(iboxgrad(nd,3,npts))
-                     iboxsrcind = 0
                      call subdividebox(sourcesort(1,istart),npts,
      1                    centers(1,ibox),boxsize(ilev),
      2                    iboxsrcind,iboxfl,iboxsubcenters)
@@ -1502,7 +1482,6 @@ cccccc        todo
                      allocate(iboxsrcind(npts))
                      allocate(iboxsrc(3,npts))
                      allocate(iboxpot(nd,npts))
-                     iboxsrcind = 0
                      call subdividebox(targsort(1,istart),npts,
      1                    centers(1,ibox),boxsize(ilev),
      2                    iboxsrcind,iboxfl,iboxsubcenters)
@@ -1539,7 +1518,6 @@ cccccc        todo
                      allocate(iboxsrc(3,npts))
                      allocate(iboxpot(nd,npts))
                      allocate(iboxgrad(nd,3,npts))
-                     iboxsrcind = 0
                      call subdividebox(targsort(1,istart),npts,
      1                    centers(1,ibox),boxsize(ilev),
      2                    iboxsrcind,iboxfl,iboxsubcenters)
