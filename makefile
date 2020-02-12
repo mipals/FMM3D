@@ -52,7 +52,7 @@ endif
 
 
 # For your OS, override the above by placing make variables in make.inc
--include make.inc.icc
+#-include make.inc.icc
 
 # multi-threaded libs & flags needed
 ifeq ($(OMP),ON)
@@ -117,7 +117,7 @@ CHEADERS = c/cprini.h c/utils.h c/hfmm3d_c.h c/lfmm3d_c.h
 
 OBJS = $(COMOBJS) $(HOBJS) $(LOBJS)
 
-.PHONY: usage lib examples test perftest python all c c-examples matlab python3 big-test pw-test debug
+.PHONY: usage lib examples test perftest python all c c-examples matlab python3 big-test pw-test debug list34-speed-test
 
 default: usage
 
@@ -326,18 +326,24 @@ clean: objclean
 
 big-test: $(STATICLIB) $(TOBJS) test/test_lap_big test/test_helm_big
 
-pw-test: $(STATICLIB) $(TOBJS) test/test_helm_pw
-	./test/Helmholtz/test_hfmm3d_pw
-
-
 test/test_helm_big:
 	$(FC) $(FFLAGS) test/Helmholtz/test_hfmm3d_big.f $(TOBJS) $(COMOBJS) $(HOBJS) -o test/Helmholtz/test_hfmm3d_big
 
 test/test_lap_big:
 	$(FC) $(FFLAGS) test/Laplace/test_lfmm3d_big.f $(TOBJS) $(COMOBJS) $(LOBJS) -o test/Laplace/test_lfmm3d_big
 
+
+pw-test: $(STATICLIB) $(TOBJS) test/test_helm_pw
+	./test/Helmholtz/test_hfmm3d_pw
+
 test/test_helm_pw:
 	$(FC) $(FFLAGS) test/Helmholtz/test_pwrep_hfmm3d.f $(TOBJS) $(COMOBJS) $(HOBJS) -o test/Helmholtz/test_hfmm3d_pw
+
+list34-speed-test: $(STATICLIB) $(TOBJS) test/helm_list34_speed
+	./test/Helmholtz/test_helm_list34_speed
+
+test/helm_list34_speed:
+	$(FC) $(FFLAGS) test/Helmholtz/test_hfmm3d_list34_speed.f $(TOBJS) $(COMOBJS) $(HOBJS) -o test/Helmholtz/test_helm_list34_speed
 
 debug: $(STATICLIB) $(TOBJS) examples/hfmm3d_deb 
 	time -p examples/hfmm3d_debug
