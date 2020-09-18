@@ -261,15 +261,15 @@ python-dist: $(STATICLIB)
 # testing routines
 #
 test: $(STATICLIB) $(TOBJS) test/helmrouts test/hfmm3d test/hfmm3d_vec test/hfmm3d_scale test/laprouts test/lfmm3d test/lfmm3d_vec test_hfmm3d_mps test/lfmm3d_scale test/stfmm3d test/stokkernels
-	(cd test/Helmholtz; ./run_helmtest.sh)
+#	(cd test/Helmholtz; ./run_helmtest.sh)
 	(cd test/Laplace; ./run_laptest.sh)
-	(cd test/Stokes; ./run_stoktest.sh)
-	cat print_testreshelm.txt
+#	(cd test/Stokes; ./run_stoktest.sh)
+#	cat print_testreshelm.txt
 	cat print_testreslap.txt
-	cat print_testresstok.txt
-	rm print_testreshelm.txt
+#	cat print_testresstok.txt
+#	rm print_testreshelm.txt
 	rm print_testreslap.txt
-	rm print_testresstok.txt
+#	rm print_testresstok.txt
 
 test-dyn: $(DYNAMICLIB) $(TOBJS) test/helmrouts-dyn test/hfmm3d-dyn test/hfmm3d_vec-dyn test/hfmm3d_scale-dyn test/laprouts-dyn test/lfmm3d-dyn test/lfmm3d_vec-dyn test_hfmm3d_mps-dyn test/lfmm3d_scale-dyn
 	(cd test/Helmholtz; ./run_helmtest.sh)

@@ -143,11 +143,11 @@ c  dropped from the sum.
 c
 c  Input arguments:
 c
-c    -    nd: integer
+c    -    nd: integer(8)
 c          number of densities
 c    -    eps: double precision
 c          precision requested
-c    -    nsource: integer
+c    -    nsource: integer(8)
 c          Number of sources
 c    -    source: double precision(3,nsource)
 c          Source locations, $x_{j}$
@@ -165,8 +165,8 @@ c--------------------------------
 c
 
       double precision eps
-      integer nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
-      integer nd
+      integer(8) nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
+      integer(8) nd
       
       double precision source(3,nsource),targ(3,1)
       double precision charge(nd,nsource)
@@ -217,11 +217,11 @@ c  dropped from the sum.
 c
 c  Input arguments:
 c
-c    -    nd: integer
+c    -    nd: integer(8)
 c          number of densities
 c    -    eps: double precision
 c          precision requested
-c    -    nsource: integer
+c    -    nsource: integer(8)
 c          Number of sources
 c    -    source: double precision(3,nsource)
 c          Source locations, $x_{j}$
@@ -242,8 +242,8 @@ c
       implicit none
       double precision eps
       
-      integer nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
-      integer nd
+      integer(8) nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
+      integer(8) nd
       
       double precision source(3,nsource),targ(3,1)
       double precision charge(nd,nsource)
@@ -295,11 +295,11 @@ c  dropped from the sum.
 c
 c  Input arguments:
 c
-c    -    nd: integer
+c    -    nd: integer(8)
 c          number of densities
 c    -    eps: double precision
 c          precision requested
-c    -    nsource: integer
+c    -    nsource: integer(8)
 c          Number of sources
 c    -    source: double precision(3,nsource)
 c          Source locations, $x_{j}$
@@ -324,8 +324,8 @@ c
       implicit none
       double precision eps
       
-      integer nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
-      integer nd
+      integer(8) nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
+      integer(8) nd
       
       double precision source(3,nsource),targ(3,1)
       double precision charge(nd,nsource)
@@ -378,11 +378,11 @@ c  dropped from the sum.
 c
 c  Input arguments:
 c
-c    -    nd: integer
+c    -    nd: integer(8)
 c          number of densities
 c    -    eps: double precision
 c          precision requested
-c    -    nsource: integer
+c    -    nsource: integer(8)
 c          Number of sources
 c    -    source: double precision(3,nsource)
 c          Source locations, $x_{j}$
@@ -401,8 +401,8 @@ c
       implicit none
       double precision eps
       
-      integer nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
-      integer nd
+      integer(8) nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
+      integer(8) nd
       
       double precision source(3,nsource),targ(3,1)
       double precision charge(nd,1)
@@ -453,11 +453,11 @@ c  dropped from the sum.
 c
 c  Input arguments:
 c
-c    -    nd: integer
+c    -    nd: integer(8)
 c          number of densities
 c    -    eps: double precision
 c          precision requested
-c    -    nsource: integer
+c    -    nsource: integer(8)
 c          Number of sources
 c    -    source: double precision(3,nsource)
 c          Source locations, $x_{j}$
@@ -478,8 +478,8 @@ c
       implicit none
       double precision eps
 
-      integer nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
-      integer nd
+      integer(8) nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
+      integer(8) nd
       
       double precision source(3,nsource),targ(3,1)
       double precision charge(nd,1)
@@ -530,11 +530,11 @@ c  dropped from the sum.
 c
 c  Input arguments:
 c
-c    -    nd: integer
+c    -    nd: integer(8)
 c          number of densities
 c    -    eps: double precision
 c          precision requested
-c    -    nsource: integer
+c    -    nsource: integer(8)
 c          Number of sources
 c    -    source: double precision(3,nsource)
 c          Source locations, $x_{j}$
@@ -557,8 +557,8 @@ c
       implicit none
       double precision eps
 
-      integer nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
-      integer nd
+      integer(8) nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
+      integer(8) nd
       
       double precision source(3,nsource),targ(3,1)
       double precision charge(nd,1)
@@ -610,11 +610,11 @@ c  dropped from the sum.
 c
 c  Input arguments:
 c
-c    -    nd: integer
+c    -    nd: integer(8)
 c          number of densities
 c    -    eps: double precision
 c          precision requested
-c    -    nsource: integer
+c    -    nsource: integer(8)
 c          Number of sources
 c    -    source: double precision(3,nsource)
 c          Source locations, $x_{j}$
@@ -635,8 +635,8 @@ c
       implicit none
       double precision eps
 
-      integer nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
-      integer nd
+      integer(8) nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
+      integer(8) nd
       
       double precision source(3,nsource),targ(3,1)
       double precision charge(nd,nsource)
@@ -692,11 +692,11 @@ c  dropped from the sum.
 c
 c  Input arguments:
 c
-c    -    nd: integer
+c    -    nd: integer(8)
 c          number of densities
 c    -    eps: double precision
 c          precision requested
-c    -    nsource: integer
+c    -    nsource: integer(8)
 c          Number of sources
 c    -    source: double precision(3,nsource)
 c          Source locations, $x_{j}$
@@ -719,8 +719,8 @@ c
       implicit none
       double precision eps
 
-      integer nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
-      integer nd
+      integer(8) nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
+      integer(8) nd
       
       double precision source(3,nsource),targ(3,1)
       double precision charge(nd,nsource)
@@ -773,11 +773,11 @@ c  dropped from the sum.
 c
 c  Input arguments:
 c
-c    -    nd: integer
+c    -    nd: integer(8)
 c          number of densities
 c    -    eps: double precision
 c          precision requested
-c    -    nsource: integer
+c    -    nsource: integer(8)
 c          Number of sources
 c    -    source: double precision(3,nsource)
 c          Source locations, $x_{j}$
@@ -802,8 +802,8 @@ c
       implicit none
       double precision eps
 
-      integer nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
-      integer nd
+      integer(8) nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
+      integer(8) nd
       
       double precision source(3,nsource),targ(3,1)
       double precision charge(nd,nsource)
@@ -854,17 +854,17 @@ c  dropped from the sum.
 c
 c  Input arguments:
 c
-c    -    nd: integer
+c    -    nd: integer(8)
 c          number of densities
 c    -    eps: double precision
 c          precision requested
-c    -    nsource: integer
+c    -    nsource: integer(8)
 c          Number of sources
 c    -    source: double precision(3,nsource)
 c          Source locations, $x_{j}$
 c    -    charge: double precision(nd,nsource)
 c          Charge strengths, $c_{\ell,j}$
-c    -    ntarg: integer
+c    -    ntarg: integer(8)
 c          Number of targets
 c    -    targ: double precision(3,ntarg)
 c          Target locations, $t_{i}$
@@ -881,8 +881,8 @@ c
       implicit none
       double precision eps
       
-      integer nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
-      integer nd
+      integer(8) nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
+      integer(8) nd
       
       double precision source(3,nsource),targ(3,ntarg)
       double precision charge(nd,nsource)
@@ -932,17 +932,17 @@ c  dropped from the sum.
 c
 c  Input arguments:
 c
-c    -    nd: integer
+c    -    nd: integer(8)
 c          number of densities
 c    -    eps: double precision
 c          precision requested
-c    -    nsource: integer
+c    -    nsource: integer(8)
 c          Number of sources
 c    -    source: double precision(3,nsource)
 c          Source locations, $x_{j}$
 c    -    charge: double precision(nd,nsource)
 c          Charge strengths, $c_{\ell,j}$
-c    -    ntarg: integer
+c    -    ntarg: integer(8)
 c          Number of targets
 c    -    targ: double precision(3,ntarg)
 c          Target locations, $t_{i}$
@@ -961,8 +961,8 @@ c
       implicit none
       double precision eps
       
-      integer nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
-      integer nd
+      integer(8) nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
+      integer(8) nd
       
       double precision source(3,nsource),targ(3,ntarg)
       double precision charge(nd,nsource)
@@ -1012,17 +1012,17 @@ c  dropped from the sum.
 c
 c  Input arguments:
 c
-c    -    nd: integer
+c    -    nd: integer(8)
 c          number of densities
 c    -    eps: double precision
 c          precision requested
-c    -    nsource: integer
+c    -    nsource: integer(8)
 c          Number of sources
 c    -    source: double precision(3,nsource)
 c          Source locations, $x_{j}$
 c    -    charge: double precision(nd,nsource)
 c          Charge strengths, $c_{\ell,j}$
-c    -    ntarg: integer
+c    -    ntarg: integer(8)
 c          Number of targets
 c    -    targ: double precision(3,ntarg)
 c          Target locations, $t_{i}$
@@ -1044,8 +1044,8 @@ c
       implicit none
       double precision eps
       
-      integer nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
-      integer nd
+      integer(8) nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
+      integer(8) nd
       
       double precision source(3,nsource),targ(3,ntarg)
       double precision charge(nd,nsource)
@@ -1094,17 +1094,17 @@ c  dropped from the sum.
 c
 c  Input arguments:
 c
-c    -    nd: integer
+c    -    nd: integer(8)
 c          number of densities
 c    -    eps: double precision
 c          precision requested
-c    -    nsource: integer
+c    -    nsource: integer(8)
 c          Number of sources
 c    -    source: double precision(3,nsource)
 c          Source locations, $x_{j}$
 c    -    dipvec: double precision(nd,3,nsource)
 c          Dipole strengths, $v_{\ell,j}$
-c    -    ntarg: integer
+c    -    ntarg: integer(8)
 c          Number of targets
 c    -    targ: double precision(3,ntarg)
 c          Target locations, $t_{i}$
@@ -1121,8 +1121,8 @@ c
       implicit none
       double precision eps
       
-      integer nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
-      integer nd
+      integer(8) nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
+      integer(8) nd
       
       double precision source(3,nsource),targ(3,ntarg)
       double precision charge(nd,1)
@@ -1173,17 +1173,17 @@ c  dropped from the sum.
 c
 c  Input arguments:
 c
-c    -    nd: integer
+c    -    nd: integer(8)
 c          number of densities
 c    -    eps: double precision
 c          precision requested
-c    -    nsource: integer
+c    -    nsource: integer(8)
 c          Number of sources
 c    -    source: double precision(3,nsource)
 c          Source locations, $x_{j}$
 c    -    dipvec: double precision(nd,3,nsource)
 c          Dipole strengths, $v_{\ell,j}$
-c    -    ntarg: integer
+c    -    ntarg: integer(8)
 c          Number of targets
 c    -    targ: double precision(3,ntarg)
 c          Target locations, $t_{i}$
@@ -1202,8 +1202,8 @@ c
       implicit none
       double precision eps
 
-      integer nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
-      integer nd
+      integer(8) nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
+      integer(8) nd
       
       double precision source(3,nsource),targ(3,ntarg)
       double precision charge(nd,1)
@@ -1255,17 +1255,17 @@ c  dropped from the sum.
 c
 c  Input arguments:
 c
-c    -    nd: integer
+c    -    nd: integer(8)
 c          number of densities
 c    -    eps: double precision
 c          precision requested
-c    -    nsource: integer
+c    -    nsource: integer(8)
 c          Number of sources
 c    -    source: double precision(3,nsource)
 c          Source locations, $x_{j}$
 c    -    dipvec: double precision(nd,3,nsource)
 c          Dipole strengths, $v_{\ell,j}$
-c    -    ntarg: integer
+c    -    ntarg: integer(8)
 c          Number of targets
 c    -    targ: double precision(3,ntarg)
 c          Target locations, $t_{i}$
@@ -1286,8 +1286,8 @@ c
       implicit none
       double precision eps
 
-      integer nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
-      integer nd
+      integer(8) nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
+      integer(8) nd
       
       double precision source(3,nsource),targ(3,ntarg)
       double precision charge(nd,1)
@@ -1338,11 +1338,11 @@ c  dropped from the sum.
 c
 c  Input arguments:
 c
-c    -    nd: integer
+c    -    nd: integer(8)
 c          number of densities
 c    -    eps: double precision
 c          precision requested
-c    -    nsource: integer
+c    -    nsource: integer(8)
 c          Number of sources
 c    -    source: double precision(3,nsource)
 c          Source locations, $x_{j}$
@@ -1350,7 +1350,7 @@ c    -    charge: double precision(nd,nsource)
 c          Charge strengths, $c_{\ell,j}$
 c    -    dipvec: double precision(nd,3,nsource)
 c          Dipole strengths, $v_{\ell,j}$
-c    -    ntarg: integer
+c    -    ntarg: integer(8)
 c          Number of targets
 c    -    targ: double precision(3,ntarg)
 c          Target locations, $t_{i}$
@@ -1367,8 +1367,8 @@ c
       implicit none
       double precision eps
 
-      integer nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
-      integer nd
+      integer(8) nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
+      integer(8) nd
       
       double precision source(3,nsource),targ(3,ntarg)
       double precision charge(nd,nsource)
@@ -1420,11 +1420,11 @@ c  dropped from the sum.
 c
 c  Input arguments:
 c
-c    -    nd: integer
+c    -    nd: integer(8)
 c          number of densities
 c    -    eps: double precision
 c          precision requested
-c    -    nsource: integer
+c    -    nsource: integer(8)
 c          Number of sources
 c    -    source: double precision(3,nsource)
 c          Source locations, $x_{j}$
@@ -1432,7 +1432,7 @@ c    -    charge: double precision(nd,nsource)
 c          Charge strengths, $c_{\ell,j}$
 c    -    dipvec: double precision(nd,3,nsource)
 c          Dipole strengths, $v_{\ell,j}$
-c    -    ntarg: integer
+c    -    ntarg: integer(8)
 c          Number of targets
 c    -    targ: double precision(3,ntarg)
 c          Target locations, $t_{i}$
@@ -1451,8 +1451,8 @@ c
       implicit none
       double precision eps
 
-      integer nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
-      integer nd
+      integer(8) nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
+      integer(8) nd
       
       double precision source(3,nsource),targ(3,ntarg)
       double precision charge(nd,nsource)
@@ -1504,11 +1504,11 @@ c  dropped from the sum.
 c
 c  Input arguments:
 c
-c    -    nd: integer
+c    -    nd: integer(8)
 c          number of densities
 c    -    eps: double precision
 c          precision requested
-c    -    nsource: integer
+c    -    nsource: integer(8)
 c          Number of sources
 c    -    source: double precision(3,nsource)
 c          Source locations, $x_{j}$
@@ -1516,7 +1516,7 @@ c    -    charge: double precision(nd,nsource)
 c          Charge strengths, $c_{\ell,j}$
 c    -    dipvec: double precision(nd,3,nsource)
 c          Dipole strengths, $v_{\ell,j}$
-c    -    ntarg: integer
+c    -    ntarg: integer(8)
 c          Number of targets
 c    -    targ: double precision(3,ntarg)
 c          Target locations, $t_{i}$
@@ -1537,8 +1537,8 @@ c
       implicit none
       double precision eps
 
-      integer nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
-      integer nd
+      integer(8) nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
+      integer(8) nd
       
       double precision source(3,nsource),targ(3,ntarg)
       double precision charge(nd,nsource)
@@ -1586,17 +1586,17 @@ c  dropped from the sum.
 c
 c  Input arguments:
 c
-c    -    nd: integer
+c    -    nd: integer(8)
 c          number of densities
 c    -    eps: double precision
 c          precision requested
-c    -    nsource: integer
+c    -    nsource: integer(8)
 c          Number of sources
 c    -    source: double precision(3,nsource)
 c          Source locations, $x_{j}$
 c    -    charge: double precision(nd,nsource)
 c          Charge strengths, $c_{\ell,j}$
-c    -    ntarg: integer
+c    -    ntarg: integer(8)
 c          Number of targets
 c    -    targ: double precision(3,ntarg)
 c          Target locations, $t_{i}$
@@ -1615,8 +1615,8 @@ c
       implicit none
       double precision eps
 
-      integer nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
-      integer nd
+      integer(8) nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
+      integer(8) nd
       
       double precision source(3,nsource),targ(3,ntarg)
       double precision charge(nd,nsource)
@@ -1666,17 +1666,17 @@ c  dropped from the sum.
 c
 c  Input arguments:
 c
-c    -    nd: integer
+c    -    nd: integer(8)
 c          number of densities
 c    -    eps: double precision
 c          precision requested
-c    -    nsource: integer
+c    -    nsource: integer(8)
 c          Number of sources
 c    -    source: double precision(3,nsource)
 c          Source locations, $x_{j}$
 c    -    charge: double precision(nd,nsource)
 c          Charge strengths, $c_{\ell,j}$
-c    -    ntarg: integer
+c    -    ntarg: integer(8)
 c          Number of targets
 c    -    targ: double precision(3,ntarg)
 c          Target locations, $t_{i}$
@@ -1699,8 +1699,8 @@ c
       implicit none
       double precision eps
       
-      integer nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
-      integer nd
+      integer(8) nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
+      integer(8) nd
       
       double precision source(3,nsource),targ(3,ntarg)
       double precision charge(nd,nsource)
@@ -1752,17 +1752,17 @@ c  dropped from the sum.
 c
 c  Input arguments:
 c
-c    -    nd: integer
+c    -    nd: integer(8)
 c          number of densities
 c    -    eps: double precision
 c          precision requested
-c    -    nsource: integer
+c    -    nsource: integer(8)
 c          Number of sources
 c    -    source: double precision(3,nsource)
 c          Source locations, $x_{j}$
 c    -    charge: double precision(nd,nsource)
 c          Charge strengths, $c_{\ell,j}$
-c    -    ntarg: integer
+c    -    ntarg: integer(8)
 c          Number of targets
 c    -    targ: double precision(3,ntarg)
 c          Target locations, $t_{i}$
@@ -1792,8 +1792,8 @@ c
       implicit none
       double precision eps
       
-      integer nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
-      integer nd
+      integer(8) nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
+      integer(8) nd
       
       double precision source(3,nsource),targ(3,ntarg)
       double precision charge(nd,nsource)
@@ -1843,17 +1843,17 @@ c  dropped from the sum.
 c
 c  Input arguments:
 c
-c    -    nd: integer
+c    -    nd: integer(8)
 c          number of densities
 c    -    eps: double precision
 c          precision requested
-c    -    nsource: integer
+c    -    nsource: integer(8)
 c          Number of sources
 c    -    source: double precision(3,nsource)
 c          Source locations, $x_{j}$
 c    -    dipvec: double precision(nd,3,nsource)
 c          Dipole strengths, $v_{\ell,j}$
-c    -    ntarg: integer
+c    -    ntarg: integer(8)
 c          Number of targets
 c    -    targ: double precision(3,ntarg)
 c          Target locations, $t_{i}$
@@ -1872,8 +1872,8 @@ c
       implicit none
       double precision eps
 
-      integer nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
-      integer nd
+      integer(8) nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
+      integer(8) nd
       
       double precision source(3,nsource),targ(3,ntarg)
       double precision charge(nd,1)
@@ -1925,17 +1925,17 @@ c  dropped from the sum.
 c
 c  Input arguments:
 c
-c    -    nd: integer
+c    -    nd: integer(8)
 c          number of densities
 c    -    eps: double precision
 c          precision requested
-c    -    nsource: integer
+c    -    nsource: integer(8)
 c          Number of sources
 c    -    source: double precision(3,nsource)
 c          Source locations, $x_{j}$
 c    -    dipvec: double precision(nd,3,nsource)
 c          Dipole strengths, $v_{\ell,j}$
-c    -    ntarg: integer
+c    -    ntarg: integer(8)
 c          Number of targets
 c    -    targ: double precision(3,ntarg)
 c          Target locations, $t_{i}$
@@ -1958,8 +1958,8 @@ c
       implicit none
       double precision eps
       
-      integer nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
-      integer nd
+      integer(8) nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
+      integer(8) nd
       
       double precision source(3,nsource),targ(3,ntarg)
       double precision charge(nd,1)
@@ -2011,17 +2011,17 @@ c  dropped from the sum.
 c
 c  Input arguments:
 c
-c    -    nd: integer
+c    -    nd: integer(8)
 c          number of densities
 c    -    eps: double precision
 c          precision requested
-c    -    nsource: integer
+c    -    nsource: integer(8)
 c          Number of sources
 c    -    source: double precision(3,nsource)
 c          Source locations, $x_{j}$
 c    -    dipvec: double precision(nd,3,nsource)
 c          Dipole strengths, $v_{\ell,j}$
-c    -    ntarg: integer
+c    -    ntarg: integer(8)
 c          Number of targets
 c    -    targ: double precision(3,ntarg)
 c          Target locations, $t_{i}$
@@ -2050,8 +2050,8 @@ c
       implicit none
       double precision eps
       
-      integer nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
-      integer nd
+      integer(8) nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
+      integer(8) nd
       
       double precision source(3,nsource),targ(3,ntarg)
       double precision charge(nd,1)
@@ -2102,11 +2102,11 @@ c  dropped from the sum.
 c
 c  Input arguments:
 c
-c    -    nd: integer
+c    -    nd: integer(8)
 c          number of densities
 c    -    eps: double precision
 c          precision requested
-c    -    nsource: integer
+c    -    nsource: integer(8)
 c          Number of sources
 c    -    source: double precision(3,nsource)
 c          Source locations, $x_{j}$
@@ -2114,7 +2114,7 @@ c    -    charge: double precision(nd,nsource)
 c          Charge strengths, $c_{\ell,j}$
 c    -    dipvec: double precision(nd,3,nsource)
 c          Dipole strengths, $v_{\ell,j}$
-c    -    ntarg: integer
+c    -    ntarg: integer(8)
 c          Number of targets
 c    -    targ: double precision(3,ntarg)
 c          Target locations, $t_{i}$
@@ -2133,8 +2133,8 @@ c
       implicit none
       double precision eps
 
-      integer nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
-      integer nd
+      integer(8) nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
+      integer(8) nd
       
       double precision source(3,nsource),targ(3,ntarg)
       double precision charge(nd,nsource)
@@ -2186,11 +2186,11 @@ c  dropped from the sum.
 c
 c  Input arguments:
 c
-c    -    nd: integer
+c    -    nd: integer(8)
 c          number of densities
 c    -    eps: double precision
 c          precision requested
-c    -    nsource: integer
+c    -    nsource: integer(8)
 c          Number of sources
 c    -    source: double precision(3,nsource)
 c          Source locations, $x_{j}$
@@ -2198,7 +2198,7 @@ c    -    charge: double precision(nd,nsource)
 c          Charge strengths, $c_{\ell,j}$
 c    -    dipvec: double precision(nd,3,nsource)
 c          Dipole strengths, $v_{\ell,j}$
-c    -    ntarg: integer
+c    -    ntarg: integer(8)
 c          Number of targets
 c    -    targ: double precision(3,ntarg)
 c          Target locations, $t_{i}$
@@ -2221,8 +2221,8 @@ c
       implicit none
       double precision eps
 
-      integer nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
-      integer nd
+      integer(8) nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
+      integer(8) nd
       
       double precision source(3,nsource),targ(3,ntarg)
       double precision charge(nd,nsource)
@@ -2275,11 +2275,11 @@ c  dropped from the sum.
 c
 c  Input arguments:
 c
-c    -    nd: integer
+c    -    nd: integer(8)
 c          number of densities
 c    -    eps: double precision
 c          precision requested
-c    -    nsource: integer
+c    -    nsource: integer(8)
 c          Number of sources
 c    -    source: double precision(3,nsource)
 c          Source locations, $x_{j}$
@@ -2287,7 +2287,7 @@ c    -    charge: double precision(nd,nsource)
 c          Charge strengths, $c_{\ell,j}$
 c    -    dipvec: double precision(nd,3,nsource)
 c          Dipole strengths, $v_{\ell,j}$
-c    -    ntarg: integer
+c    -    ntarg: integer(8)
 c          Number of targets
 c    -    targ: double precision(3,ntarg)
 c          Target locations, $t_{i}$
@@ -2317,8 +2317,8 @@ c
       implicit none
       double precision eps
 
-      integer nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
-      integer nd
+      integer(8) nsource,ntarg,ifcharge,ifdipole,ifpgh,ifpghtarg
+      integer(8) nd
       
       double precision source(3,nsource),targ(3,ntarg)
       double precision charge(nd,nsource)
