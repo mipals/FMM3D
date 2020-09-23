@@ -53,9 +53,12 @@ include("lower_level_routines.jl")
 
 
 
-# For the moment repress output
-function show(io::IO, ::MIME"text/plain", v::T) where {T<:FMMVals}
-    println(io, "$T")
+# Probably not the prettiest print. Better than nothing
+function show(io::IO, ::MIME"text/plain", output::T) where {T<:FMMVals}
+    println("$T. Accesible fields:")
+    for field in propertynames(output)
+        println("."*string(field))
+    end
 end
 
 end # module
