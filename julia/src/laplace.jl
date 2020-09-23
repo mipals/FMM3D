@@ -8,17 +8,58 @@ documentation for specifics.
 mutable struct LaplaceOutput <: FMMVals
     pot
     grad
-    hes
+    hess
 
     pottarg
     gradtarg
     hesstarg
-end
-function LaplaceOutput()
-    LaplaceOutput(nothing,nothing,nothing,
-                  nothing,nothing,nothing)
-end
 
+    pgt
+    pg
+end
+function LaplaceOutput(pgt,pg=nothing)
+    LaplaceOutput(nothing,nothing,nothing,
+                  nothing,nothing,nothing,
+                  pgt,pg)
+end
+function Base.propertynames(output::LaplaceOutput)
+    Base.fieldnames(typeof(output))
+    pg  = output.pg
+    pgt = output.pgt
+    if pg == nothing
+        if pgt == 1
+            return (:pottarg,)
+        elseif pgt == 2
+            return (:pottarg,:gradtarg)
+        elseif pgt == 3
+            return (:pottarg,:gradtarg,:hesstarg)
+        end
+    elseif pg==1
+        if pgt == 1
+            return (:pot,:pottarg)
+        elseif pgt == 2
+            return (:pot,:pottarg,:gradtarg)
+        elseif pgt == 3
+            return (:pot,:pottarg,:gradtarg,:hesstarg)
+        end
+    elseif pg==2
+        if pgt == 1
+            return (:pot,:grad,:pottarg)
+        elseif pgt == 2
+            return (:pot,:grad,:pottarg,:gradtarg)
+        elseif pgt == 3
+            return (:pot,:grad,:pottarg,:gradtarg,:hesstarg)
+        end
+    elseif pg==3
+        if pgt == 1
+            return (:pot,:grad,:hess,:pottarg,)
+        elseif pgt == 2
+            return (:pot,:grad,:hess,:pottarg,:gradtarg)
+        elseif pgt == 3
+            return (:pot,:grad,:hess,:pottarg,:gradtarg,:hesstarg)
+        end
+    end
+end
     
 """
 ```julia
@@ -59,7 +100,7 @@ where ``c_{j}`` are the charge densities,
 * `nd::Integer` number of densities
 # Output
         
-`vals::FMMVals` with the fields
+`vals<:FMMVals` with the fields
 Note that the Hessian is returned as a length
 6 vector at each point with the second derivatives
 in the order: ``\\partial_{xx}``, ``\\partial_{yy}``,
@@ -86,7 +127,7 @@ function lfmm3d(eps::Float64,sources::Array{Float64};charges::TFN=nothing,
 
     # default values
 
-    vals = LaplaceOutput()
+    vals = LaplaceOutput(pgt,pg)
     
     ifcharge = 0
     ifdipole = 0
@@ -255,7 +296,7 @@ where ``c_{j}`` are the charge densities,
 * `thresh::Float64` threshold for ignoring interactions when ``\\|x-x_{j}\\| \\leq thresh``
 # Output
         
-`vals::FMMVals` with the fields
+`vals<:FMMVals` with the fields
 * `vals.pottarg::Array{ComplexF64}` size (nd,nt) or (nt) potential at target locations if requested
 * `vals.gradtarg::Array{ComplexF64}` size (nd,3,nt) or (3,nt) gradient at target locations if requested
 """
@@ -274,7 +315,7 @@ function l3ddir(sources::Array{Float64},targets::Array{Float64};
 
     # default values
 
-    vals = LaplaceOutput()
+    vals = LaplaceOutput(pgt)
     
     ifcharge = 0
     ifdipole = 0

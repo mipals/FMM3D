@@ -19,6 +19,7 @@ documentation for [`lower_level_routs`](@ref)
 module FMM3D
 
 using FMM3D_jll
+import Base: show, propertynames
 
 export FMMVals, hfmm3d, lfmm3d, h3ddir, l3ddir, lower_level_routs
 export besseljs3d
@@ -37,10 +38,10 @@ TCN = Union{Array{ComplexF64},Nothing}
 
 """
     FMMVals
-Abstract type for FMM and direct computation function
-calls. Fields are `nothing` on return unless requested.
-See individual FMM/direct computation function 
-documentation for specifics.
+Abstract return type for FMM and direct computation 
+function calls. Fields are `nothing` on return 
+unless requested. See individual FMM/direct 
+computation function documentation for specifics.
 """
 abstract type FMMVals end
 
@@ -50,5 +51,11 @@ include("stokes.jl")
 include("maxwell.jl")
 include("lower_level_routines.jl")
 
+
+
+# For the moment repress output
+function show(io::IO, ::MIME"text/plain", v::T) where {T<:FMMVals}
+    println(io, "$T")
+end
 
 end # module

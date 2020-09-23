@@ -8,17 +8,30 @@ documentation for specifics.
 mutable struct HelmholtzOutput <: FMMVals
     pot
     grad
-    hes
 
     pottarg
     gradtarg
-    hesstarg
-end
-function HelmholtzOutput()
-    HelmholtzOutput(nothing,nothing,nothing,
-                    nothing,nothing,nothing)
-end
 
+    pgt
+    pg
+end
+function HelmholtzOutput(pgt,pg=nothing)
+    HelmholtzOutput(nothing,nothing,
+                    nothing,nothing,
+                    pgt,pg)
+end
+function Base.propertynames(output::HelmholtzOutput)
+    Base.fieldnames(typeof(output))
+    pg  = output.pg
+    pgt = output.pgt
+    if pg == nothing
+        return pgt == 1 ? (:pottarg,) : (:pottarg, :gradtarg)
+    elseif pg==1
+        return pgt == 1 ? (:pot, :pottarg) : (:pot, :pottarg, :gradtarg)
+    elseif pg==2
+        return pgt == 1 ? (:pot, :grad, :pottarg) : (:pot, :grad, :pottarg, :gradtarg)
+    end
+end
 
 """
 ```julia
@@ -57,7 +70,7 @@ where ``c_{j}`` are the charge densities,
 * `nd::Integer` number of densities
 # Output
         
-`vals::FMMVals` with the fields
+`vals<:FMMVals` with the fields
 * `vals.pot::Array{ComplexF64}` size (nd,n) or (n) potential at source locations if requested
 * `vals.grad::Array{ComplexF64}` size (nd,3,n) or (3,n) gradient at source locations if requested
 * `vals.pottarg::Array{ComplexF64}` size (nd,nt) or (nt) potential at target locations if requested
@@ -80,7 +93,7 @@ function hfmm3d(eps::Float64,zk::Union{Float64,ComplexF64},
 
     # default values
 
-    vals = HelmholtzOutput()
+    vals = HelmholtzOutput(pgt,pg)
     
     ifcharge = 0
     ifdipole = 0
@@ -230,7 +243,7 @@ where ``c_{j}`` are the charge densities,
 * `thresh::Float64` threshold for ignoring interactions when ``\\|x-x_{j}\\| \\leq thresh``
 # Output
         
-`vals::FMMVals` with the fields
+`vals<:FMMVals` with the fields
 * `vals.pottarg::Array{ComplexF64}` size (nd,nt) or (nt) potential at target locations if requested
 * `vals.gradtarg::Array{ComplexF64}` size (nd,3,nt) or (3,nt) gradient at target locations if requested
 """
@@ -251,7 +264,7 @@ function h3ddir(zk::Union{ComplexF64,Float64},sources::Array{Float64},
     
     # default values
 
-    vals = HelmholtzOutput()
+    vals = HelmholtzOutput(pgt)
     
     ifcharge = 0
     ifdipole = 0
