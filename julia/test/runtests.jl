@@ -12,7 +12,6 @@ using LinearAlgebra
     charges = randn(n) + im*randn(n)
     dipvecs = randn(3,n) + im*randn(3,n)
     zk = 2.1
-    eps = 1e-9
 
     vals1c = h3ddir(zk,sources,targets,charges=charges,
                     pgt=2,thresh=1e-16)
@@ -66,7 +65,6 @@ end
     targets = randn(3,nt)
     charges = randn(n)
     dipvecs = randn(3,n)
-    eps = 1e-9
 
     vals1c = l3ddir(sources,targets,charges=charges,
                     pgt=2,thresh=1e-16)
