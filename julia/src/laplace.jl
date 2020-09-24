@@ -22,44 +22,6 @@ function LaplaceOutput(pgt,pg=nothing)
                   nothing,nothing,nothing,
                   pgt,pg)
 end
-function Base.propertynames(output::LaplaceOutput)
-    Base.fieldnames(typeof(output))
-    pg  = output.pg
-    pgt = output.pgt
-    if pg == nothing
-        if pgt == 1
-            return (:pottarg,)
-        elseif pgt == 2
-            return (:pottarg,:gradtarg)
-        elseif pgt == 3
-            return (:pottarg,:gradtarg,:hesstarg)
-        end
-    elseif pg==1
-        if pgt == 1
-            return (:pot,:pottarg)
-        elseif pgt == 2
-            return (:pot,:pottarg,:gradtarg)
-        elseif pgt == 3
-            return (:pot,:pottarg,:gradtarg,:hesstarg)
-        end
-    elseif pg==2
-        if pgt == 1
-            return (:pot,:grad,:pottarg)
-        elseif pgt == 2
-            return (:pot,:grad,:pottarg,:gradtarg)
-        elseif pgt == 3
-            return (:pot,:grad,:pottarg,:gradtarg,:hesstarg)
-        end
-    elseif pg==3
-        if pgt == 1
-            return (:pot,:grad,:hess,:pottarg,)
-        elseif pgt == 2
-            return (:pot,:grad,:hess,:pottarg,:gradtarg)
-        elseif pgt == 3
-            return (:pot,:grad,:hess,:pottarg,:gradtarg,:hesstarg)
-        end
-    end
-end
     
 """
 ```julia
@@ -121,9 +83,8 @@ function lfmm3d(eps::Float64,sources::Array{Float64};charges::TFN=nothing,
 
     @assert size(sources,1) == 3
     @assert nd >= 0
-
-    if (pg > 3 || pg < 0); @warn "flag pg not in expected range" end
-    if (pgt > 3 || pgt < 0); @warn "flag pgt not in expected range" end  
+    @assert (0 <= pg  && pg  <= 3) "flag pg not in expected range"
+    @assert (0 <= pgt && pgt <= 3) "flag pgt not in expected range"
 
     # default values
 
@@ -310,8 +271,7 @@ function l3ddir(sources::Array{Float64},targets::Array{Float64};
     @assert size(sources,1) == 3
     @assert size(targets,1) == 3    
     @assert nd >= 0
-
-    if (pgt > 2 || pgt < 0); @warn "flag pgt not in expected range" end      
+    @assert (0 <= pgt && pgt <= 2) "flag pgt not in expected range"      
 
     # default values
 

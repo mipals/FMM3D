@@ -54,11 +54,33 @@ include("lower_level_routines.jl")
 
 
 # Probably not the prettiest print. Better than nothing
+function propertynames(output::T) where {T<:Union{HelmholtzOutput,LaplaceOutput}}
+    Base.fieldnames(typeof(output))
+    pg  = output.pg
+    pgt = output.pgt
+
+    # Possible stages
+    fieldstarg = [:pottarg,:gradtarg,:hesstarg]
+    fields = [:pot,:grad,:hess]
+
+    # Only using the computed fields
+    fieldstarg = fieldstarg[1:pgt]
+
+    if pg == nothing
+        return tuple(fieldstarg...,)
+    else
+        fields = fields[1:pg]
+    end
+
+    return tuple(cat(fields,fieldstarg,dims=1)...)
+    
+end
 function show(io::IO, ::MIME"text/plain", output::T) where {T<:FMMVals}
     println("$T. Accesible fields:")
     for field in propertynames(output)
         println("."*string(field))
     end
 end
+
 
 end # module

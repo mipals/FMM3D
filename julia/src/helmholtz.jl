@@ -20,18 +20,6 @@ function HelmholtzOutput(pgt,pg=nothing)
                     nothing,nothing,
                     pgt,pg)
 end
-function Base.propertynames(output::HelmholtzOutput)
-    Base.fieldnames(typeof(output))
-    pg  = output.pg
-    pgt = output.pgt
-    if pg == nothing
-        return pgt == 1 ? (:pottarg,) : (:pottarg, :gradtarg)
-    elseif pg==1
-        return pgt == 1 ? (:pot, :pottarg) : (:pot, :pottarg, :gradtarg)
-    elseif pg==2
-        return pgt == 1 ? (:pot, :grad, :pottarg) : (:pot, :grad, :pottarg, :gradtarg)
-    end
-end
 
 """
 ```julia
@@ -86,10 +74,8 @@ function hfmm3d(eps::Float64,zk::Union{Float64,ComplexF64},
     
     @assert size(sources,1) == 3
     @assert nd >= 0
-
-    if (pg > 2 || pg < 0); @warn "flag pg not in expected range" end
-    if (pgt > 2 || pgt < 0); @warn "flag pgt not in expected range" end    
-    
+    @assert (0 <= pg  && pg  <= 2) "flag pg not in expected range"
+    @assert (0 <= pgt && pgt <= 2) "flag pgt not in expected range"   
 
     # default values
 
@@ -258,9 +244,7 @@ function h3ddir(zk::Union{ComplexF64,Float64},sources::Array{Float64},
     @assert size(sources,1) == 3
     @assert size(targets,1) == 3    
     @assert nd >= 0
-
-    if (pgt > 2 || pgt < 0); @warn "flag pgt not in expected range" end  
-
+    @assert (0 <= pgt || pgt <= 2) "flag pgt not in expected range"
     
     # default values
 
