@@ -59,7 +59,7 @@ where ``c_{j}`` are the charge densities,
 * `nd::Integer` number of densities
 # Output
         
-`vals<:FMMVals` with the fields
+`vals::LaplaceOutput` with the fields
 Note that the Hessian is returned as a length
 6 vector at each point with the second derivatives
 in the order: ``\\partial_{xx}``, ``\\partial_{yy}``,
@@ -254,7 +254,7 @@ where ``c_{j}`` are the charge densities,
 * `thresh::Float64` threshold for ignoring interactions when ``\\|x-x_{j}\\| \\leq thresh``
 # Output
         
-`vals<:FMMVals` with the fields
+`vals::LaplaceOutput` with the fields
 * `vals.pottarg::Array{ComplexF64}` size (nd,nt) or (nt) potential at target locations if requested
 * `vals.gradtarg::Array{ComplexF64}` size (nd,3,nt) or (3,nt) gradient at target locations if requested
 """

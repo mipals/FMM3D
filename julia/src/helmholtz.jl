@@ -55,7 +55,7 @@ where ``c_{j}`` are the charge densities,
 * `nd::Integer` number of densities
 # Output
         
-`vals<:FMMVals` with the fields
+`vals::HelmholtzOutput` with the fields
 * `vals.pot::Array{ComplexF64}` size (nd,n) or (n) potential at source locations if requested
 * `vals.grad::Array{ComplexF64}` size (nd,3,n) or (3,n) gradient at source locations if requested
 * `vals.pottarg::Array{ComplexF64}` size (nd,nt) or (nt) potential at target locations if requested
@@ -226,7 +226,7 @@ where ``c_{j}`` are the charge densities,
 * `thresh::Float64` threshold for ignoring interactions when ``\\|x-x_{j}\\| \\leq thresh``
 # Output
         
-`vals<:FMMVals` with the fields
+`vals::HelmholtzOutput` with the fields
 * `vals.pottarg::Array{ComplexF64}` size (nd,nt) or (nt) potential at target locations if requested
 * `vals.gradtarg::Array{ComplexF64}` size (nd,3,nt) or (3,nt) gradient at target locations if requested
 """

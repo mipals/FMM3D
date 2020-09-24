@@ -73,9 +73,10 @@ function propertynames(output::T) where {T<:Union{HelmholtzOutput,LaplaceOutput}
     
 end
 function show(io::IO, ::MIME"text/plain", output::T) where {T<:FMMVals}
-    println("$T. Accesible fields:")
     for field in propertynames(output)
-        println("."*string(field))
+        strfield = string(field)
+        println("."*strfield*" "^(max(8-length(strfield),0)), 
+                '\t', "$(typeof(getfield(output,field)))")
     end
 end
 
