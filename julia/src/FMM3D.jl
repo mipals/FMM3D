@@ -59,18 +59,15 @@ function propertynames(output::T) where {T<:Union{HelmholtzOutput,LaplaceOutput}
     pg  = output.pg
     pgt = output.pgt
 
-    # Possible stages
     fieldstarg = [:pottarg,:gradtarg,:hesstarg]
-    fields = [:pot,:grad,:hess]
-
-    # Only using the computed fields
     fieldstarg = fieldstarg[1:pgt]
 
-    if pg == nothing
+    if pg === nothing
         return tuple(fieldstarg...,)
-    else
-        fields = fields[1:pg]
     end
+
+    fields = [:pot,:grad,:hess]
+    fields = fields[1:pg]
 
     return tuple(cat(fields,fieldstarg,dims=1)...)
     

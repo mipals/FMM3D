@@ -1,9 +1,6 @@
 """
     LaplaceOutput
 Return type for Laplace computations.
-Fields are `nothing` on return unless requested.
-See individual FMM/direct computation function 
-documentation for specifics.
 """
 mutable struct LaplaceOutput <: FMMVals
     pot
@@ -106,14 +103,14 @@ function lfmm3d(eps::Float64,sources::Array{Float64};charges::TFN=nothing,
 
     nt = 0
 
-    if targets != nothing
+    if targets !== nothing
         @assert size(targets,1) == 3
         nt = div(length(targets),3)
     else
         targets = 0.0
     end
     
-    if charges != nothing
+    if charges !== nothing
         @assert div(length(charges),nd) == n
         ifcharge = 1
     else
@@ -121,7 +118,7 @@ function lfmm3d(eps::Float64,sources::Array{Float64};charges::TFN=nothing,
         ifcharge = 0
     end
 
-    if dipvecs != nothing
+    if dipvecs !== nothing
         @assert div(length(dipvecs),nd) == n*3
         ifdipole = 1
     else
@@ -140,7 +137,7 @@ function lfmm3d(eps::Float64,sources::Array{Float64};charges::TFN=nothing,
         return vals
     end
 
-    if (pgt == 1 || pgt == 2 || pgt == 3) && targets == nothing
+    if (pgt == 1 || pgt == 2 || pgt == 3) && targets === nothing
         @warn "target values requested but no targets provided"
     end
 
@@ -289,7 +286,7 @@ function l3ddir(sources::Array{Float64},targets::Array{Float64};
     n = div(length(sources),3)
     nt = div(length(targets),3)
     
-    if charges != nothing
+    if charges !== nothing
         @assert div(length(charges),nd) == n
         ifcharge = 1
     else
@@ -297,7 +294,7 @@ function l3ddir(sources::Array{Float64},targets::Array{Float64};
         ifcharge = 0
     end
 
-    if dipvecs != nothing
+    if dipvecs !== nothing
         @assert div(length(dipvecs),nd) == n*3
         ifdipole = 1
     else

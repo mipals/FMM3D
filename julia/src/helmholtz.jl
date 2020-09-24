@@ -1,9 +1,6 @@
 """
     HelmholtzOutput
-Return type for Helmholmtz computations.
-Fields are `nothing` on return unless requested.
-See individual FMM/direct computation function 
-documentation for specifics.
+Return type for Helmholtz computations.
 """
 mutable struct HelmholtzOutput <: FMMVals
     pot
@@ -97,14 +94,14 @@ function hfmm3d(eps::Float64,zk::Union{Float64,ComplexF64},
     nt = 0
     zk = complex(zk)
 
-    if targets != nothing
+    if targets !== nothing
         @assert size(targets,1) == 3
         nt = div(length(targets),3)
     else
         targets = 0.0
     end
     
-    if charges != nothing
+    if charges !== nothing
         @assert div(length(charges),nd) == n
         ifcharge = 1
     else
@@ -112,7 +109,7 @@ function hfmm3d(eps::Float64,zk::Union{Float64,ComplexF64},
         ifcharge = 0
     end
 
-    if dipvecs != nothing
+    if dipvecs !== nothing
         @assert div(length(dipvecs),nd) == n*3
         ifdipole = 1
     else
@@ -263,7 +260,7 @@ function h3ddir(zk::Union{ComplexF64,Float64},sources::Array{Float64},
     nt = div(length(targets),3)
     zk = complex(zk)
     
-    if charges != nothing
+    if charges !== nothing
         @assert div(length(charges),nd) == n
         ifcharge = 1
     else
@@ -271,7 +268,7 @@ function h3ddir(zk::Union{ComplexF64,Float64},sources::Array{Float64},
         ifcharge = 0
     end
 
-    if dipvecs != nothing
+    if dipvecs !== nothing
         @assert div(length(dipvecs),nd) == n*3
         ifdipole = 1
     else
