@@ -21,7 +21,7 @@ module FMM3D
 using FMM3D_jll
 import Base: show, propertynames
 
-export FMMVals, hfmm3d, lfmm3d, h3ddir, l3ddir, lower_level_routs
+export hfmm3d, lfmm3d, h3ddir, l3ddir, lower_level_routs
 export besseljs3d
 
 # fortran input/return types
@@ -75,7 +75,7 @@ end
 function show(io::IO, ::MIME"text/plain", output::T) where {T<:FMMVals}
     for field in propertynames(output)
         strfield = string(field)
-        println("."*strfield*" "^(max(8-length(strfield),0)), 
+        println("."*strfield*" "^(max(9-length(strfield),0)), 
                 '\t', "$(typeof(getfield(output,field)))")
     end
 end
