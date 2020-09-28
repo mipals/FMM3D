@@ -1,6 +1,9 @@
 """
     LaplaceOutput
 Return type for Laplace computations.
+Fields are `nothing` on return unless requested.
+See individual FMM/direct computation function 
+documentation for specifics.
 """
 mutable struct LaplaceOutput <: FMMVals
     pot

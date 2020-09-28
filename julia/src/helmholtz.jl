@@ -1,6 +1,9 @@
 """
     HelmholtzOutput
 Return type for Helmholtz computations.
+Fields are `nothing` on return unless requested.
+See individual FMM/direct computation function 
+documentation for specifics.
 """
 mutable struct HelmholtzOutput <: FMMVals
     pot

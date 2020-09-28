@@ -50,35 +50,7 @@ include("laplace.jl")
 include("stokes.jl")
 include("maxwell.jl")
 include("lower_level_routines.jl")
-
-
-
-# Probably not the prettiest print. Better than nothing
-function propertynames(output::T) where {T<:Union{HelmholtzOutput,LaplaceOutput}}
-    Base.fieldnames(typeof(output))
-    pg  = output.pg
-    pgt = output.pgt
-
-    fieldstarg = [:pottarg,:gradtarg,:hesstarg]
-    fieldstarg = fieldstarg[1:pgt]
-
-    if pg === nothing
-        return tuple(fieldstarg...,)
-    end
-
-    fields = [:pot,:grad,:hess]
-    fields = fields[1:pg]
-
-    return tuple(cat(fields,fieldstarg,dims=1)...)
-    
-end
-function show(io::IO, ::MIME"text/plain", output::T) where {T<:FMMVals}
-    for field in propertynames(output)
-        strfield = string(field)
-        println("."*strfield*" "^(max(9-length(strfield),0)), 
-                '\t', "$(typeof(getfield(output,field)))")
-    end
-end
+include("properties.jl")
 
 
 end # module

@@ -15,8 +15,12 @@ mutable struct MaxwellOutput <: FMMVals
     htarg
     gradetarg
     gradhtarg
+
+    ifehtarg
+    ifeh
 end
-function MaxwellOutput()
+function MaxwellOutput(ifehtarg,ifeh=nothing)
     MaxwellOutput(nothing,nothing,nothing,nothing,
-                  nothing,nothing,nothing,nothing)
+                  nothing,nothing,nothing,nothing,
+                  ifehtarg, ifeh)
 end
