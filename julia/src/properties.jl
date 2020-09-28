@@ -1,5 +1,4 @@
 function propertynames(output::T) where {T<:Union{HelmholtzOutput,LaplaceOutput}}
-    fieldnames(typeof(output))
     pg  = output.pg
     pgt = output.pgt
 
@@ -19,19 +18,18 @@ end
 
 
 function propertynames(output::StokesOutput)
-    fieldnames(typeof(output))
-    pg  = output.pg
-    pgt = output.pgt
+    ifppreg  = output.ifppreg
+    ifppregtarg = output.ifppregtarg
 
-    fieldstarg = [:pottarg,pretarg,:gradtarg]
-    fieldstarg = fieldstarg[1:pgt]
+    fieldstarg = [:pottarg,:pretarg,:gradtarg]
+    fieldstarg = fieldstarg[1:ifppregtarg]
 
-    if pg === nothing
+    if ifppreg === nothing
         return tuple(fieldstarg...,)
     end
 
     fields = [:pot,:pre,:grad]
-    fields = fields[1:pg]
+    fields = fields[1:ifppreg]
 
     return tuple(cat(fields,fieldstarg,dims=1)...)
     
@@ -39,7 +37,6 @@ end
 
 
 function propertynames(output::MaxwellOutput)
-    fieldnames(typeof(output))
     ifeh  = output.ifeh
     ifehtarg = output.ifehtarg
 

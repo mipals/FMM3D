@@ -13,8 +13,12 @@ mutable struct StokesOutput <: FMMVals
     pottarg
     pretarg
     gradtarg
+
+    ifppregtarg
+    ifppreg
 end
-function StokesOutput()
+function StokesOutput(ifppregtarg, ifppreg=nothing)
     StokesOutput(nothing,nothing,nothing,
-                 nothing,nothing,nothing)
+                 nothing,nothing,nothing,
+                 ifppregtarg, ifppreg)
 end
