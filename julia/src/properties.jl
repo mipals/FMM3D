@@ -1,4 +1,3 @@
-# Probably not the prettiest print. Better than nothing
 function propertynames(output::T) where {T<:Union{HelmholtzOutput,LaplaceOutput}}
     fieldnames(typeof(output))
     pg  = output.pg
@@ -68,7 +67,7 @@ function propertynames(output::MaxwellOutput)
     
 end
 
-
+# Probably not the prettiest print. Better than nothing
 function show(io::IO, ::MIME"text/plain", output::T) where {T<:FMMVals}
     for field in propertynames(output)
         strfield = string(field)
